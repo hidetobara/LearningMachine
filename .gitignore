@@ -1,0 +1,10 @@
+﻿obj/
+bin/
+packages/
+Debug/
+Release/
+
+*.user
+*.bin
+*.png
+*.gif
