@@ -17,10 +17,16 @@ namespace IconLibrary
 	 */
 	public class LearningDBN : LearningManager
 	{
-		protected LearningDBN() { }
-
-		const int MiddleCount = 16;
+		const int MiddleCount = 64;
 		const int Iterate = 3;
+
+		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 16, Width = 16, Plane = 16 }; } }
+		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 16 }; } }
+
+		public int Height { get { return FrameIn.Height; } }
+		public int Width { get { return FrameIn.Width; } }
+		public int Plane { get { return FrameIn.Plane; } }
+		public int Length { get { return FrameIn.Length; } }
 
 		protected DeepBeliefNetwork _Network;
 		protected DeepBeliefNetworkLearning _Teacher;
@@ -29,7 +35,7 @@ namespace IconLibrary
 
 		public override void Initialize()
 		{
-			_Network = new DeepBeliefNetwork(Length, new int[] { MiddleCount, Length });
+			_Network = new DeepBeliefNetwork(Length, new int[] { MiddleCount, FrameOut.Length });
 			new GaussianWeights(_Network).Randomize();
 			_Network.UpdateVisibleWeights();
 			_Teacher = new DeepBeliefNetworkLearning(_Network)
@@ -69,7 +75,7 @@ namespace IconLibrary
 		public override LearningImage Forecast(LearningImage image)
 		{
 			double[] data = _Network.Compute(image.Data);
-			return new LearningImage(Height, Width, Plane, data);
+			return new LearningImage(FrameOut, data);
 		}
 	}
 }

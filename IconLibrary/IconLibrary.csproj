@@ -58,6 +58,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LearningConvolution.cs" />
     <Compile Include="LearningImage.cs" />
     <Compile Include="LearningDBN.cs" />
     <Compile Include="LearningIPCA_Slicing.cs" />

@@ -15,7 +15,16 @@ namespace IconLibrary
 
 	public class LearningIPCA : LearningDBN
 	{
-		const int MainMax = 16;
+		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 16, Width = 16, Plane = 3 }; } }
+		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 16 }; } }
+		public override string Filename { get { return "IPCA/"; } }
+
+		public int Height { get { return FrameIn.Height; } }
+		public int Width { get { return FrameIn.Width; } }
+		public int Plane { get { return FrameIn.Plane; } }
+		public int Length { get { return FrameIn.Length; } }
+		public int MainMax { get { return FrameOut.Plane; } }
+
 		double DynamicAmnesic
 		{
 			get { return 2.0 * (1 - Math.Exp(-_FrameNow / 32.0)); }	// 2.0fくらいが良い
@@ -24,8 +33,6 @@ namespace IconLibrary
 
 		LearningImage[] _MainImages;	// 主成分
 		LearningImage[] _TmpImages;		// 副成分
-
-		public override string Filename { get { return "IPCA/"; } }
 
 		long _FrameNow;
 
@@ -36,8 +43,8 @@ namespace IconLibrary
 			_TmpImages = new LearningImage[MainMax];
 			for (int m = 0; m < MainMax; m++)
 			{
-				_MainImages[m] = new LearningImage(Height, Width);
-				_TmpImages[m] = new LearningImage(Height, Width);
+				_MainImages[m] = new LearningImage(Height, Width, Plane);
+				_TmpImages[m] = new LearningImage(Height, Width, Plane);
 			}
 		}
 
@@ -92,9 +99,9 @@ namespace IconLibrary
 			long iterateMax = MainMax - 1;
 			if (MainMax > _FrameNow) iterateMax = _FrameNow;
 
-			LearningImage imgA = new LearningImage(Height, Width);
-			LearningImage imgB = new LearningImage(Height, Width);
-			LearningImage imgC = new LearningImage(Height, Width);
+			LearningImage imgA = new LearningImage(Height, Width, Plane);
+			LearningImage imgB = new LearningImage(Height, Width, Plane);
+			LearningImage imgC = new LearningImage(Height, Width, Plane);
 			double scalerA, scalerB, scalerC;
 			double nrmV;
 			double l = DynamicAmnesic; //!<忘却の値、２ぐらいがよい
@@ -139,11 +146,11 @@ namespace IconLibrary
 			return BackProject(results);
 		}
 
-		public List<double> Project(LearningImage image)
+		public override LearningImage Project(LearningImage i)
 		{
 			List<double> results = new List<double>();
-			LearningImage amt = new LearningImage(Height, Width, Plane, image.Data);
-			LearningImage tmp = new LearningImage(Height, Width);
+			LearningImage amt = new LearningImage(Height, Width, Plane, i.Data);
+			LearningImage tmp = new LearningImage(Height, Width, Plane);
 			for (int m = 0; m < MainMax; m++)
 			{
 				double length = LearningImage.EuclideanLength(_MainImages[m]);
@@ -152,13 +159,14 @@ namespace IconLibrary
 				LearningImage.Sub(amt, tmp, amt);
 				results.Add(result);
 			}
-			return results;
+			return new LearningImage(FrameOut, results.ToArray());
 		}
 
-		public LearningImage BackProject(List<double> list)
+		public override LearningImage BackProject(LearningImage i)
 		{
-			LearningImage image = new LearningImage(Height, Width);
-			LearningImage tmp = new LearningImage(Height, Width);
+			List<double> list = new List<double>(i.Data);
+			LearningImage image = new LearningImage(Height, Width, Plane);
+			LearningImage tmp = new LearningImage(Height, Width, Plane);
 			for (int m = 0; m < MainMax; m++)
 			{
 				double length = LearningImage.EuclideanLength(_MainImages[m]);

@@ -21,7 +21,7 @@ namespace IconDesktop
 		public FormMain()
 		{
 			InitializeComponent();
-			LearningManager.Instance = new LearningIPCA_Slicing();
+			LearningManager.Instance = new LearningConvolution();
 		}
 
 		private void ButtonDirectory_Click(object sender, EventArgs e)
@@ -87,9 +87,6 @@ namespace IconDesktop
 						BackgroundWorkerMain.ReportProgress(progress);
 						images.Clear();
 						progress++;
-#if DEBUG
-						_Learning.Forecast(images[0]).SavePng("../trn" + progress + ".png");
-#endif
 						System.Threading.Thread.Sleep(1);
 					}
 				}

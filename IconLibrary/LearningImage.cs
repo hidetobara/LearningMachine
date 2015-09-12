@@ -11,22 +11,27 @@ namespace IconLibrary
 {
     public class LearningImage
     {
-		public int Height;
-		public int Width;
-		public int Area { get { return Width * Height; } }
-		public int Plane = 3;
-		public int Length { get { return Width * Height * Plane; } }
+		private LearningFrame _Frame;
+		public int Height { get { return _Frame.Height; } }
+		public int Width { get { return _Frame.Width; } }
+		public int Area { get { return _Frame.Area; } }
+		public int Plane { get { return _Frame.Plane; } }
+		public int Length { get { return _Frame.Length; } }
 		public double[] Data;
 
+		public LearningImage(LearningFrame f, double[] data =null)
+		{
+			_Frame = f;
+			Data = new double[Length];
+			if (data != null) Array.Copy(data, Data, Math.Min(data.Length, Length));
+		}
 		public LearningImage(int height, int width, int plane = 3, double[] data = null)
 		{
-			Height = height;
-			Width = width;
-			Plane = plane;
-			Data = new double[Area * Plane];
-			if (data != null) Array.Copy(data, Data, Math.Min(data.Length, Area * Plane));
+			_Frame = new LearningFrame() { Height = height, Width = width, Plane = plane };
+			Data = new double[Length];
+			if (data != null) Array.Copy(data, Data, Math.Min(data.Length, Length));
 		}
-		public LearningImage(LearningImage image) : this(image.Height, image.Width, image.Plane, image.Data) { }
+		public LearningImage(LearningImage image) : this(image._Frame, image.Data) { }
 
 		public unsafe static LearningImage LoadPng(string path)
 		{
@@ -111,6 +116,12 @@ namespace IconLibrary
 			return (byte)((v - low) / (high - low) * 255.0);
 		}
 
+		public void SavePngAdjusted(string path)
+		{
+			var list = LearningImage.HighLow(this);
+			SavePng(path, list[1], list[0]);
+		}
+
 		public static void Sacle(LearningImage i, LearningImage o, double scale = 1, double bias = 0)
 		{
 			for (int l = 0; l < o.Length; l++) o.Data[l] = i.Data[l] * scale + bias;
@@ -193,7 +204,7 @@ namespace IconLibrary
 
 		public LearningImage Trim(Rectangle r)
 		{
-			LearningImage i = new LearningImage(r.Height, r.Width);
+			LearningImage i = new LearningImage(r.Height, r.Width, Plane);
 			for(int h = r.Top; h < r.Bottom; h++)
 			{
 				for(int w = r.Left; w < r.Right; w++)
@@ -212,6 +223,20 @@ namespace IconLibrary
 				for(int w = 0; w < Width - s.Width; w++)
 					list.Add(Trim(new Rectangle() { X = w, Y = h, Size = s }));
 			return list;
+		}
+
+		public void Paste(int x, int y, LearningImage image)
+		{
+			for (int h = 0; h < image.Height; h++)
+			{
+				for (int w = 0; w < image.Width; w++)
+				{
+					if (h + y >= this.Height || w + x >= this.Width) continue;
+					int pt = (this.Width * (h + y) + (w + x)) * Plane;
+					int pi = (image.Width * h + w) * Plane;
+					for (int l = 0; l < Plane; l++) this.Data[pt + l] = image.Data[pi + l];
+				}
+			}
 		}
 	}
 }
