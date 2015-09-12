@@ -14,17 +14,19 @@ namespace IconLibrary
 		public int Height;
 		public int Width;
 		public int Area { get { return Width * Height; } }
-		public int Length { get { return Width * Height * 3; } }
+		public int Plane = 3;
+		public int Length { get { return Width * Height * Plane; } }
 		public double[] Data;
 
-		public LearningImage(int height, int width, double[] data = null)
+		public LearningImage(int height, int width, int plane = 3, double[] data = null)
 		{
 			Height = height;
 			Width = width;
-			Data = new double[Area * 3];
-			if (data != null) Array.Copy(data, Data, Math.Min(data.Length, Area * 3));
+			Plane = plane;
+			Data = new double[Area * Plane];
+			if (data != null) Array.Copy(data, Data, Math.Min(data.Length, Area * Plane));
 		}
-		public LearningImage(LearningImage image) : this(image.Height, image.Width, image.Data) { }
+		public LearningImage(LearningImage image) : this(image.Height, image.Width, image.Plane, image.Data) { }
 
 		public unsafe static LearningImage LoadPng(string path)
 		{
@@ -38,12 +40,11 @@ namespace IconLibrary
 				for (int h = 0; h < srcData.Height; h++)
 				{
 					byte* ps = (byte*)srcData.Scan0 + srcData.Stride * h;
-					for (int w = 0; w < srcData.Width; w++, ps += 3)
+					for (int w = 0; w < srcData.Width; w++, ps += i.Plane)
 					{
-						int postion = (i.Width * h + w) * 3;
-						i.Data[postion + 0] = (double)ps[0] / 255;
-						i.Data[postion + 1] = (double)ps[1] / 255;
-						i.Data[postion + 2] = (double)ps[2] / 255;
+						int postion = (i.Width * h + w) * i.Plane;
+						for (int l = 0; l < i.Plane; l++)
+							i.Data[postion + l] = (double)ps[l] / 255;
 					}
 				}
 				src.UnlockBits(srcData);
@@ -71,9 +72,8 @@ namespace IconLibrary
 					for (int hh = hs; hh < hs + scale; hh++)
 						for (int ww = ws; ww < ws + scale; ww++) list.Add(this.Width * hh + ww);
 					int postion = (i.Width * h + w) * 3;
-					i.Data[postion + 0] = Average(list, 3, 0);
-					i.Data[postion + 1] = Average(list, 3, 1);
-					i.Data[postion + 2] = Average(list, 3, 2);
+					for (int l = 0; l < Plane; l++)
+						i.Data[postion + l] = Average(list, Plane, l);
 				}
 			}
 			return i;
@@ -81,7 +81,7 @@ namespace IconLibrary
 		private double Average(List<int> list, int scale = 3, int bias = 0)
 		{
 			double amount = 0;
-			foreach (int i in list) amount += Data[i * 3 + bias];
+			foreach (int i in list) amount += Data[i * scale + bias];
 			return amount / list.Count;
 		}
 
@@ -94,10 +94,9 @@ namespace IconLibrary
 				byte* p = (byte*)d.Scan0 + d.Stride * h;
 				for (int w = 0; w < d.Width; w++, p += 3)
 				{
-					int position = (this.Width * h + w) * 3;
-					p[0] = Step(Data[position + 0], low, high);
-					p[1] = Step(Data[position + 1], low, high);
-					p[2] = Step(Data[position + 2], low, high);
+					int position = (this.Width * h + w) * Plane;
+					for (int l = 0; l < Plane && l < 3; l++)
+						p[l] = Step(Data[position + l], low, high);
 				}
 			}
 			b.UnlockBits(d);
@@ -148,6 +147,7 @@ namespace IconLibrary
 				List<byte> buffer = new List<byte>();
 				buffer.AddRange(BitConverter.GetBytes(Height));
 				buffer.AddRange(BitConverter.GetBytes(Width));
+				buffer.AddRange(BitConverter.GetBytes(Plane));
 				for (int l = 0; l < Length; l++) buffer.AddRange(BitConverter.GetBytes(Data[l]));
 				writer = new BinaryWriter(File.OpenWrite(path));
 				writer.Write(buffer.ToArray());
@@ -174,7 +174,8 @@ namespace IconLibrary
 				int shift = 0;
 				int height = BitConverter.ToInt32(bytes, shift); shift += sizeof(int);
 				int width = BitConverter.ToInt32(bytes, shift); shift += sizeof(int);
-				LearningImage image = new LearningImage(height, width);
+				int plane = BitConverter.ToInt32(bytes, shift); shift += sizeof(int);
+				LearningImage image = new LearningImage(height, width, plane);
 				for (int l = 0; l < image.Length; l++) image.Data[l] = BitConverter.ToDouble(bytes, l * sizeof(double) + shift);
 				return image;
 			}
@@ -188,6 +189,29 @@ namespace IconLibrary
 				if (reader != null) reader.Close();
 				reader = null;
 			}
+		}
+
+		public LearningImage Trim(Rectangle r)
+		{
+			LearningImage i = new LearningImage(r.Height, r.Width);
+			for(int h = r.Top; h < r.Bottom; h++)
+			{
+				for(int w = r.Left; w < r.Right; w++)
+				{
+					int d = i.Width * (h - r.Top) + (w - r.Left);
+					int s = h * Width + w;
+					for (int p = 0; p < Plane; p++) i.Data[d * Plane + p] = this.Data[s * Plane + p];
+				}
+			}
+			return i;
+		}
+		public List<LearningImage> MakeSlices(Size s)
+		{
+			List<LearningImage> list = new List<LearningImage>();
+			for (int h = 0; h < Height - s.Height; h++)
+				for(int w = 0; w < Width - s.Width; w++)
+					list.Add(Trim(new Rectangle() { X = w, Y = h, Size = s }));
+			return list;
 		}
 	}
 }

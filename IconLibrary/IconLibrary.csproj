@@ -59,7 +59,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LearningImage.cs" />
-    <Compile Include="LearningDNN.cs" />
+    <Compile Include="LearningDBN.cs" />
+    <Compile Include="LearningIPCA_Slicing.cs" />
     <Compile Include="LearningManager.cs" />
     <Compile Include="LearningIPCA.cs" />
     <Compile Include="Log.cs" />

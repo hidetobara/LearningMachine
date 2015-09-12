@@ -15,16 +15,16 @@ namespace IconLibrary
 			set { if (_Instance == null) _Instance = value; }
 		}
 
-		public int Width = 100;
-		public int Height = 100;
-		public int Plane = 3;
+		public virtual int Width { get { return 100; } }
+		public virtual int Height { get { return 100; } }
+		public virtual int Plane { get { return 3; } }
 		public int Length { get { return Width * Height * Plane; } }
 
 		public virtual string Filename { get { return "Learning.bin"; } }
 		public virtual void Initialize() { }
 		public virtual bool Load(string path) { return false; }
 		public virtual void Save(string path) { }
-		public virtual void Learn(List<LearningImage> images, int iterate = 1) { }
+		public virtual void Learn(List<LearningImage> images) { }
 		public virtual LearningImage Forecast(LearningImage image) { return null; }
 	}
 }

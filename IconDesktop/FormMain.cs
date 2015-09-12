@@ -21,7 +21,7 @@ namespace IconDesktop
 		public FormMain()
 		{
 			InitializeComponent();
-			LearningManager.Instance = new LearningIPCA();
+			LearningManager.Instance = new LearningIPCA_Slicing();
 		}
 
 		private void ButtonDirectory_Click(object sender, EventArgs e)
@@ -88,7 +88,7 @@ namespace IconDesktop
 						images.Clear();
 						progress++;
 #if DEBUG
-						//if (i % 10 == 0) _Learning.Forecast(images[0]).SavePng("../f" + i + ".png");
+						_Learning.Forecast(images[0]).SavePng("../trn" + progress + ".png");
 #endif
 						System.Threading.Thread.Sleep(1);
 					}
@@ -102,7 +102,7 @@ namespace IconDesktop
 				string path = task.Inputs[0];
 				string filename = Path.GetFileName(path);
 				LearningImage forecasted = _Learning.Forecast(LearningImage.LoadPng(path).Shrink(SCALE));
-				forecasted.SavePng("../" + filename, -1.25, 1.25);
+				forecasted.SavePng("../" + filename);
 				Log.Instance.Info("forecasted: " + filename);
 			}
 		}

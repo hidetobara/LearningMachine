@@ -13,18 +13,19 @@ using Accord.Neuro.Networks;
 namespace IconLibrary
 {
 	/*
-	 * デフォルトは Deep Neural Network
+	 * Deep Brief Network
 	 */
-	public class LearningDNN : LearningManager
+	public class LearningDBN : LearningManager
 	{
-		protected LearningDNN() { }
+		protected LearningDBN() { }
 
 		const int MiddleCount = 16;
+		const int Iterate = 3;
 
 		protected DeepBeliefNetwork _Network;
 		protected DeepBeliefNetworkLearning _Teacher;
 
-		public override string Filename { get { return "DNN.bin"; } }
+		public override string Filename { get { return "DBN.bin"; } }
 
 		public override void Initialize()
 		{
@@ -55,20 +56,20 @@ namespace IconLibrary
 			_Network.Save(path);
 		}
 
-		public override void Learn(List<LearningImage> images, int iterate = 1)
+		public override void Learn(List<LearningImage> images)
 		{
 			List<double[]> inputs = new List<double[]>();
 			for (int i = 0; i < images.Count; i++) inputs.Add(images[i].Data);
 			var data = _Teacher.GetLayerInput(inputs.ToArray());
 
-			for (int i = 0; i < iterate; i++) _Teacher.RunEpoch(data);
+			for (int i = 0; i < Iterate; i++) _Teacher.RunEpoch(data);
 			_Network.UpdateVisibleWeights();
 		}
 
 		public override LearningImage Forecast(LearningImage image)
 		{
 			double[] data = _Network.Compute(image.Data);
-			return new LearningImage(Height, Width, data);
+			return new LearningImage(Height, Width, Plane, data);
 		}
 	}
 }

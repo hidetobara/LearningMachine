@@ -13,7 +13,7 @@ namespace IconLibrary
 {
 	using Hash = Dictionary<string, object>;
 
-	public class LearningIPCA : LearningDNN
+	public class LearningIPCA : LearningDBN
 	{
 		const int MainMax = 16;
 		double DynamicAmnesic
@@ -70,8 +70,7 @@ namespace IconLibrary
 				_MainImages[m].SaveBin(Path.Combine(path, "main" + m + ".bin"));
 				_TmpImages[m].SaveBin(Path.Combine(path, "tmp" + m + ".bin"));
 
-				List<double> list = new List<double>() { 1.25, -1.25 };
-				if (m == 0) list = LearningImage.HighLow(_MainImages[0]);
+				List<double> list = LearningImage.HighLow(_MainImages[m]);
 				_MainImages[m].SavePng(Path.Combine(path, "main" + m + ".png"), list[1], list[0]);
 			}
 
@@ -81,12 +80,9 @@ namespace IconLibrary
 			File.WriteAllText(Path.Combine(path, "state.json"), context);
 		}
 
-		public override void Learn(List<LearningImage> images, int iterate = 1)
+		public override void Learn(List<LearningImage> images)
 		{
-			for(int i = 0; i < iterate; i++)
-			{
-				foreach (var image in images) Update(image);
-			}
+			foreach (var image in images) Update(image);
 		}
 
 		private void Update(LearningImage imgIn)
@@ -146,7 +142,7 @@ namespace IconLibrary
 		public List<double> Project(LearningImage image)
 		{
 			List<double> results = new List<double>();
-			LearningImage amt = new LearningImage(Height, Width, image.Data);
+			LearningImage amt = new LearningImage(Height, Width, Plane, image.Data);
 			LearningImage tmp = new LearningImage(Height, Width);
 			for (int m = 0; m < MainMax; m++)
 			{
