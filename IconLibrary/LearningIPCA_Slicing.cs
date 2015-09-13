@@ -7,7 +7,7 @@ using System.Drawing;
 
 namespace IconLibrary
 {
-	public class LearningIPCA_Slicing_3to32 : LearningIPCA
+	public class LearningIPCA_Slicing_3to16 : LearningIPCA
 	{
 		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 8, Width = 8, Plane = 3 }; } }
 		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 32 }; } }
@@ -22,11 +22,11 @@ namespace IconLibrary
 		}
 	}
 
-	public class LearningIPCA_Slicing_32to32 : LearningIPCA
+	public class LearningIPCA_Slicing_16to32 : LearningIPCA
 	{
 		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 8, Width = 8, Plane = 32 }; } }
-		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 32 }; } }
-		public override string Filename { get { return "IPCA_32to32/"; } }
+		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 64 }; } }
+		public override string Filename { get { return "IPCA_32to64/"; } }
 
 		public override void Learn(List<LearningImage> images)
 		{

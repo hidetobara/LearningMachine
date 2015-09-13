@@ -142,6 +142,12 @@ namespace IconLibrary
 		{
 			return Norm.Euclidean(a.Data);
 		}
+		public static double ParticularEuclideanLength(LearningImage a)
+		{
+			double amount = 0;
+			for (int i = 1; i < a.Data.Length; i++) amount += a.Data[i] * a.Data[i];
+			return Math.Sqrt(amount);
+		}
 		public static List<double> HighLow(LearningImage a)
 		{
 			return new List<double>() { a.Data.Max(), a.Data.Min() };
@@ -234,7 +240,8 @@ namespace IconLibrary
 					if (h + y >= this.Height || w + x >= this.Width) continue;
 					int pt = (this.Width * (h + y) + (w + x)) * Plane;
 					int pi = (image.Width * h + w) * Plane;
-					for (int l = 0; l < Plane; l++) this.Data[pt + l] = image.Data[pi + l];
+					for (int l = 0; l < Plane; l++)
+						this.Data[pt + l] = image.Data[pi + l];	// デフォルト
 				}
 			}
 		}
