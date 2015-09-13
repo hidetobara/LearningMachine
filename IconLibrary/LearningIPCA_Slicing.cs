@@ -7,11 +7,11 @@ using System.Drawing;
 
 namespace IconLibrary
 {
-	public class LearningIPCA_Slicing_3to16 : LearningIPCA
+	public class LearningIPCA_Slicing_3to32 : LearningIPCA
 	{
-		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 16, Width = 16, Plane = 3 }; } }
-		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 16 }; } }
-		public override string Filename { get { return "IPCA_3to16/"; } }
+		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 8, Width = 8, Plane = 3 }; } }
+		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 32 }; } }
+		public override string Filename { get { return "IPCA_3to32/"; } }
 
 		public override void Learn(List<LearningImage> images)
 		{
@@ -22,11 +22,11 @@ namespace IconLibrary
 		}
 	}
 
-	public class LearningIPCA_Slicing_16to16 : LearningIPCA
+	public class LearningIPCA_Slicing_32to32 : LearningIPCA
 	{
-		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 16, Width = 16, Plane = 16 }; } }
-		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 16 }; } }
-		public override string Filename { get { return "IPCA_16to16/"; } }
+		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 8, Width = 8, Plane = 32 }; } }
+		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 32 }; } }
+		public override string Filename { get { return "IPCA_32to32/"; } }
 
 		public override void Learn(List<LearningImage> images)
 		{

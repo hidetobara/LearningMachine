@@ -238,5 +238,20 @@ namespace IconLibrary
 				}
 			}
 		}
+
+		public void Blend(int x, int y, LearningImage image, double rate = 0.75)
+		{
+			for (int h = 0; h < image.Height; h++)
+			{
+				for (int w = 0; w < image.Width; w++)
+				{
+					if (h + y >= this.Height || w + x >= this.Width) continue;
+					int pt = (this.Width * (h + y) + (w + x)) * Plane;
+					int pi = (image.Width * h + w) * Plane;
+					for (int l = 0; l < Plane; l++) this.Data[pt + l] = this.Data[pt + l] * (1 - rate) + image.Data[pi + l] * rate;
+				}
+			}
+		}
+
 	}
 }
