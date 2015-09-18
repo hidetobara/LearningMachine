@@ -11,12 +11,11 @@ namespace IconLibrary
 	{
 		const int Scale = 2;
 
-		protected LearningManager _Learning_Color = new LearningIPCA_Slicing_3to16();
+		protected LearningManager _Learning_Color = new LearningIPCA_Slicing_3to32();
 		public int ColorHeight { get { return _Learning_Color.FrameIn.Height; } }
 		public int ColorWidth { get { return _Learning_Color.FrameIn.Width; } }
-		public int ColorPlane { get { return _Learning_Color.FrameOut.Plane; } }
-		protected LearningManager _Learning_Components16 = new LearningIPCA_Slicing_16to32();
-		public int ComponentPlane { get { return _Learning_Components16.FrameOut.Plane; } }
+		protected LearningManager _Learning_Components32 = new LearningIPCA_Slicing_32to64();
+		protected LearningManager _Learning_Components64 = new LearningIPCA_Slicing_64to64();
 
 		public override string Filename { get { return "./"; } }
 
@@ -26,68 +25,59 @@ namespace IconLibrary
 		public override bool Load(string path)
 		{
 			if (!_Learning_Color.Load(Path.Combine(path, _Learning_Color.Filename))) _Learning_Color.Initialize();
-			if (!_Learning_Components16.Load(Path.Combine(path, _Learning_Components16.Filename))) _Learning_Components16.Initialize();
+			if (!_Learning_Components32.Load(Path.Combine(path, _Learning_Components32.Filename))) _Learning_Components32.Initialize();
+			if (!_Learning_Components64.Load(Path.Combine(path, _Learning_Components64.Filename))) _Learning_Components64.Initialize();
 			return true;
 		}
 		public override void Save(string path)
 		{
 			_Learning_Color.Save(Path.Combine(path, _Learning_Color.Filename));
-			_Learning_Components16.Save(Path.Combine(path, _Learning_Components16.Filename));
+			_Learning_Components32.Save(Path.Combine(path, _Learning_Components32.Filename));
+			_Learning_Components64.Save(Path.Combine(path, _Learning_Components64.Filename));
 		}
 
 		public override void Learn(List<LearningImage> images)
 		{
-			// 3to32の学習
 			_Learning_Color.Learn(images);
-			// 32to32の学習
 
-			List<LearningImage> compresses = new List<LearningImage>();
-			foreach (LearningImage image in images) compresses.Add(CompressColorToComponents(image));
-			_Learning_Components16.Learn(compresses);
+			List<LearningImage> compresses1 = new List<LearningImage>();
+			foreach (LearningImage image in images) compresses1.Add(CompressColorToComponents(image));
+			_Learning_Components32.Learn(compresses1);
+
+			List<LearningImage> compresses2 = new List<LearningImage>();
+			foreach (LearningImage image in compresses1) compresses2.Add(CompressComponents32(image));
+			_Learning_Components64.Learn(compresses2);
 		}
 
-		public LearningImage Forecast1(LearningImage i)
+		public LearningImage ForecastColor(LearningImage i)
 		{
 			var io = CompressColorToComponents(i); io.SavePngAdjusted("../i1.png");
-			var o = ExpandComponentsToColor(io); o.SavePngAdjusted("../io1.png");
-			io = Forecast2(io);
-			o = ExpandComponentsToColor(io); o.SavePngAdjusted("../o1.png");
+//			io = Forecast32(io);
+			var o = ExpandComponentsToColor(io); o.SavePngAdjusted("../o1.png");
 			return o;
 		}
 
-		public LearningImage Forecast2(LearningImage i)
+		public LearningImage Forecast32(LearningImage i)
 		{
-			var io = CompressComponents(i); io.SavePngAdjusted("../i2.png");
-			var o = ExpandComponents(io); o.SavePngAdjusted("../o2.png");
+			var io = CompressComponents32(i); io.SavePngAdjusted("../i2.png");
+//			io = Forecast64(io);
+			var o = ExpandComponents32(io); o.SavePngAdjusted("../o2.png");
+			return o;
+		}
+
+		public LearningImage Forecast64(LearningImage i)
+		{
+			var io = CompressComponents64(i); io.SavePngAdjusted("../i3.png");
+			var o = ExpandComponents64(io); o.SavePngAdjusted("../o3.png");
 			return o;
 		}
 
 		public override LearningImage Forecast(LearningImage image)
 		{
-			return Forecast1(image);
+			return ForecastColor(image);
 		}
 
-		public LearningImage CompressColorToComponents(LearningImage i)
-		{
-			List<double> results = new List<double>();
-			int scaledH = 0;
-			int scaledW = 0;
-			for(int h = 0; h <= i.Height - ColorHeight; h += Scale)
-			{
-				scaledW = 0;
-				for(int w = 0; w <= i.Width - ColorWidth; w += Scale)
-				{
-					var trimed = i.Trim(new Rectangle(w, h, ColorWidth, ColorHeight));
-					var projected = _Learning_Color.Project(trimed);
-					results.AddRange(projected.Data);
-					scaledW++;
-				}
-				scaledH++;
-			}
-			return new LearningImage(scaledH, scaledW, ColorPlane, results.ToArray());
-		}
-
-		public LearningImage CompressComponents(LearningImage i)
+		private LearningImage Compress(LearningManager manager, LearningImage i)
 		{
 			List<double> results = new List<double>();
 			int scaledH = 0;
@@ -98,67 +88,100 @@ namespace IconLibrary
 				for (int w = 0; w <= i.Width - ColorWidth; w += Scale)
 				{
 					var trimed = i.Trim(new Rectangle(w, h, ColorWidth, ColorHeight));
-					var projected = _Learning_Components16.Project(trimed);
+					var projected = manager.Project(trimed);
 					results.AddRange(projected.Data);
 					scaledW++;
 				}
 				scaledH++;
 			}
-			return new LearningImage(scaledH, scaledW, ComponentPlane, results.ToArray());
+			return new LearningImage(scaledH, scaledW, manager.FrameOut.Plane, results.ToArray());
+		}
+		public LearningImage CompressColorToComponents(LearningImage i)
+		{
+			return Compress(_Learning_Color, i);
+		}
+		public LearningImage CompressComponents32(LearningImage i)
+		{
+			return Compress(_Learning_Components32, i);
+		}
+		public LearningImage CompressComponents64(LearningImage i)
+		{
+			return Compress(_Learning_Components64, i);
 		}
 
-		public LearningImage ExpandComponents(LearningImage i)
+		private LearningImage Expand(LearningManager manager, LearningImage i)
 		{
-			List<Likelihood> list = MakeLikelihoods(i);
-
-			LearningImage o = new LearningImage((i.Height - 1) * Scale + ColorHeight, (i.Width - 1) * Scale + ColorWidth, _Learning_Components16.FrameIn.Plane);
-			foreach(var l in list)
-			{
-				LearningImage pasting = _Learning_Components16.BackProject(l.Image);
-				o.Paste(l.W * Scale, l.H * Scale, pasting);
-			}
-			return o;
-		}
-
-		public LearningImage ExpandComponentsToColor(LearningImage i)
-		{
-			List<Likelihood> list = MakeLikelihoods(i);
-
-			LearningImage o = new LearningImage((i.Height - 1) * Scale + ColorHeight, (i.Width - 1) * Scale + ColorWidth, _Learning_Color.FrameIn.Plane);
-			foreach (var l in list)
-			{
-				LearningImage pasting = _Learning_Color.BackProject(l.Image);
-				o.Blend(l.W * Scale, l.H * Scale, pasting);
-			}
-			return o;
-		}
-
-		private List<Likelihood> MakeLikelihoods(LearningImage i)
-		{
-			List<Likelihood> list = new List<Likelihood>();
+			LearningImage o = new LearningImage((i.Height - 1) * Scale + ColorHeight, (i.Width - 1) * Scale + ColorWidth, manager.FrameIn.Plane);
+			ListImage li = new ListImage(o.Height, o.Width);
 			for (int h = 0; h < i.Height; h++)
 			{
 				for (int w = 0; w < i.Width; w++)
 				{
 					LearningImage trimed = i.Trim(new Rectangle(w, h, 1, 1));
-					list.Add(new Likelihood(trimed, h, w));
+					LearningImage pasting = manager.BackProject(trimed);
+					for (int hh = 0; hh < pasting.Height; hh++)
+						for (int ww = 0; ww < pasting.Width; ww++)
+							li.Add(h * Scale + hh, w * Scale + ww, pasting.GetPlane(hh, ww));
 				}
 			}
-			return list.OrderBy(v => v.Value).ToList();
+
+			for (int h = 0; h < o.Height; h++)
+				for (int w = 0; w < o.Width; w++)
+					o.SetPlane(h, w, li.Median(h, w).Data);
+			return o;
+		}
+		public LearningImage ExpandComponents64(LearningImage i)
+		{
+			return Expand(_Learning_Components64, i);
+		}
+		public LearningImage ExpandComponents32(LearningImage i)
+		{
+			return Expand(_Learning_Components32, i);
+		}
+		public LearningImage ExpandComponentsToColor(LearningImage i)
+		{
+			return Expand(_Learning_Color, i);
 		}
 
-		class Likelihood
+		#region 解凍用クラス
+		class ListImage
 		{
-			public double Value { private set; get; }
-			public LearningImage Image;
-			public int W, H;
-			public Likelihood(LearningImage i, int h, int w)
+			public int Height { get; private set; }
+			public int Width { get; private set; }
+			int _Lenght { get { return Width * Height; } }
+			Planes[] _Data;
+			public ListImage(int height, int width)
 			{
-				Image = i;
-				H = h;
-				W = w;
-				Value = LearningImage.ParticularEuclideanLength(Image);
+				Height = height;
+				Width = width;
+				_Data = new Planes[Height * Width];
+				for (int i = 0; i < _Lenght; i++) _Data[i] = new Planes();
+			}
+			public void Add(int h, int w, double[] vs)
+			{
+				_Data[Width * h + w].Add(vs);
+			}
+			public Plane Median(int h, int w)
+			{
+				return _Data[Width * h + w].Median();
 			}
 		}
+		class Planes
+		{
+			List<Plane> _Data = new List<Plane>();
+			public void Add(double[] vs) { _Data.Add(new Plane(vs)); }
+			public Plane Median()
+			{
+				_Data.OrderBy(d => d.Euclidean());
+				return _Data[_Data.Count / 2];
+			}
+		}
+		class Plane
+		{
+			public double[] Data;
+			public Plane(double[] vs) { Data = vs; }
+			public double Euclidean() { return Accord.Math.Norm.Euclidean(Data); }
+		}
+		#endregion
 	}
 }

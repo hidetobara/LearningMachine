@@ -19,6 +19,17 @@ namespace IconLibrary
 		public int Length { get { return _Frame.Length; } }
 		public double[] Data;
 
+		public double[] GetPlane(int h, int w)
+		{
+			double[] p = new double[Plane];
+			Array.Copy(Data, (Width * h + w) * Plane, p, 0, Plane);
+			return p;
+		}
+		public void SetPlane(int h, int w, double[] vs)
+		{
+			Array.Copy(vs, 0, Data, (Width * h + w) * Plane, Plane);
+		}
+
 		public LearningImage(LearningFrame f, double[] data =null)
 		{
 			_Frame = f;
