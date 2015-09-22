@@ -74,6 +74,8 @@ namespace IconLibrary
 
 		public override void Save(string path)
 		{
+			if (_FrameNow == 0) return;
+
 			for(int m = 0; m < MainMax; m++)
 			{
 				_MainImages[m].SaveBin(Path.Combine(path, "main" + m + ".bin"));

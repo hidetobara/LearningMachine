@@ -12,16 +12,16 @@ namespace IconLibrary
 		protected LearningIPCA _Learning_Color = new LearningIPCA_Slicing_3to32();
 		public int ColorHeight { get { return _Learning_Color.FrameIn.Height; } }
 		public int ColorWidth { get { return _Learning_Color.FrameIn.Width; } }
-		protected LearningIPCA _Learning_Components32 = new LearningIPCA_Slicing_32to64();
-		protected LearningIPCA _Learning_Components64 = new LearningIPCA_Slicing_64to64();
+		protected LearningIPCA _Learning_Components1 = new LearningIPCA_Slicing_32to64();
+		protected LearningIPCA _Learning_Components2 = new LearningIPCA_Slicing_64to64();
 
 		public override string Filename { get { return "./"; } }
 
 		public void ChangeMainMax(int ipca0, int ipca1, int ipca2)
 		{
 			_Learning_Color.TemporaryMainMax = ipca0;
-			_Learning_Components32.TemporaryMainMax = ipca1;
-			_Learning_Components64.TemporaryMainMax = ipca2;
+			_Learning_Components1.TemporaryMainMax = ipca1;
+			_Learning_Components2.TemporaryMainMax = ipca2;
 		}
 
 		public override void Initialize()
@@ -30,15 +30,15 @@ namespace IconLibrary
 		public override bool Load(string path)
 		{
 			if (!_Learning_Color.Load(Path.Combine(path, _Learning_Color.Filename))) _Learning_Color.Initialize();
-			if (!_Learning_Components32.Load(Path.Combine(path, _Learning_Components32.Filename))) _Learning_Components32.Initialize();
-			if (!_Learning_Components64.Load(Path.Combine(path, _Learning_Components64.Filename))) _Learning_Components64.Initialize();
+			if (!_Learning_Components1.Load(Path.Combine(path, _Learning_Components1.Filename))) _Learning_Components1.Initialize();
+			if (!_Learning_Components2.Load(Path.Combine(path, _Learning_Components2.Filename))) _Learning_Components2.Initialize();
 			return true;
 		}
 		public override void Save(string path)
 		{
 			_Learning_Color.Save(Path.Combine(path, _Learning_Color.Filename));
-			_Learning_Components32.Save(Path.Combine(path, _Learning_Components32.Filename));
-			_Learning_Components64.Save(Path.Combine(path, _Learning_Components64.Filename));
+			_Learning_Components1.Save(Path.Combine(path, _Learning_Components1.Filename));
+			_Learning_Components2.Save(Path.Combine(path, _Learning_Components2.Filename));
 		}
 
 		public override void Learn(List<LearningImage> images)
@@ -47,33 +47,33 @@ namespace IconLibrary
 
 			List<LearningImage> compresses1 = new List<LearningImage>();
 			foreach (LearningImage image in images) compresses1.Add(CompressColorToComponents(image));
-			_Learning_Components32.Learn(compresses1);
-
+			_Learning_Components1.Learn(compresses1);
+			
 			List<LearningImage> compresses2 = new List<LearningImage>();
-			foreach (LearningImage image in compresses1) compresses2.Add(CompressComponents32(image));
-			_Learning_Components64.Learn(compresses2);
+			foreach (LearningImage image in compresses1) compresses2.Add(CompressComponents1(image));
+			_Learning_Components2.Learn(compresses2);
 		}
 
 		public LearningImage ForecastColor(LearningImage i)
 		{
 			var io = CompressColorToComponents(i); io.SavePngAdjusted("../i1.png");
-			io = Forecast32(io);
+//			io = Forecast1(io);
 			var o = ExpandComponentsToColor(io); o.SavePngAdjusted("../o1.png");
 			return o;
 		}
 
-		public LearningImage Forecast32(LearningImage i)
+		public LearningImage Forecast1(LearningImage i)
 		{
-			var io = CompressComponents32(i); io.SavePngAdjusted("../i2.png");
-			io = Forecast64(io);
-			var o = ExpandComponents32(io); o.SavePngAdjusted("../o2.png");
+			var io = CompressComponents1(i); io.SavePngAdjusted("../i2.png");
+//			io = Forecast2(io);
+			var o = ExpandComponents1(io); o.SavePngAdjusted("../o2.png");
 			return o;
 		}
 
-		public LearningImage Forecast64(LearningImage i)
+		public LearningImage Forecast2(LearningImage i)
 		{
-			var io = CompressComponents64(i); io.SavePngAdjusted("../i3.png");
-			var o = ExpandComponents64(io); o.SavePngAdjusted("../o3.png");
+			var io = CompressComponents2(i); io.SavePngAdjusted("../i3.png");
+			var o = ExpandComponents2(io); o.SavePngAdjusted("../o3.png");
 			return o;
 		}
 
@@ -105,13 +105,13 @@ namespace IconLibrary
 		{
 			return Compress(_Learning_Color, i);
 		}
-		public LearningImage CompressComponents32(LearningImage i)
+		public LearningImage CompressComponents1(LearningImage i)
 		{
-			return Compress(_Learning_Components32, i);
+			return Compress(_Learning_Components1, i);
 		}
-		public LearningImage CompressComponents64(LearningImage i)
+		public LearningImage CompressComponents2(LearningImage i)
 		{
-			return Compress(_Learning_Components64, i);
+			return Compress(_Learning_Components2, i);
 		}
 
 		private LearningImage Expand(LearningIPCA manager, LearningImage i)
@@ -136,13 +136,13 @@ namespace IconLibrary
 					o.SetPlane(h, w, li.Median(h, w).Data);
 			return o;
 		}
-		public LearningImage ExpandComponents64(LearningImage i)
+		public LearningImage ExpandComponents2(LearningImage i)
 		{
-			return Expand(_Learning_Components64, i);
+			return Expand(_Learning_Components2, i);
 		}
-		public LearningImage ExpandComponents32(LearningImage i)
+		public LearningImage ExpandComponents1(LearningImage i)
 		{
-			return Expand(_Learning_Components32, i);
+			return Expand(_Learning_Components1, i);
 		}
 		public LearningImage ExpandComponentsToColor(LearningImage i)
 		{

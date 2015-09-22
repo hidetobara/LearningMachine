@@ -12,6 +12,7 @@ namespace IconLibrary
 		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 8, Width = 8, Plane = 3 }; } }
 		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 32 }; } }
 		public override string Filename { get { return "IPCA_3to32/"; } }
+		public override int Scale { get { return 1; } }
 
 		public override void Learn(List<LearningImage> images)
 		{
@@ -27,6 +28,7 @@ namespace IconLibrary
 		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 8, Width = 8, Plane = 32 }; } }
 		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 64 }; } }
 		public override string Filename { get { return "IPCA_32to64/"; } }
+		public override int Scale { get { return 1; } }
 
 		public override void Learn(List<LearningImage> images)
 		{
