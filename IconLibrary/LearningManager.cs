@@ -36,5 +36,6 @@ namespace IconLibrary
 		public int Plane;
 		public int Area { get { return Width * Height; } }
 		public int Length { get { return Width * Height * Plane; } }
+		public LearningFrame(int height, int width, int plane) { Height = height; Width = width; Plane = plane; }
 	}
 }

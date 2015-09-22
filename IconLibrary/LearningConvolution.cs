@@ -9,15 +9,20 @@ namespace IconLibrary
 {
 	public class LearningConvolution : LearningManager
 	{
-		const int Scale = 2;
-
-		protected LearningManager _Learning_Color = new LearningIPCA_Slicing_3to32();
+		protected LearningIPCA _Learning_Color = new LearningIPCA_Slicing_3to32();
 		public int ColorHeight { get { return _Learning_Color.FrameIn.Height; } }
 		public int ColorWidth { get { return _Learning_Color.FrameIn.Width; } }
-		protected LearningManager _Learning_Components32 = new LearningIPCA_Slicing_32to64();
-		protected LearningManager _Learning_Components64 = new LearningIPCA_Slicing_64to64();
+		protected LearningIPCA _Learning_Components32 = new LearningIPCA_Slicing_32to64();
+		protected LearningIPCA _Learning_Components64 = new LearningIPCA_Slicing_64to64();
 
 		public override string Filename { get { return "./"; } }
+
+		public void ChangeMainMax(int ipca0, int ipca1, int ipca2)
+		{
+			_Learning_Color.TemporaryMainMax = ipca0;
+			_Learning_Components32.TemporaryMainMax = ipca1;
+			_Learning_Components64.TemporaryMainMax = ipca2;
+		}
 
 		public override void Initialize()
 		{
@@ -52,7 +57,7 @@ namespace IconLibrary
 		public LearningImage ForecastColor(LearningImage i)
 		{
 			var io = CompressColorToComponents(i); io.SavePngAdjusted("../i1.png");
-//			io = Forecast32(io);
+			io = Forecast32(io);
 			var o = ExpandComponentsToColor(io); o.SavePngAdjusted("../o1.png");
 			return o;
 		}
@@ -60,7 +65,7 @@ namespace IconLibrary
 		public LearningImage Forecast32(LearningImage i)
 		{
 			var io = CompressComponents32(i); io.SavePngAdjusted("../i2.png");
-//			io = Forecast64(io);
+			io = Forecast64(io);
 			var o = ExpandComponents32(io); o.SavePngAdjusted("../o2.png");
 			return o;
 		}
@@ -77,15 +82,15 @@ namespace IconLibrary
 			return ForecastColor(image);
 		}
 
-		private LearningImage Compress(LearningManager manager, LearningImage i)
+		private LearningImage Compress(LearningIPCA manager, LearningImage i)
 		{
 			List<double> results = new List<double>();
 			int scaledH = 0;
 			int scaledW = 0;
-			for (int h = 0; h <= i.Height - ColorHeight; h += Scale)
+			for (int h = 0; h <= i.Height - ColorHeight; h += manager.Scale)
 			{
 				scaledW = 0;
-				for (int w = 0; w <= i.Width - ColorWidth; w += Scale)
+				for (int w = 0; w <= i.Width - ColorWidth; w += manager.Scale)
 				{
 					var trimed = i.Trim(new Rectangle(w, h, ColorWidth, ColorHeight));
 					var projected = manager.Project(trimed);
@@ -109,8 +114,9 @@ namespace IconLibrary
 			return Compress(_Learning_Components64, i);
 		}
 
-		private LearningImage Expand(LearningManager manager, LearningImage i)
+		private LearningImage Expand(LearningIPCA manager, LearningImage i)
 		{
+			int Scale = manager.Scale;
 			LearningImage o = new LearningImage((i.Height - 1) * Scale + ColorHeight, (i.Width - 1) * Scale + ColorWidth, manager.FrameIn.Plane);
 			ListImage li = new ListImage(o.Height, o.Width);
 			for (int h = 0; h < i.Height; h++)

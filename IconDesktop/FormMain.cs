@@ -51,6 +51,7 @@ namespace IconDesktop
 			{
 				task.Type = IconTaskType.Forecast;
 				task.Inputs.Add(TextBoxForecast.Text);
+				task.Details = new List<int>() { (int)NumericUpDownPrimary0.Value, (int)NumericUpDownPrimary1.Value, (int)NumericUpDownPrimary2.Value };
 			}
 			Properties.Settings.Default.Save();
 			if (task.Type == IconTaskType.None) return;
@@ -98,6 +99,7 @@ namespace IconDesktop
 			{
 				string path = task.Inputs[0];
 				string filename = Path.GetFileName(path);
+				if (_Learning is LearningConvolution && task.Details.Count > 2) (_Learning as LearningConvolution).ChangeMainMax(task.Details[0], task.Details[1], task.Details[2]);
 				LearningImage forecasted = _Learning.Forecast(LearningImage.LoadPng(path).Shrink(SCALE));
 				forecasted.SavePng("../" + filename);
 				Log.Instance.Info("forecasted: " + filename);
@@ -136,6 +138,7 @@ namespace IconDesktop
 			public string NeuroDirectory;
 			public List<string> Inputs = new List<string>();
 			public List<string> Outputs = new List<string>();
+			public List<int> Details = new List<int>();
 		}
 	}
 }

@@ -19,16 +19,18 @@ namespace IconLibrary
 		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 16 }; } }
 		public override string Filename { get { return "IPCA/"; } }
 
-		public int Height { get { return FrameIn.Height; } }
-		public int Width { get { return FrameIn.Width; } }
-		public int Plane { get { return FrameIn.Plane; } }
-		public int Length { get { return FrameIn.Length; } }
-		public int MainMax { get { return FrameOut.Plane; } }
+		public int MainMax
+		{
+			get { if (0 < TemporaryMainMax && TemporaryMainMax < FrameOut.Plane) return TemporaryMainMax; else return FrameOut.Plane; }
+		}
+		public int TemporaryMainMax = 0;
 
-		double DynamicAmnesic
+		public virtual int Scale { get { return 2; } }
+		protected virtual double DynamicAmnesic
 		{
 			get { return 2.0 * (1 - Math.Exp(-_FrameNow / 32.0)); }	// 2.0fくらいが良い
 		}
+
 		const string FRAME_KEY = "frame";
 
 		LearningImage[] _MainImages;	// 主成分
