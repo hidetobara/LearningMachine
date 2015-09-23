@@ -44,23 +44,20 @@ namespace IconLibrary
 		public override void Learn(List<LearningImage> images)
 		{
 			_Learning_Color.Learn(images);
-			GC.Collect();
 
 			List<LearningImage> compresses1 = new List<LearningImage>();
 			foreach (LearningImage image in images) compresses1.Add(CompressColorToComponents(image));
 			_Learning_Components1.Learn(compresses1);
-			GC.Collect();
 		
-//			List<LearningImage> compresses2 = new List<LearningImage>();
-//			foreach (LearningImage image in compresses1) compresses2.Add(CompressComponents1(image));
-//			_Learning_Components2.Learn(compresses2);
-//			GC.Collect();
+			List<LearningImage> compresses2 = new List<LearningImage>();
+			foreach (LearningImage image in compresses1) compresses2.Add(CompressComponents1(image));
+			_Learning_Components2.Learn(compresses2);
 		}
 
 		public LearningImage ForecastColor(LearningImage i)
 		{
 			var io = CompressColorToComponents(i); io.SavePngAdjusted("../ic.png");
-//			io = Forecast1(io);
+			io = Forecast1(io);
 			var o = ExpandComponentsToColor(io); o.SavePngAdjusted("../oc.png");
 			return o;
 		}
@@ -68,7 +65,7 @@ namespace IconLibrary
 		public LearningImage Forecast1(LearningImage i)
 		{
 			var io = CompressComponents1(i); io.SavePngAdjusted("../i1.png");
-//			io = Forecast2(io);
+			io = Forecast2(io);
 			var o = ExpandComponents1(io); o.SavePngAdjusted("../o1.png");
 			return o;
 		}
