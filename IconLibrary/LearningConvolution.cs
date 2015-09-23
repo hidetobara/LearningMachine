@@ -44,36 +44,39 @@ namespace IconLibrary
 		public override void Learn(List<LearningImage> images)
 		{
 			_Learning_Color.Learn(images);
+			GC.Collect();
 
 			List<LearningImage> compresses1 = new List<LearningImage>();
 			foreach (LearningImage image in images) compresses1.Add(CompressColorToComponents(image));
 			_Learning_Components1.Learn(compresses1);
-			
-			List<LearningImage> compresses2 = new List<LearningImage>();
-			foreach (LearningImage image in compresses1) compresses2.Add(CompressComponents1(image));
-			_Learning_Components2.Learn(compresses2);
+			GC.Collect();
+		
+//			List<LearningImage> compresses2 = new List<LearningImage>();
+//			foreach (LearningImage image in compresses1) compresses2.Add(CompressComponents1(image));
+//			_Learning_Components2.Learn(compresses2);
+//			GC.Collect();
 		}
 
 		public LearningImage ForecastColor(LearningImage i)
 		{
-			var io = CompressColorToComponents(i); io.SavePngAdjusted("../i1.png");
+			var io = CompressColorToComponents(i); io.SavePngAdjusted("../ic.png");
 //			io = Forecast1(io);
-			var o = ExpandComponentsToColor(io); o.SavePngAdjusted("../o1.png");
+			var o = ExpandComponentsToColor(io); o.SavePngAdjusted("../oc.png");
 			return o;
 		}
 
 		public LearningImage Forecast1(LearningImage i)
 		{
-			var io = CompressComponents1(i); io.SavePngAdjusted("../i2.png");
+			var io = CompressComponents1(i); io.SavePngAdjusted("../i1.png");
 //			io = Forecast2(io);
-			var o = ExpandComponents1(io); o.SavePngAdjusted("../o2.png");
+			var o = ExpandComponents1(io); o.SavePngAdjusted("../o1.png");
 			return o;
 		}
 
 		public LearningImage Forecast2(LearningImage i)
 		{
-			var io = CompressComponents2(i); io.SavePngAdjusted("../i3.png");
-			var o = ExpandComponents2(io); o.SavePngAdjusted("../o3.png");
+			var io = CompressComponents2(i); io.SavePngAdjusted("../i2.png");
+			var o = ExpandComponents2(io); o.SavePngAdjusted("../o2.png");
 			return o;
 		}
 
@@ -87,10 +90,10 @@ namespace IconLibrary
 			List<double> results = new List<double>();
 			int scaledH = 0;
 			int scaledW = 0;
-			for (int h = 0; h <= i.Height - ColorHeight; h += manager.Scale)
+			for (int h = -ColorHeight / 2; h < i.Height - ColorHeight / 2; h += manager.Scale)
 			{
 				scaledW = 0;
-				for (int w = 0; w <= i.Width - ColorWidth; w += manager.Scale)
+				for (int w = -ColorWidth / 2; w < i.Width - ColorWidth / 2; w += manager.Scale)
 				{
 					var trimed = i.Trim(new Rectangle(w, h, ColorWidth, ColorHeight));
 					var projected = manager.Project(trimed);
@@ -117,8 +120,7 @@ namespace IconLibrary
 		private LearningImage Expand(LearningIPCA manager, LearningImage i)
 		{
 			int Scale = manager.Scale;
-			LearningImage o = new LearningImage((i.Height - 1) * Scale + ColorHeight, (i.Width - 1) * Scale + ColorWidth, manager.FrameIn.Plane);
-			ListImage li = new ListImage(o.Height, o.Width);
+			ListImage li = new ListImage(i.Height * Scale + ColorHeight, i.Width * Scale + ColorWidth);
 			for (int h = 0; h < i.Height; h++)
 			{
 				for (int w = 0; w < i.Width; w++)
@@ -131,9 +133,10 @@ namespace IconLibrary
 				}
 			}
 
+			LearningImage o = new LearningImage(i.Height * Scale, i.Width * Scale, manager.FrameIn.Plane);
 			for (int h = 0; h < o.Height; h++)
 				for (int w = 0; w < o.Width; w++)
-					o.SetPlane(h, w, li.Median(h, w).Data);
+					o.SetPlane(h, w, li.Median(h + ColorHeight / 2, w + ColorWidth / 2).Data);
 			return o;
 		}
 		public LearningImage ExpandComponents2(LearningImage i)
@@ -165,6 +168,10 @@ namespace IconLibrary
 			}
 			public void Add(int h, int w, double[] vs)
 			{
+				if(h < 0 || h >= Height || w < 0 || w>= Width)
+				{
+					return;
+				}
 				_Data[Width * h + w].Add(vs);
 			}
 			public Plane Median(int h, int w)

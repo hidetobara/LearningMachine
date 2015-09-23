@@ -226,8 +226,12 @@ namespace IconLibrary
 			{
 				for(int w = r.Left; w < r.Right; w++)
 				{
+					if (h < 0 || h >= this.Height || w < 0 || w >= this.Width)
+					{
+						continue;	// 無い画素
+					}
 					int d = i.Width * (h - r.Top) + (w - r.Left);
-					int s = h * Width + w;
+					int s = h * this.Width + w;
 					for (int p = 0; p < Plane; p++) i.Data[d * Plane + p] = this.Data[s * Plane + p];
 				}
 			}
