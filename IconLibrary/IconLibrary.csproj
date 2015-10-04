@@ -58,12 +58,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="LearningConvolution.cs" />
+    <Compile Include="LearningProcess.cs" />
     <Compile Include="LearningImage.cs" />
     <Compile Include="LearningDBN.cs" />
     <Compile Include="LearningIPCA_Slicing.cs" />
-    <Compile Include="LearningManager.cs" />
+    <Compile Include="LearningUnit.cs" />
     <Compile Include="LearningIPCA.cs" />
+    <Compile Include="LearningPool.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="MiniJSON.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

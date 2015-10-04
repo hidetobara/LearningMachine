@@ -25,7 +25,7 @@ namespace IconLibrary
 		}
 		public int TemporaryMainMax = 0;
 
-		public virtual int Scale { get { return 2; } }
+		public override int Scale { get { return 2; } }
 		protected virtual double DynamicAmnesic
 		{
 			get { return 2.0 * (1 - Math.Exp(-_FrameNow / 32.0)); }	// 2.0fくらいが良い

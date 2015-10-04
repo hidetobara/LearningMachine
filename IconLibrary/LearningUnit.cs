@@ -6,17 +6,18 @@ using System.Threading.Tasks;
 
 namespace IconLibrary
 {
-	public class LearningManager
+	public class LearningUnit
 	{
-		private static LearningManager _Instance;
-		public static LearningManager Instance
+		private static LearningUnit _Instance;
+		public static LearningUnit Instance
 		{
-			get { if (_Instance == null) _Instance = new LearningManager(); return _Instance; }
+			get { if (_Instance == null) _Instance = new LearningUnit(); return _Instance; }
 			set { if (_Instance == null) _Instance = value; }
 		}
 
 		public virtual LearningFrame FrameIn { get { return new LearningFrame(); } }
 		public virtual LearningFrame FrameOut { get { return new LearningFrame(); } }
+		public virtual int Scale { get { return 1; } }
 
 		public virtual string Filename { get { return "Learning.bin"; } }
 		public virtual void Initialize() { }

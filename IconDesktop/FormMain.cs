@@ -16,12 +16,12 @@ namespace IconDesktop
 	public partial class FormMain : Form
 	{
 		const int SCALE = 1;
-		LearningManager _Learning;
+		LearningUnit _Learning;
 
 		public FormMain()
 		{
 			InitializeComponent();
-			LearningManager.Instance = new LearningConvolution();
+			LearningUnit.Instance = new LearningProcess();
 		}
 
 		private void ButtonDirectory_Click(object sender, EventArgs e)
@@ -67,7 +67,7 @@ namespace IconDesktop
 
 			if(_Learning == null)
 			{
-				_Learning = LearningManager.Instance;
+				_Learning = LearningUnit.Instance;
 				if (!_Learning.Load(GetNeuroPath(task.NeuroDirectory))) _Learning.Initialize();
 			}
 
@@ -99,7 +99,7 @@ namespace IconDesktop
 			{
 				string path = task.Inputs[0];
 				string filename = Path.GetFileName(path);
-				if (_Learning is LearningConvolution && task.Details.Count > 2) (_Learning as LearningConvolution).ChangeMainMax(task.Details[0], task.Details[1], task.Details[2]);
+				if (_Learning is LearningProcess && task.Details.Count > 2) (_Learning as LearningProcess).ChangeMainMax(task.Details[0], task.Details[1], task.Details[2]);
 				LearningImage forecasted = _Learning.Forecast(LearningImage.LoadPng(path).Shrink(SCALE));
 				forecasted.SavePng("../" + filename);
 				Log.Instance.Info("forecasted: " + filename);

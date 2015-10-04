@@ -15,7 +15,7 @@ namespace IconLibrary
 	/*
 	 * Deep Brief Network
 	 */
-	public class LearningDBN : LearningManager
+	public class LearningDBN : LearningUnit
 	{
 		const int MiddleCount = 64;
 		const int Iterate = 3;

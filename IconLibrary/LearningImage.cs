@@ -19,15 +19,37 @@ namespace IconLibrary
 		public int Length { get { return _Frame.Length; } }
 		public double[] Data;
 
-		public double[] GetPlane(int h, int w)
+		public LearningPlane GetPlane(int h, int w)
 		{
+			if (h < 0) h = 0;
+			if (h >= Height) h = Height - 1;
+			if (w < 0) w = 0;
+			if (w >= Width) w = Width - 1;
 			double[] p = new double[Plane];
 			Array.Copy(Data, (Width * h + w) * Plane, p, 0, Plane);
+			return new LearningPlane(p);
+		}
+		public LearningPlane GetPlane(double h, double w)
+		{
+			int h0 = (int)h;
+			int h1 = (int)h + 1;
+			int w0 = (int)w;
+			int w1 = (int)w + 1;
+			var p00 = GetPlane(h0, w0);
+			var p10 = GetPlane(h1, w0);
+			var p01 = GetPlane(h0, w1);
+			var p11 = GetPlane(h1, w1);
+			double w00 = ((h1 - h) + (w1 - w)) * 0.25;
+			double w10 = ((h - h0) + (w1 - w)) * 0.25;
+			double w01 = ((h1 - h) + (w - w0)) * 0.25;
+			double w11 = ((h - h0) + (w - w0)) * 0.25;
+			LearningPlane p = new LearningPlane(Plane);
+			p.Add(p00.Scale(w00), p10.Scale(w10), p01.Scale(w01), p11.Scale(w11));
 			return p;
 		}
-		public void SetPlane(int h, int w, double[] vs)
+		public void SetPlane(int h, int w, LearningPlane p)
 		{
-			Array.Copy(vs, 0, Data, (Width * h + w) * Plane, Plane);
+			Array.Copy(p.Data, 0, Data, (Width * h + w) * Plane, Plane);
 		}
 
 		public LearningImage(LearningFrame f, double[] data =null)
@@ -219,6 +241,20 @@ namespace IconLibrary
 			}
 		}
 
+		public List<LearningPlane> GetPlanes(Rectangle r)
+		{
+			List<LearningPlane> list = new List<LearningPlane>();
+			for (int h = r.Top; h < r.Bottom; h++)
+			{
+				for (int w = r.Left; w < r.Right; w++)
+				{
+					if (h < 0 || h >= this.Height || w < 0 || w >= this.Width) continue;	// 無い画素
+					list.Add(GetPlane(h, w));
+				}
+			}
+			return list;
+		}
+
 		public LearningImage Trim(Rectangle r)
 		{
 			LearningImage i = new LearningImage(r.Height, r.Width, Plane);
@@ -226,13 +262,16 @@ namespace IconLibrary
 			{
 				for(int w = r.Left; w < r.Right; w++)
 				{
-					if (h < 0 || h >= this.Height || w < 0 || w >= this.Width)
-					{
-						continue;	// 無い画素
-					}
+					int sh = h;
+					int sw = w;
+					if (sh < 0) sh = 0;
+					if (sh >= this.Height) sh = this.Height - 1;
+					if (sw < 0) sw = 0;
+					if (sw >= this.Width) sw = this.Width - 1;
+
 					int d = i.Width * (h - r.Top) + (w - r.Left);
-					int s = h * this.Width + w;
-					for (int p = 0; p < Plane; p++) i.Data[d * Plane + p] = this.Data[s * Plane + p];
+					int s = sh * this.Width + sw;
+					Array.Copy(this.Data, s * Plane, i.Data, d * Plane, Plane);
 				}
 			}
 			return i;
@@ -274,6 +313,28 @@ namespace IconLibrary
 				}
 			}
 		}
+	}
 
+	public class LearningPlane
+	{
+		public double[] Data;
+		public LearningPlane(int plane) { Data = new double[plane]; }
+		public LearningPlane(double[] vs) { Data = vs; }
+		public double Euclidean() { return Accord.Math.Norm.Euclidean(Data); }
+		public double SpecialEuclidean()
+		{
+			double sum = Accord.Math.Norm.SquareEuclidean(Data) - Data[0] * Data[0];
+			return sum > 0 ? Math.Sqrt(sum) : 0;
+		}
+
+		public void Add(params LearningPlane[] planes)
+		{
+			foreach (var plane in planes) this.Data = Accord.Math.Matrix.Add(this.Data, plane.Data);
+		}
+
+		public LearningPlane Scale(double scale)
+		{
+			return new LearningPlane(Accord.Math.Matrix.Multiply(Data, scale));
+		}
 	}
 }
