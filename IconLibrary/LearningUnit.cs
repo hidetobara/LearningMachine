@@ -8,6 +8,8 @@ namespace IconLibrary
 {
 	public class LearningUnit
 	{
+		public enum LearningStyle { None, InputOnly, InputOutput };
+
 		private static LearningUnit _Instance;
 		public static LearningUnit Instance
 		{
@@ -19,11 +21,20 @@ namespace IconLibrary
 		public virtual LearningFrame FrameOut { get { return new LearningFrame(); } }
 		public virtual int Scale { get { return 1; } }
 
-		public virtual string Filename { get { return "Learning.bin"; } }
+		public int Height { get { return FrameIn.Height; } }
+		public int Width { get { return FrameIn.Width; } }
+		public int Plane { get { return FrameIn.Plane; } }
+		public int Length { get { return FrameIn.Length; } }
+
+		public virtual string Filename { get { return "./"; } }
 		public virtual void Initialize() { }
 		public virtual bool Load(string path) { return false; }
 		public virtual void Save(string path) { }
+
+		public virtual LearningStyle Style { get { return LearningStyle.None; } }
+		public virtual bool IsEnoughToLearn { get { return false; } }
 		public virtual void Learn(List<LearningImage> images) { }
+		public virtual void Learn(List<LearningImagePair> pairs) { }
 
 		public virtual LearningImage Project(LearningImage image) { return null; }
 		public virtual LearningImage BackProject(LearningImage image) { return null; }

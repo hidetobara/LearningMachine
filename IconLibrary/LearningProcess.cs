@@ -7,27 +7,12 @@ using System.Drawing;
 
 namespace IconLibrary
 {
+	/*
+	 * LearningUnitを組み合わせて学習
+	 */
 	public class LearningProcess : LearningUnit
 	{
-		LearningUnit[] _Units;
-		protected LearningUnit _Learning_Color { get { return _Units[0]; } }
-		public int ColorHeight { get { return _Learning_Color.FrameIn.Height; } }
-		public int ColorWidth { get { return _Learning_Color.FrameIn.Width; } }
-
-		public override string Filename { get { return "./"; } }
-
-		public LearningProcess()
-		{
-			_Units = new LearningUnit[2];
-			_Units[0] = new LearningIPCA_Slicing_3to32();
-			_Units[1] = new LearningPool();
-//			_Units[2] = new LearningIPCA_Slicing_32to64();
-		}
-
-		public void ChangeMainMax(int ipca0, int ipca1, int ipca2)
-		{
-			if(_Learning_Color is LearningIPCA) (_Learning_Color as LearningIPCA).TemporaryMainMax = ipca0;
-		}
+		protected LearningUnit[] _Units;
 
 		public override void Initialize()
 		{
@@ -36,7 +21,7 @@ namespace IconLibrary
 		{
 			foreach(var unit in _Units)
 			{
-				if (!unit.Load(Path.Combine(path, _Learning_Color.Filename))) unit.Initialize();
+				if (!unit.Load(Path.Combine(path, unit.Filename))) unit.Initialize();
 			}
 			return true;
 		}
@@ -44,22 +29,32 @@ namespace IconLibrary
 		{
 			foreach(var unit in _Units)
 			{
-				unit.Save(Path.Combine(path, _Learning_Color.Filename));
+				unit.Save(Path.Combine(path, unit.Filename));
 			}
 		}
 
-		public override void Learn(List<LearningImage> images)
+		public override void Learn(List<LearningImagePair> pairs)
 		{
-			// 初期
-			List<LearningImage> samples = images;
+			List<LearningImage> samples = new List<LearningImage>();
 			List<LearningImage> compresses = new List<LearningImage>();
+			foreach (var pair in pairs) samples.Add(pair.In);
 
-			_Units[0].Learn(samples);
+			if (!_Units[0].IsEnoughToLearn) _Units[0].Learn(samples);
 
-			for (int i = 1; i < _Units.Length; i++ )
+			for (int i = 1; i < _Units.Length; i++)
 			{
-				foreach (var image in samples) compresses.Add(_Units[i - 1].Project(image));
-				_Units[i].Learn(compresses);
+				foreach (var img in samples) compresses.Add(_Units[i - 1].Project(img));
+				switch(_Units[i].Style)
+				{
+					case LearningStyle.InputOnly:
+						if (!_Units[i].IsEnoughToLearn) _Units[i].Learn(compresses);
+						break;
+					case LearningStyle.InputOutput:
+						List<LearningImagePair> list = new List<LearningImagePair>();
+						for (int j = 0; j < compresses.Count; j++) list.Add(new LearningImagePair(compresses[j], pairs[j].Out));
+						_Units[i].Learn(list);
+						break;
+				}
 
 				samples = compresses;
 				compresses = new List<LearningImage>();
@@ -73,9 +68,9 @@ namespace IconLibrary
 			var c = _Units[index].Project(i);
 			c.SavePngAdjusted("../c" + index + ".png");
 			var o = ForecastUnit(index + 1, c);
-			var e = _Units[index].BackProject(o);
-			e.SavePngAdjusted("../e" + index + ".png");
-			return e;
+			//var e = _Units[index].BackProject(o);
+			//e.SavePngAdjusted("../e" + index + ".png");
+			return o;
 		}
 
 		public override LearningImage Forecast(LearningImage image)

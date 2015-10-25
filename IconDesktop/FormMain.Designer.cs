@@ -41,21 +41,21 @@
 			this.TextBoxNeuroDirectory = new System.Windows.Forms.TextBox();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
 			this.ButtonRunForecast = new System.Windows.Forms.Button();
-			this.ButtonForecastPath = new System.Windows.Forms.Button();
+			this.ButtonForecast = new System.Windows.Forms.Button();
 			this.TextBoxForecast = new System.Windows.Forms.TextBox();
 			this.label3 = new System.Windows.Forms.Label();
 			this.OpenFileDialogMain = new System.Windows.Forms.OpenFileDialog();
 			this.groupBox3 = new System.Windows.Forms.GroupBox();
-			this.label4 = new System.Windows.Forms.Label();
-			this.NumericUpDownPrimary0 = new System.Windows.Forms.NumericUpDown();
-			this.NumericUpDownPrimary1 = new System.Windows.Forms.NumericUpDown();
 			this.NumericUpDownPrimary2 = new System.Windows.Forms.NumericUpDown();
+			this.NumericUpDownPrimary1 = new System.Windows.Forms.NumericUpDown();
+			this.NumericUpDownPrimary0 = new System.Windows.Forms.NumericUpDown();
+			this.label4 = new System.Windows.Forms.Label();
 			this.groupBox1.SuspendLayout();
 			this.groupBox2.SuspendLayout();
 			this.groupBox3.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.NumericUpDownPrimary0)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.NumericUpDownPrimary1)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.NumericUpDownPrimary2)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.NumericUpDownPrimary1)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.NumericUpDownPrimary0)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -159,7 +159,7 @@
 			// groupBox2
 			// 
 			this.groupBox2.Controls.Add(this.ButtonRunForecast);
-			this.groupBox2.Controls.Add(this.ButtonForecastPath);
+			this.groupBox2.Controls.Add(this.ButtonForecast);
 			this.groupBox2.Controls.Add(this.TextBoxForecast);
 			this.groupBox2.Controls.Add(this.label3);
 			this.groupBox2.Location = new System.Drawing.Point(12, 127);
@@ -181,13 +181,13 @@
 			// 
 			// ButtonForecastPath
 			// 
-			this.ButtonForecastPath.Location = new System.Drawing.Point(279, 18);
-			this.ButtonForecastPath.Name = "ButtonForecastPath";
-			this.ButtonForecastPath.Size = new System.Drawing.Size(75, 23);
-			this.ButtonForecastPath.TabIndex = 8;
-			this.ButtonForecastPath.Text = "Select";
-			this.ButtonForecastPath.UseVisualStyleBackColor = true;
-			this.ButtonForecastPath.Click += new System.EventHandler(this.ButtonPath_Click);
+			this.ButtonForecast.Location = new System.Drawing.Point(279, 18);
+			this.ButtonForecast.Name = "ButtonForecastPath";
+			this.ButtonForecast.Size = new System.Drawing.Size(75, 23);
+			this.ButtonForecast.TabIndex = 8;
+			this.ButtonForecast.Text = "Select";
+			this.ButtonForecast.UseVisualStyleBackColor = true;
+			this.ButtonForecast.Click += new System.EventHandler(this.ButtonDirectory_Click);
 			// 
 			// TextBoxForecast
 			// 
@@ -201,9 +201,9 @@
 			this.label3.AutoSize = true;
 			this.label3.Location = new System.Drawing.Point(6, 23);
 			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(59, 12);
+			this.label3.Size = new System.Drawing.Size(83, 12);
 			this.label3.TabIndex = 6;
-			this.label3.Text = "Input Path:";
+			this.label3.Text = "Input Directory:";
 			// 
 			// OpenFileDialogMain
 			// 
@@ -222,22 +222,13 @@
 			this.groupBox3.TabStop = false;
 			this.groupBox3.Text = "Detail";
 			// 
-			// label4
+			// NumericUpDownPrimary2
 			// 
-			this.label4.AutoSize = true;
-			this.label4.Location = new System.Drawing.Point(6, 15);
-			this.label4.Name = "label4";
-			this.label4.Size = new System.Drawing.Size(82, 12);
-			this.label4.TabIndex = 0;
-			this.label4.Text = "Primary Length";
-			// 
-			// NumericUpDownPrimary0
-			// 
-			this.NumericUpDownPrimary0.Location = new System.Drawing.Point(94, 13);
-			this.NumericUpDownPrimary0.Name = "NumericUpDownPrimary0";
-			this.NumericUpDownPrimary0.Size = new System.Drawing.Size(50, 19);
-			this.NumericUpDownPrimary0.TabIndex = 1;
-			this.NumericUpDownPrimary0.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.NumericUpDownPrimary2.Location = new System.Drawing.Point(206, 13);
+			this.NumericUpDownPrimary2.Name = "NumericUpDownPrimary2";
+			this.NumericUpDownPrimary2.Size = new System.Drawing.Size(50, 19);
+			this.NumericUpDownPrimary2.TabIndex = 3;
+			this.NumericUpDownPrimary2.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
 			// 
 			// NumericUpDownPrimary1
 			// 
@@ -247,13 +238,22 @@
 			this.NumericUpDownPrimary1.TabIndex = 2;
 			this.NumericUpDownPrimary1.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
 			// 
-			// NumericUpDownPrimary2
+			// NumericUpDownPrimary0
 			// 
-			this.NumericUpDownPrimary2.Location = new System.Drawing.Point(206, 13);
-			this.NumericUpDownPrimary2.Name = "NumericUpDownPrimary2";
-			this.NumericUpDownPrimary2.Size = new System.Drawing.Size(50, 19);
-			this.NumericUpDownPrimary2.TabIndex = 3;
-			this.NumericUpDownPrimary2.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.NumericUpDownPrimary0.Location = new System.Drawing.Point(94, 13);
+			this.NumericUpDownPrimary0.Name = "NumericUpDownPrimary0";
+			this.NumericUpDownPrimary0.Size = new System.Drawing.Size(50, 19);
+			this.NumericUpDownPrimary0.TabIndex = 1;
+			this.NumericUpDownPrimary0.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			// 
+			// label4
+			// 
+			this.label4.AutoSize = true;
+			this.label4.Location = new System.Drawing.Point(6, 15);
+			this.label4.Name = "label4";
+			this.label4.Size = new System.Drawing.Size(82, 12);
+			this.label4.TabIndex = 0;
+			this.label4.Text = "Primary Length";
 			// 
 			// FormMain
 			// 
@@ -277,9 +277,9 @@
 			this.groupBox2.PerformLayout();
 			this.groupBox3.ResumeLayout(false);
 			this.groupBox3.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this.NumericUpDownPrimary0)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.NumericUpDownPrimary1)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.NumericUpDownPrimary2)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.NumericUpDownPrimary1)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.NumericUpDownPrimary0)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -300,7 +300,7 @@
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.GroupBox groupBox2;
 		private System.Windows.Forms.Button ButtonRunForecast;
-		private System.Windows.Forms.Button ButtonForecastPath;
+		private System.Windows.Forms.Button ButtonForecast;
 		private System.Windows.Forms.TextBox TextBoxForecast;
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.OpenFileDialog OpenFileDialogMain;

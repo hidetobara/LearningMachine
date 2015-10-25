@@ -11,6 +11,8 @@ namespace IconLibrary
 {
     public class LearningImage
     {
+		public enum ColorType { Color, Gray };
+
 		private LearningFrame _Frame;
 		public int Height { get { return _Frame.Height; } }
 		public int Width { get { return _Frame.Width; } }
@@ -66,15 +68,21 @@ namespace IconLibrary
 		}
 		public LearningImage(LearningImage image) : this(image._Frame, image.Data) { }
 
-		public unsafe static LearningImage LoadPng(string path)
+		public unsafe static LearningImage LoadPng(string path, ColorType color = ColorType.Color)
 		{
 			if (!File.Exists(path)) return null;
 			try
 			{
 				Bitmap src = new Bitmap(path);
-				BitmapData srcData = src.LockBits(new Rectangle(Point.Empty, src.Size), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-
-				LearningImage i = new LearningImage(src.Height, src.Width);
+				PixelFormat format = PixelFormat.Format24bppRgb;
+				int plane = 3;
+				if (color == ColorType.Gray)
+				{
+					format = PixelFormat.Format8bppIndexed;
+					plane = 1;
+				}
+				BitmapData srcData = src.LockBits(new Rectangle(Point.Empty, src.Size), ImageLockMode.ReadOnly, format);
+				LearningImage i = new LearningImage(src.Height, src.Width, plane);
 				for (int h = 0; h < srcData.Height; h++)
 				{
 					byte* ps = (byte*)srcData.Scan0 + srcData.Stride * h;
@@ -133,8 +141,11 @@ namespace IconLibrary
 				for (int w = 0; w < d.Width; w++, p += 3)
 				{
 					int position = (this.Width * h + w) * Plane;
-					for (int l = 0; l < Plane && l < 3; l++)
-						p[l] = Step(Data[position + l], low, high);
+					for (int l = 0; l < 3; l++)
+					{
+						if (l < Plane) p[l] = Step(Data[position + l], low, high);
+						else p[l] = 0;
+					}
 				}
 			}
 			b.UnlockBits(d);
@@ -313,6 +324,21 @@ namespace IconLibrary
 				}
 			}
 		}
+
+		public LearningImage Mask(Rectangle r)
+		{
+			LearningImage i = new LearningImage(_Frame);
+			for (int h = r.Top; h < r.Bottom; h++)
+			{
+				for (int w = r.Left; w < r.Right; w++)
+				{
+					if (h < 0 || h >= this.Height || w < 0 || w >= this.Width) continue;
+					int p = (Width * h + w) * Plane;
+					Array.Copy(this.Data, p, i.Data, p, Plane);
+				}
+			}
+			return i;
+		}
 	}
 
 	public class LearningPlane
@@ -336,5 +362,12 @@ namespace IconLibrary
 		{
 			return new LearningPlane(Accord.Math.Matrix.Multiply(Data, scale));
 		}
+	}
+
+	public class LearningImagePair
+	{
+		public LearningImage In;
+		public LearningImage Out;
+		public LearningImagePair(LearningImage i, LearningImage o) { In = i; Out = o; }
 	}
 }

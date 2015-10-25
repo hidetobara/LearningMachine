@@ -13,7 +13,7 @@ namespace IconLibrary
 {
 	using Hash = Dictionary<string, object>;
 
-	public class LearningIPCA : LearningDBN
+	public class LearningIPCA : LearningUnit
 	{
 		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 16, Width = 16, Plane = 3 }; } }
 		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 16 }; } }
@@ -25,7 +25,7 @@ namespace IconLibrary
 		}
 		public int TemporaryMainMax = 0;
 
-		public override int Scale { get { return 2; } }
+		public override int Scale { get { return 1; } }
 		protected virtual double DynamicAmnesic
 		{
 			get { return 2.0 * (1 - Math.Exp(-_FrameNow / 32.0)); }	// 2.0fくらいが良い
@@ -37,6 +37,7 @@ namespace IconLibrary
 		LearningImage[] _TmpImages;		// 副成分
 
 		long _FrameNow;
+		public override bool IsEnoughToLearn { get { return _FrameNow > 3000; } }
 
 		public override void Initialize()
 		{
@@ -91,9 +92,14 @@ namespace IconLibrary
 			File.WriteAllText(Path.Combine(path, "state.json"), context);
 		}
 
+		public override LearningUnit.LearningStyle Style { get { return LearningStyle.InputOnly; } }
 		public override void Learn(List<LearningImage> images)
 		{
-			foreach (var image in images) Update(image);
+			foreach (var image in images)
+			{
+				if (LearningImage.EuclideanLength(image) == 0) continue;
+				Update(image);
+			}
 		}
 
 		private void Update(LearningImage imgIn)

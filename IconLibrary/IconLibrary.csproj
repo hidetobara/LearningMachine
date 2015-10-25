@@ -58,9 +58,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LearningDigits.cs" />
+    <Compile Include="LearningNormalize.cs" />
     <Compile Include="LearningProcess.cs" />
     <Compile Include="LearningImage.cs" />
-    <Compile Include="LearningDBN.cs" />
+    <Compile Include="LearningDNN.cs" />
     <Compile Include="LearningIPCA_Slicing.cs" />
     <Compile Include="LearningUnit.cs" />
     <Compile Include="LearningIPCA.cs" />

@@ -15,13 +15,13 @@ namespace IconDesktop
 {
 	public partial class FormMain : Form
 	{
-		const int SCALE = 1;
+		LearningImage.ColorType _Color = LearningImage.ColorType.Gray;
 		LearningUnit _Learning;
 
 		public FormMain()
 		{
 			InitializeComponent();
-			LearningUnit.Instance = new LearningProcess();
+			LearningUnit.Instance = new LearningDigits();
 		}
 
 		private void ButtonDirectory_Click(object sender, EventArgs e)
@@ -30,13 +30,12 @@ namespace IconDesktop
 
 			if (sender == ButtonNeuroDirectory) TextBoxNeuroDirectory.Text = FolderBrowserDialogMain.SelectedPath;
 			if (sender == ButtonInputDirectory) TextBoxInputDirectory.Text = FolderBrowserDialogMain.SelectedPath;
+			if (sender == ButtonForecast) TextBoxForecast.Text = FolderBrowserDialogMain.SelectedPath;
 		}
 
 		private void ButtonPath_Click(object sender, EventArgs e)
 		{
-			if (OpenFileDialogMain.ShowDialog() != DialogResult.OK) return;
 
-			if (sender == ButtonForecastPath) TextBoxForecast.Text = OpenFileDialogMain.FileName;
 		}
 
 		private void ButtonRun_Click(object sender, EventArgs e)
@@ -50,7 +49,7 @@ namespace IconDesktop
 			else if(sender == ButtonRunForecast)
 			{
 				task.Type = IconTaskType.Forecast;
-				task.Inputs.Add(TextBoxForecast.Text);
+				task.Inputs = new List<string>(Directory.GetFiles(TextBoxForecast.Text, "*.png", SearchOption.AllDirectories));
 				task.Details = new List<int>() { (int)NumericUpDownPrimary0.Value, (int)NumericUpDownPrimary1.Value, (int)NumericUpDownPrimary2.Value };
 			}
 			Properties.Settings.Default.Save();
@@ -73,36 +72,38 @@ namespace IconDesktop
 
 			if(task.Type == IconTaskType.Training)
 			{
-				const int Limit = 1000;
-				List<LearningImage> images = new List<LearningImage>();
-				int progress = 0;
-				foreach (var i in task.Inputs)
+				List<LearningImagePair> pairs = new List<LearningImagePair>();
+#if DEBUG
+				task.Inputs = task.Inputs.OrderBy(p => Guid.NewGuid()).Take(1000).ToList();
+#endif
+				foreach (var path in task.Inputs)
 				{
-					images.Add(LearningImage.LoadPng(i).Shrink(SCALE));
-
-					// 学習開始
-					if(images.Count >= Limit)
-					{
-						_Learning.Learn(images);
-						Log.Instance.Info("progress: " + progress);
-						BackgroundWorkerMain.ReportProgress(progress);
-						images.Clear();
-						progress++;
-						System.Threading.Thread.Sleep(1);
-					}
+					LearningImage image = LearningImage.LoadPng(path, _Color);
+					string dir = Path.GetDirectoryName(path);
+					int index = dir.LastIndexOf('\\');
+					string group = dir.Substring(index + 1);
+					int number = -1;
+					if (!int.TryParse(group, out number)) continue;
+					LearningImage result = new LearningImage(4, 4, 1);
+					if (number < 16) result.Data[number] = 1;
+					pairs.Add(new LearningImagePair(image, result));
 				}
-				if (images.Count > 0) _Learning.Learn(images);
+				if (pairs.Count > 0)
+				{
+					_Learning.Learn(pairs);
+				}
 
 				_Learning.Save(GetNeuroPath(task.NeuroDirectory));
 			}
 			else if(task.Type == IconTaskType.Forecast && task.Inputs.Count > 0)
 			{
-				string path = task.Inputs[0];
-				string filename = Path.GetFileName(path);
-				if (_Learning is LearningProcess && task.Details.Count > 2) (_Learning as LearningProcess).ChangeMainMax(task.Details[0], task.Details[1], task.Details[2]);
-				LearningImage forecasted = _Learning.Forecast(LearningImage.LoadPng(path).Shrink(SCALE));
-				forecasted.SavePng("../" + filename);
-				Log.Instance.Info("forecasted: " + filename);
+				foreach (var path in task.Inputs)
+				{
+					string filename = Path.GetFileName(path);
+					LearningImage forecasted = _Learning.Forecast(LearningImage.LoadPng(path, _Color));
+					forecasted.SavePng("../" + filename);
+					Log.Instance.Info("forecasted: " + filename);
+				}
 			}
 		}
 		private string GetNeuroPath(string dir) { return Path.Combine(dir, _Learning.Filename); }

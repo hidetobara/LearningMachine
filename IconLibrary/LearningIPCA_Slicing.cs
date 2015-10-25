@@ -15,9 +15,12 @@ namespace IconLibrary
 		public override void Learn(List<LearningImage> images)
 		{
 			Size s = new Size(Width, Height);
-			List<LearningImage> list = new List<LearningImage>();
-			foreach (var i in images) list.AddRange(i.MakeSlices(s));
-			base.Learn(list);
+			foreach (var i in images)
+			{
+				List<LearningImage> list = new List<LearningImage>();
+				list.AddRange(i.MakeSlices(s));
+				base.Learn(list);
+			}
 		}
 
 		public override LearningImage Project(LearningImage i)
@@ -120,10 +123,18 @@ namespace IconLibrary
 		public override int Scale { get { return 1; } }
 	}
 
-	public class LearningIPCA_Slicing_64to64 : LearningConvolutionIPCA
+	public class LearningIPCA_Slicing : LearningConvolutionIPCA
 	{
-		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 8, Width = 8, Plane = 64 }; } }
-		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 96 }; } }
-		public override string Filename { get { return "IPCA_64to96/"; } }
+		private LearningFrame _FrameIn;
+		private LearningFrame _FrameOut;
+		public override LearningFrame FrameIn { get { return _FrameIn; } }
+		public override LearningFrame FrameOut { get { return _FrameOut; } }
+		public override string Filename { get { return "IPCA_" + _FrameIn.Plane + "-" + _FrameOut.Plane + "/"; } }
+
+		public LearningIPCA_Slicing(int start, int end)
+		{
+			_FrameIn = new LearningFrame(8, 8, start);
+			_FrameOut = new LearningFrame(1, 1, end);
+		}
 	}
 }

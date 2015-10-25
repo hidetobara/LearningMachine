@@ -11,7 +11,8 @@ namespace IconLibrary
 	 */
 	public class LearningPool : LearningUnit
 	{
-		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 2, Width = 2 }; } }
+		private LearningFrame _Frame;
+		public override LearningFrame FrameIn { get { return _Frame; } }
 		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1 }; } }
 
 		public override string Filename { get { return "Pool.bin"; } }
@@ -19,6 +20,11 @@ namespace IconLibrary
 		public override bool Load(string path) { return true; }
 		public override void Save(string path) { }
 		public override void Learn(List<LearningImage> images) { }
+
+		public LearningPool(int step = 2)
+		{
+			_Frame = new LearningFrame() { Height = step, Width = step };
+		}
 
 		public override LearningImage Project(LearningImage image)
 		{
