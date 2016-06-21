@@ -72,6 +72,7 @@ namespace IconLibrary
 		public override LearningUnit.LearningStyle Style { get { return LearningStyle.InputOutput; } }
 		public override void Learn(List<LearningImagePair> pairs)
 		{
+			Log.Instance.Info("[DNN.Learn]");
 			List<double[]> dataIn = new List<double[]>();
 			List<double[]> dataOut = new List<double[]>();
 			foreach (var p in pairs)
@@ -89,7 +90,7 @@ namespace IconLibrary
 				var diff = Accord.Math.Matrix.Subtract(dataOut[0], tmpOut);
 				double lengthOut = Accord.Math.Norm.Euclidean(dataOut[0]);
 				double lengthDiff = Accord.Math.Norm.Euclidean(diff);
-				if (i % 10 == 0) Log.Instance.Info("[DNN]" + i + " " + lengthDiff + "/" + lengthOut);
+				if (i % 10 == 0) Log.Instance.Info("[DNN.Learn]" + i + " " + lengthDiff + "/" + lengthOut);
 				if (lengthDiff / lengthOut < 0.05) break;
 			}
 		}

@@ -15,7 +15,7 @@ namespace IconLibrary
 
 	public class LearningIPCA : LearningUnit
 	{
-		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 16, Width = 16, Plane = 3 }; } }
+		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 150, Width = 150, Plane = 3 }; } }
 		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 16 }; } }
 		public override string Filename { get { return "IPCA/"; } }
 
@@ -97,7 +97,8 @@ namespace IconLibrary
 		{
 			foreach (var image in images)
 			{
-				if (LearningImage.EuclideanLength(image) == 0) continue;
+				if (FrameIn.Height != image.Height || FrameIn.Width != image.Width) continue;
+				//if (LearningImage.EuclideanLength(image) < FrameIn.Area * 0.03) continue;
 				Update(image);
 			}
 		}

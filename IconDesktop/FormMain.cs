@@ -21,7 +21,8 @@ namespace IconDesktop
 		public FormMain()
 		{
 			InitializeComponent();
-			LearningUnit.Instance = new LearningDigits();
+			//LearningUnit.Instance = new LearningDigits();
+			LearningUnit.Instance = new LearningIPCA();
 		}
 
 		private void ButtonDirectory_Click(object sender, EventArgs e)
@@ -44,7 +45,8 @@ namespace IconDesktop
 			if (sender == ButtonRunTraining)
 			{
 				task.Type = IconTaskType.Training;
-				task.Inputs = new List<string>(Directory.GetFiles(TextBoxInputDirectory.Text, "*.png", SearchOption.AllDirectories));
+				task.Inputs = new List<string>(Directory.GetFiles(TextBoxInputDirectory.Text, "*.jpg", SearchOption.AllDirectories));
+//				task.Inputs.AddRange(Directory.GetFiles(TextBoxInputDirectory.Text, "*.png", SearchOption.AllDirectories));
 			}
 			else if(sender == ButtonRunForecast)
 			{
@@ -61,49 +63,65 @@ namespace IconDesktop
 
 		private void BackgroundWorkerMain_DoWork(object sender, DoWorkEventArgs e)
 		{
-			IconTask task = e.Argument as IconTask;
-			if (task == null) return;
-
-			if(_Learning == null)
+			try
 			{
-				_Learning = LearningUnit.Instance;
-				if (!_Learning.Load(GetNeuroPath(task.NeuroDirectory))) _Learning.Initialize();
-			}
+				IconTask task = e.Argument as IconTask;
+				if (task == null) return;
 
-			if(task.Type == IconTaskType.Training)
-			{
-				List<LearningImagePair> pairs = new List<LearningImagePair>();
-#if DEBUG
-				task.Inputs = task.Inputs.OrderBy(p => Guid.NewGuid()).Take(1000).ToList();
+				if (_Learning == null)
+				{
+					_Learning = LearningUnit.Instance;
+					if (!_Learning.Load(GetNeuroPath(task.NeuroDirectory))) _Learning.Initialize();
+				}
+
+				if (task.Type == IconTaskType.Training)
+				{
+#if false
+					List<LearningImagePair> pairs = new List<LearningImagePair>();
+					//task.Inputs = task.Inputs.OrderBy(p => Guid.NewGuid()).Take(5000).ToList();
+					foreach (var path in task.Inputs)
+					{
+						LearningImage image = LearningImage.LoadPng(path, _Color);
+						string dir = Path.GetDirectoryName(path);
+						int index = dir.LastIndexOf('\\');
+						string group = dir.Substring(index + 1);
+						int number = -1;
+						if (!int.TryParse(group, out number)) continue;
+						LearningImage result = new LearningImage(4, 4, 1);
+						if (number < 16) result.Data[number] = 1;
+						pairs.Add(new LearningImagePair(image, result));
+					}
+					if (pairs.Count > 0)
+					{
+						_Learning.Learn(pairs);
+					}
 #endif
-				foreach (var path in task.Inputs)
-				{
-					LearningImage image = LearningImage.LoadPng(path, _Color);
-					string dir = Path.GetDirectoryName(path);
-					int index = dir.LastIndexOf('\\');
-					string group = dir.Substring(index + 1);
-					int number = -1;
-					if (!int.TryParse(group, out number)) continue;
-					LearningImage result = new LearningImage(4, 4, 1);
-					if (number < 16) result.Data[number] = 1;
-					pairs.Add(new LearningImagePair(image, result));
-				}
-				if (pairs.Count > 0)
-				{
-					_Learning.Learn(pairs);
-				}
+					List<LearningImage> images = new List<LearningImage>();
+					foreach(string path in task.Inputs)
+					{
+						LearningImage image2 = CvImage.Load(path).Zoom(100).ToLearningImage();
+						LearningImage image = LearningImage.LoadPng(path).Shrink(4);
+						if (image.Height != _Learning.Height || image.Width != _Learning.Width) continue;
+						images.Add(image);
+					}
+					_Learning.Learn(images);
 
-				_Learning.Save(GetNeuroPath(task.NeuroDirectory));
-			}
-			else if(task.Type == IconTaskType.Forecast && task.Inputs.Count > 0)
-			{
-				foreach (var path in task.Inputs)
-				{
-					string filename = Path.GetFileName(path);
-					LearningImage forecasted = _Learning.Forecast(LearningImage.LoadPng(path, _Color));
-					forecasted.SavePng("../" + filename);
-					Log.Instance.Info("forecasted: " + filename);
+					_Learning.Save(GetNeuroPath(task.NeuroDirectory));
 				}
+				else if (task.Type == IconTaskType.Forecast && task.Inputs.Count > 0)
+				{
+					foreach (var path in task.Inputs)
+					{
+						string filename = Path.GetFileName(path);
+						LearningImage forecasted = _Learning.Forecast(LearningImage.LoadPng(path, _Color));
+						forecasted.SavePng("../" + filename);
+						Log.Instance.Info("forecasted: " + filename);
+					}
+				}
+			}
+			catch(Exception ex)
+			{
+				Log.Instance.Error(ex.Message + "@" + ex.StackTrace);
 			}
 		}
 		private string GetNeuroPath(string dir) { return Path.Combine(dir, _Learning.Filename); }
@@ -121,6 +139,7 @@ namespace IconDesktop
 
 		private void UpdateLog()
 		{
+			if (!Log.Instance.Updated) return;
 			TextBoxLog.Text = Log.Instance.Get();
 			TextBoxLog.Select(TextBoxLog.Text.Length, 0);
 			TextBoxLog.ScrollToCaret();
@@ -140,6 +159,11 @@ namespace IconDesktop
 			public List<string> Inputs = new List<string>();
 			public List<string> Outputs = new List<string>();
 			public List<int> Details = new List<int>();
+		}
+
+		private void TimerMain_Tick(object sender, EventArgs e)
+		{
+			UpdateLog();
 		}
 	}
 }

@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
 			this.label1 = new System.Windows.Forms.Label();
 			this.ButtonNeuroDirectory = new System.Windows.Forms.Button();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -50,6 +51,7 @@
 			this.NumericUpDownPrimary1 = new System.Windows.Forms.NumericUpDown();
 			this.NumericUpDownPrimary0 = new System.Windows.Forms.NumericUpDown();
 			this.label4 = new System.Windows.Forms.Label();
+			this.TimerMain = new System.Windows.Forms.Timer(this.components);
 			this.groupBox1.SuspendLayout();
 			this.groupBox2.SuspendLayout();
 			this.groupBox3.SuspendLayout();
@@ -179,10 +181,10 @@
 			this.ButtonRunForecast.UseVisualStyleBackColor = true;
 			this.ButtonRunForecast.Click += new System.EventHandler(this.ButtonRun_Click);
 			// 
-			// ButtonForecastPath
+			// ButtonForecast
 			// 
 			this.ButtonForecast.Location = new System.Drawing.Point(279, 18);
-			this.ButtonForecast.Name = "ButtonForecastPath";
+			this.ButtonForecast.Name = "ButtonForecast";
 			this.ButtonForecast.Size = new System.Drawing.Size(75, 23);
 			this.ButtonForecast.TabIndex = 8;
 			this.ButtonForecast.Text = "Select";
@@ -255,6 +257,11 @@
 			this.label4.TabIndex = 0;
 			this.label4.Text = "Primary Length";
 			// 
+			// TimerMain
+			// 
+			this.TimerMain.Enabled = true;
+			this.TimerMain.Tick += new System.EventHandler(this.TimerMain_Tick);
+			// 
 			// FormMain
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -309,6 +316,7 @@
 		private System.Windows.Forms.NumericUpDown NumericUpDownPrimary1;
 		private System.Windows.Forms.NumericUpDown NumericUpDownPrimary0;
 		private System.Windows.Forms.Label label4;
+		private System.Windows.Forms.Timer TimerMain;
 	}
 }
 

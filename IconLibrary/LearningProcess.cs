@@ -43,7 +43,12 @@ namespace IconLibrary
 
 			for (int i = 1; i < _Units.Length; i++)
 			{
-				foreach (var img in samples) compresses.Add(_Units[i - 1].Project(img));
+				Log.Instance.Info("[Process.Learn] " + i + " " + samples.Count);
+				for (int j = 0; j < samples.Count; j++)
+				{
+					compresses.Add(_Units[i - 1].Project(samples[j]));
+					if (j % 1000 == 0) Log.Instance.Info("[Process.Learn] " + i + "." + j);
+				}
 				switch(_Units[i].Style)
 				{
 					case LearningStyle.InputOnly:
@@ -56,6 +61,8 @@ namespace IconLibrary
 						break;
 				}
 
+				samples.Clear();
+				GC.Collect();
 				samples = compresses;
 				compresses = new List<LearningImage>();
 			}

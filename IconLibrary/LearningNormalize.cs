@@ -17,9 +17,9 @@ namespace IconLibrary
 			double[] maxs = new double[image.Plane];
 			for (int h = 0; h < o.Height; h++)
 			{
-				for(int w = 0; w < o.Width; w++)
+				for (int w = 0; w < o.Width; w++)
 				{
-					for(int p = 0; p < o.Plane; p++)
+					for (int p = 0; p < o.Plane; p++)
 					{
 						double v = o.Data[(o.Width * h + w) * o.Plane + p];
 						if (maxs[p] < Math.Abs(v)) maxs[p] = Math.Abs(v);
