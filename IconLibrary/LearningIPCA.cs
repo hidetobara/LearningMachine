@@ -92,6 +92,19 @@ namespace IconLibrary
 			File.WriteAllText(Path.Combine(path, "state.json"), context);
 		}
 
+		public override void Learn(List<string> paths)
+		{
+			int limit = Height > Width ? Height : Width;
+			List<LearningImage> images = new List<LearningImage>();
+			foreach (string path in paths)
+			{
+				LearningImage image = CvImage.Load(path).Zoom(limit).ToLearningImage();
+				if (image.Height != Height || image.Width != Width) continue;
+				images.Add(image);
+			}
+			Learn(images);
+		}
+
 		public override LearningUnit.LearningStyle Style { get { return LearningStyle.InputOnly; } }
 		public override void Learn(List<LearningImage> images)
 		{

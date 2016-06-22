@@ -35,6 +35,7 @@ namespace IconLibrary
 		public virtual bool IsEnoughToLearn { get { return false; } }
 		public virtual void Learn(List<LearningImage> images) { }
 		public virtual void Learn(List<LearningImagePair> pairs) { }
+		public virtual void Learn(List<string> paths) { }
 
 		public virtual LearningImage Project(LearningImage image) { return null; }
 		public virtual LearningImage BackProject(LearningImage image) { return null; }

@@ -19,7 +19,6 @@ namespace IconLibrary
 		public override void Initialize() { }
 		public override bool Load(string path) { return true; }
 		public override void Save(string path) { }
-		public override void Learn(List<LearningImage> images) { }
 
 		public LearningPool(int step = 2)
 		{

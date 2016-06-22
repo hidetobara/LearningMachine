@@ -57,10 +57,11 @@ namespace IconLibrary
 			LearningImage i = new LearningImage(_Mat.Height, _Mat.Width);
 			for(int h = 0; h < _Mat.Height; h++)
 			{
+				long step = _Mat.Step(0);
 				byte* p = _Mat.DataPointer + _Mat.Step(0) * h;
 				for (int w = 0; w < _Mat.Width; w++, p += 3)
 				{
-					int index = h * i.Width + w;
+					int index = (h * i.Width + w) * 3;
 					i.Data[index + 0] = (double)p[0] / 255.0;
 					i.Data[index + 1] = (double)p[1] / 255.0;
 					i.Data[index + 2] = (double)p[2] / 255.0;

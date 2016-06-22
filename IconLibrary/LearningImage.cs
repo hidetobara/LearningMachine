@@ -150,7 +150,7 @@ namespace IconLibrary
 			}
 			b.UnlockBits(d);
 			string dir = Path.GetDirectoryName(path);
-			if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+			if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
 			b.Save(path, ImageFormat.Png);
 		}
 		private byte Step(double v, double low = 0, double high = 1)
