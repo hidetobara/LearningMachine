@@ -38,17 +38,24 @@ namespace IconLibrary
 		public CvImage Zoom(int limit)
 		{
 			int height, width;
+			int x, y;
 			if(_Mat.Height > _Mat.Width)
-			{
-				height = limit;
-				width = _Mat.Width * limit / _Mat.Height;
-			}
-			else
 			{
 				width = limit;
 				height = _Mat.Height * limit / _Mat.Width;
+				x = 0;
+				y = (height - limit) / 2;
 			}
-			return Resize(height, width);
+			else
+			{
+				height = limit;
+				width = _Mat.Width * limit / _Mat.Height;
+				x = (width - limit) / 2;
+				y = 0;
+			}
+			Mat resized = _Mat.Resize(new Size(width, height));
+			Mat trimed = new Mat(resized, new Rect(x, y, limit, limit));
+			return new CvImage(trimed);
 		}
 
 		#region 変換

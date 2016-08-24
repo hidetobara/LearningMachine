@@ -177,8 +177,12 @@ namespace IconLibrary
 			LearningImage tmp = new LearningImage(Height, Width, Plane);
 			for (int m = 0; m < MainMax; m++)
 			{
-				double length = LearningImage.EuclideanLength(_MainImages[m]);
-				double result = LearningImage.DotProduct(amt, _MainImages[m]) / length;
+				double length = 1, result = 1;
+				if (m > 0)
+				{
+					length = LearningImage.EuclideanLength(_MainImages[m]);
+					result = LearningImage.DotProduct(amt, _MainImages[m]) / length;
+				}
 				LearningImage.Sacle(_MainImages[m], tmp, result / length);
 				LearningImage.Sub(amt, tmp, amt);
 				results.Add(result);

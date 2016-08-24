@@ -37,9 +37,9 @@ namespace IconLibrary
 		public virtual void Learn(List<LearningImagePair> pairs) { }
 		public virtual void Learn(List<string> paths) { }
 
-		public virtual LearningImage Project(LearningImage image) { return null; }
-		public virtual LearningImage BackProject(LearningImage image) { return null; }
-		public virtual LearningImage Forecast(LearningImage image) { return null; }
+		public virtual LearningImage Project(LearningImage image) { return image; }
+		public virtual LearningImage BackProject(LearningImage image) { return image; }
+		public virtual LearningImage Forecast(LearningImage image) { return image; }
 	}
 
 	public struct LearningFrame

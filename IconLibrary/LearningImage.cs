@@ -131,9 +131,10 @@ namespace IconLibrary
 			return amount / list.Count;
 		}
 
-		unsafe public void SavePng(string path, double low = 0, double high = 1)
+		unsafe public void SavePng(string path, double low = 0, double high = 1, int start = 0)
 		{
-			Bitmap b = new Bitmap(this.Width, this.Height, PixelFormat.Format32bppArgb);
+			//Bitmap b = new Bitmap(this.Width, this.Height, PixelFormat.Format32bppArgb);
+			Bitmap b = new Bitmap(this.Width, this.Height, PixelFormat.Format24bppRgb);
 			BitmapData d = b.LockBits(new Rectangle(Point.Empty, b.Size), ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
 			for (int h = 0; h < d.Height; h++)
 			{
@@ -143,7 +144,8 @@ namespace IconLibrary
 					int position = (this.Width * h + w) * Plane;
 					for (int l = 0; l < 3; l++)
 					{
-						if (l < Plane) p[l] = Step(Data[position + l], low, high);
+						int sl = start + l;
+						if (sl< Plane) p[sl] = Step(Data[position + sl], low, high);
 						else p[l] = 0;
 					}
 				}

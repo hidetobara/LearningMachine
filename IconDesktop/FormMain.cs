@@ -22,7 +22,8 @@ namespace IconDesktop
 		{
 			InitializeComponent();
 			//LearningUnit.Instance = new LearningDigits();
-			LearningUnit.Instance = new LearningIPCA();
+			//LearningUnit.Instance = new LearningIPCA();
+			LearningUnit.Instance = new LearningLunch();
 		}
 
 		private void ButtonDirectory_Click(object sender, EventArgs e)
@@ -45,13 +46,12 @@ namespace IconDesktop
 			if (sender == ButtonRunTraining)
 			{
 				task.Type = IconTaskType.Training;
-				task.Inputs = new List<string>(Directory.GetFiles(TextBoxInputDirectory.Text, "*.jpg", SearchOption.AllDirectories));
-//				task.Inputs.AddRange(Directory.GetFiles(TextBoxInputDirectory.Text, "*.png", SearchOption.AllDirectories));
+				task.Inputs = GetFiles(TextBoxInputDirectory.Text);
 			}
 			else if(sender == ButtonRunForecast)
 			{
 				task.Type = IconTaskType.Forecast;
-				task.Inputs = new List<string>(Directory.GetFiles(TextBoxForecast.Text, "*.png", SearchOption.AllDirectories));
+				task.Inputs = GetFiles(TextBoxForecast.Text);
 				task.Details = new List<int>() { (int)NumericUpDownPrimary0.Value, (int)NumericUpDownPrimary1.Value, (int)NumericUpDownPrimary2.Value };
 			}
 			Properties.Settings.Default.Save();
@@ -59,6 +59,13 @@ namespace IconDesktop
 
 			EnableButtons(false);
 			BackgroundWorkerMain.RunWorkerAsync(task);
+		}
+
+		List<string> GetFiles(string directory)
+		{
+			List<string> files = new List<string>(Directory.GetFiles(directory, "*.png", SearchOption.AllDirectories));
+			files.AddRange(Directory.GetFiles(directory, "*.jpg", SearchOption.AllDirectories));
+			return files;
 		}
 
 		private void BackgroundWorkerMain_DoWork(object sender, DoWorkEventArgs e)
@@ -76,6 +83,9 @@ namespace IconDesktop
 
 				if (task.Type == IconTaskType.Training)
 				{
+#if DEBUG
+					task.Inputs = task.Inputs.OrderBy(i => Guid.NewGuid()).Take(100).ToList();
+#endif
 					_Learning.Learn(task.Inputs);
 					_Learning.Save(GetNeuroPath(task.NeuroDirectory));
 				}

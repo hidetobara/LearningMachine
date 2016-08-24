@@ -76,11 +76,13 @@
   <ItemGroup>
     <Compile Include="CvImage.cs" />
     <Compile Include="LearningDigits.cs" />
+    <Compile Include="LearningLunch.cs" />
     <Compile Include="LearningNormalize.cs" />
     <Compile Include="LearningProcess.cs" />
     <Compile Include="LearningImage.cs" />
     <Compile Include="LearningDNN.cs" />
     <Compile Include="LearningIPCA_Slicing.cs" />
+    <Compile Include="LearningRecord.cs" />
     <Compile Include="LearningUnit.cs" />
     <Compile Include="LearningIPCA.cs" />
     <Compile Include="LearningPool.cs" />
