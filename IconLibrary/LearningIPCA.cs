@@ -178,14 +178,14 @@ namespace IconLibrary
 			for (int m = 0; m < MainMax; m++)
 			{
 				double length = 1, result = 1;
-				if (m > 0)
+				if (m >= 0)
 				{
 					length = LearningImage.EuclideanLength(_MainImages[m]);
 					result = LearningImage.DotProduct(amt, _MainImages[m]) / length;
 				}
 				LearningImage.Sacle(_MainImages[m], tmp, result / length);
 				LearningImage.Sub(amt, tmp, amt);
-				results.Add(result);
+				results.Add(result / length);
 			}
 			return new LearningImage(FrameOut, results.ToArray());
 		}
@@ -197,8 +197,8 @@ namespace IconLibrary
 			LearningImage tmp = new LearningImage(Height, Width, Plane);
 			for (int m = 0; m < MainMax; m++)
 			{
-				double length = LearningImage.EuclideanLength(_MainImages[m]);
-				LearningImage.Sacle(_MainImages[m], tmp, list[m] / length);
+//				double length = LearningImage.EuclideanLength(_MainImages[m]);	本来はlist[m]*length
+				LearningImage.Sacle(_MainImages[m], tmp, list[m]);
 				LearningImage.Add(image, tmp, image);
 			}
 			return image;

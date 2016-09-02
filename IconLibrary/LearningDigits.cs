@@ -14,11 +14,11 @@ namespace IconLibrary
 	{
 		public LearningDigits()
 		{
-			_Units = new LearningUnit[4];
-			_Units[0] = new LearningIPCA_Slicing(1, 16);	// (28,28,1)
-			_Units[1] = new LearningPool(4);	// (7,7,16)
-			_Units[2] = new LearningNormalize();	// (7,7,16)
-			_Units[3] = new LearningDNN(7, 16, 4, 1);
+			_Units = new List<LearningUnit>();
+			_Units.Add(new LearningIPCA_Slicing(1, 16));	// (28,28,1)
+			_Units.Add(new LearningPool(4));		// (7,7,16)
+			_Units.Add(new LearningNormalize());	// (7,7,16)
+			_Units.Add(new LearningDNN(7, 16, 4, 1));
 		}
 
 		public override void Learn(List<string> paths)
@@ -27,13 +27,8 @@ namespace IconLibrary
 			foreach (string path in paths)
 			{
 				LearningImage image = LearningImage.LoadPng(path, LearningImage.ColorType.Gray);
-				string dir = Path.GetDirectoryName(path);
-				int index = dir.LastIndexOf('\\');
-				string group = dir.Substring(index + 1);
-				int number = -1;
-				if (!int.TryParse(group, out number)) continue;
-				LearningImage result = new LearningImage(4, 4, 1);
-				if (number < 16) result.Data[number] = 1;
+				LearningImage result = MakeOutimage(4, 4, path);
+				if (result == null) continue;
 				pairs.Add(new LearningImagePair(image, result));
 			}
 			if (pairs.Count > 0) Learn(pairs);

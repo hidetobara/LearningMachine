@@ -12,7 +12,7 @@ namespace IconLibrary
 	 */
 	public class LearningProcess : LearningUnit
 	{
-		protected LearningUnit[] _Units;
+		protected List<LearningUnit> _Units;
 
 		public override void Initialize()
 		{
@@ -41,7 +41,7 @@ namespace IconLibrary
 
 			if (!_Units[0].IsEnoughToLearn) _Units[0].Learn(samples);
 
-			for (int i = 1; i < _Units.Length; i++)
+			for (int i = 1; i < _Units.Count; i++)
 			{
 				Log.Instance.Info("[Process.Learn] " + i + " " + samples.Count);
 				for (int j = 0; j < samples.Count; j++)
@@ -70,7 +70,7 @@ namespace IconLibrary
 
 		private LearningImage ForecastUnit(int index, LearningImage i)
 		{
-			if(index >= _Units.Length) return i;
+			if(index >= _Units.Count) return i;
 
 			var c = _Units[index].Project(i);
 			c.SavePngAdjusted("../c" + index + ".png");
@@ -83,6 +83,19 @@ namespace IconLibrary
 		public override LearningImage Forecast(LearningImage image)
 		{
 			return ForecastUnit(0, image);
+		}
+
+		protected LearningImage MakeOutimage(int height, int width, string path)
+		{
+			string dir = Path.GetDirectoryName(path);
+			int index = dir.LastIndexOf('\\');
+			string group = dir.Substring(index + 1);
+			int number = 0;
+			if (!int.TryParse(group, out number)) return null;
+
+			LearningImage result = new LearningImage(height, width, 1);
+			if (0 <= number && number < height * width) result.Data[number] = 1;
+			return result;
 		}
 	}
 }
