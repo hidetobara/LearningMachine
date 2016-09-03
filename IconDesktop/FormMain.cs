@@ -15,7 +15,6 @@ namespace IconDesktop
 {
 	public partial class FormMain : Form
 	{
-		LearningImage.ColorType _Color = LearningImage.ColorType.Gray;
 		LearningUnit _Learning;
 
 		public FormMain()
@@ -23,7 +22,7 @@ namespace IconDesktop
 			InitializeComponent();
 			//LearningUnit.Instance = new LearningDigits();
 			//LearningUnit.Instance = new LearningIPCA();
-			LearningUnit.Instance = new LearningLunch();
+			LearningUnit.Instance = new LearningPseudoCNN();
 		}
 
 		private void ButtonDirectory_Click(object sender, EventArgs e)
@@ -33,6 +32,7 @@ namespace IconDesktop
 			if (sender == ButtonNeuroDirectory) TextBoxNeuroDirectory.Text = FolderBrowserDialogMain.SelectedPath;
 			if (sender == ButtonInputDirectory) TextBoxInputDirectory.Text = FolderBrowserDialogMain.SelectedPath;
 			if (sender == ButtonForecast) TextBoxForecast.Text = FolderBrowserDialogMain.SelectedPath;
+			if (sender == ButtonForecastOutput) TextBoxForecastOutput.Text = FolderBrowserDialogMain.SelectedPath;
 		}
 
 		private void ButtonPath_Click(object sender, EventArgs e)
@@ -52,7 +52,7 @@ namespace IconDesktop
 			{
 				task.Type = IconTaskType.Forecast;
 				task.Inputs = GetFiles(TextBoxForecast.Text);
-				task.Details = new List<int>() { (int)NumericUpDownPrimary0.Value, (int)NumericUpDownPrimary1.Value, (int)NumericUpDownPrimary2.Value };
+				task.Outputs.Add(TextBoxForecastOutput.Text);
 			}
 			Properties.Settings.Default.Save();
 			if (task.Type == IconTaskType.None) return;
@@ -83,8 +83,9 @@ namespace IconDesktop
 
 				if (task.Type == IconTaskType.Training)
 				{
+					task.Inputs = task.Inputs.OrderBy(i => Guid.NewGuid()).ToList();
 #if DEBUG
-					task.Inputs = task.Inputs.OrderBy(i => Guid.NewGuid()).Take(100).ToList();
+					task.Inputs = task.Inputs.Take(100).ToList();
 #endif
 					_Learning.Learn(task.Inputs);
 					_Learning.Save(GetNeuroPath(task.NeuroDirectory));
@@ -93,10 +94,9 @@ namespace IconDesktop
 				{
 					foreach (var path in task.Inputs)
 					{
-						string filename = Path.GetFileName(path);
-						LearningImage forecasted = _Learning.Forecast(LearningImage.LoadPng(path, _Color));
-						forecasted.SavePng("../" + filename);
-						Log.Instance.Info("forecasted: " + filename);
+						string dir = "../";
+						if(task.Outputs.Count > 0) dir = task.Outputs[0];
+						_Learning.Forecast(path, dir);
 					}
 				}
 			}
@@ -139,7 +139,6 @@ namespace IconDesktop
 			public string NeuroDirectory;
 			public List<string> Inputs = new List<string>();
 			public List<string> Outputs = new List<string>();
-			public List<int> Details = new List<int>();
 		}
 
 		private void TimerMain_Tick(object sender, EventArgs e)

@@ -80,9 +80,17 @@ namespace IconLibrary
 			return o;
 		}
 
-		public override LearningImage Forecast(LearningImage image)
+		public override LearningImage Forecast(string path)
 		{
-			return ForecastUnit(0, image);
+			return ForecastUnit(0, PrepareImage(path));
+		}
+
+		public override void Forecast(string path, string outdir)
+		{
+			LearningImage forecasted = this.Forecast(path);
+			string filename = Path.GetFileName(path);
+			forecasted.SavePng(Path.Combine(outdir, filename));
+			Log.Instance.Info("forecasted: " + filename);
 		}
 
 		protected LearningImage MakeOutimage(int height, int width, string path)

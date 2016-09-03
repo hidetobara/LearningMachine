@@ -3,6 +3,8 @@ bin/
 packages/
 Debug/
 Release/
+Learning/
+Neuro/
 
 *.user
 *.bin

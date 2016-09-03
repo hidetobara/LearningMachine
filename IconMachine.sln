@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IconDesktop", "IconDesktop\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IconLibrary", "IconLibrary\IconLibrary.csproj", "{1C617645-1302-4225-8CB7-D487242939E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrepareDesktop", "PrepareDesktop\PrepareDesktop.csproj", "{6E4BD551-B720-4311-9027-D6A66B11D3A5}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{1C617645-1302-4225-8CB7-D487242939E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C617645-1302-4225-8CB7-D487242939E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1C617645-1302-4225-8CB7-D487242939E4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6E4BD551-B720-4311-9027-D6A66B11D3A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6E4BD551-B720-4311-9027-D6A66B11D3A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6E4BD551-B720-4311-9027-D6A66B11D3A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6E4BD551-B720-4311-9027-D6A66B11D3A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

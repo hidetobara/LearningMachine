@@ -40,6 +40,9 @@ namespace IconLibrary
 		public virtual LearningImage Project(LearningImage image) { return image; }
 		public virtual LearningImage BackProject(LearningImage image) { return image; }
 		public virtual LearningImage Forecast(LearningImage image) { return image; }
+		public virtual LearningImage Forecast(string path) { return null; }
+		public virtual void Forecast(string path, string outdir) { }
+		public virtual LearningImage PrepareImage(string path) { return CvImage.Load(path).ToLearningImage(); }
 	}
 
 	public struct LearningFrame

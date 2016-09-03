@@ -58,6 +58,5 @@ namespace IconLibrary
 			}
 			return backed;
 		}
-		public override LearningImage Forecast(LearningImage image) { return image; }
 	}
 }

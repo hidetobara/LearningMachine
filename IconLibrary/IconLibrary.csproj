@@ -76,7 +76,7 @@
   <ItemGroup>
     <Compile Include="CvImage.cs" />
     <Compile Include="LearningDigits.cs" />
-    <Compile Include="LearningLunch.cs" />
+    <Compile Include="LearningPseudoCNN.cs" />
     <Compile Include="LearningNormalize.cs" />
     <Compile Include="LearningProcess.cs" />
     <Compile Include="LearningImage.cs" />
