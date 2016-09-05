@@ -107,22 +107,6 @@ namespace IconLibrary
 		#endregion
 	}
 
-	public class LearningIPCA_Slicing_3to32 : LearningConvolutionIPCA
-	{
-		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 8, Width = 8, Plane = 3 }; } }
-		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 32 }; } }
-		public override string Filename { get { return "IPCA_3to32/"; } }
-		public override int Scale { get { return 1; } }
-	}
-
-	public class LearningIPCA_Slicing_32to64 : LearningConvolutionIPCA
-	{
-		public override LearningFrame FrameIn { get { return new LearningFrame() { Height = 8, Width = 8, Plane = 32 }; } }
-		public override LearningFrame FrameOut { get { return new LearningFrame() { Height = 1, Width = 1, Plane = 64 }; } }
-		public override string Filename { get { return "IPCA_32to64/"; } }
-		public override int Scale { get { return 1; } }
-	}
-
 	public class LearningIPCA_Slicing : LearningConvolutionIPCA
 	{
 		private LearningFrame _FrameIn;
@@ -131,9 +115,9 @@ namespace IconLibrary
 		public override LearningFrame FrameOut { get { return _FrameOut; } }
 		public override string Filename { get { return "IPCA_" + _FrameIn.Plane + "-" + _FrameOut.Plane + "/"; } }
 
-		public LearningIPCA_Slicing(int start, int end)
+		public LearningIPCA_Slicing(int start, int end, int block = 8)
 		{
-			_FrameIn = new LearningFrame(8, 8, start);
+			_FrameIn = new LearningFrame(block, block, start);
 			_FrameOut = new LearningFrame(1, 1, end);
 		}
 	}

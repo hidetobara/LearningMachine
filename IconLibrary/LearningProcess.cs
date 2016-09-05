@@ -73,7 +73,7 @@ namespace IconLibrary
 			if(index >= _Units.Count) return i;
 
 			var c = _Units[index].Project(i);
-			c.SavePngAdjusted("../c" + index + ".png");
+			//c.SavePngAdjusted("../c" + index + ".png");
 			var o = ForecastUnit(index + 1, c);
 			//var e = _Units[index].BackProject(o);
 			//e.SavePngAdjusted("../e" + index + ".png");

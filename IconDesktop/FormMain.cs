@@ -22,7 +22,7 @@ namespace IconDesktop
 			InitializeComponent();
 			//LearningUnit.Instance = new LearningDigits();
 			//LearningUnit.Instance = new LearningIPCA();
-			LearningUnit.Instance = new LearningPseudoCNN();
+			LearningUnit.Instance = new LearningPseudo3CNN();
 		}
 
 		private void ButtonDirectory_Click(object sender, EventArgs e)
@@ -85,7 +85,7 @@ namespace IconDesktop
 				{
 					task.Inputs = task.Inputs.OrderBy(i => Guid.NewGuid()).ToList();
 #if DEBUG
-					task.Inputs = task.Inputs.Take(100).ToList();
+					task.Inputs = task.Inputs.Take(10).ToList();
 #endif
 					_Learning.Learn(task.Inputs);
 					_Learning.Save(GetNeuroPath(task.NeuroDirectory));

@@ -26,6 +26,8 @@ namespace IconLibrary
 		public int Plane { get { return FrameIn.Plane; } }
 		public int Length { get { return FrameIn.Length; } }
 
+		public virtual int LearningLimit { get { return 500; } }
+
 		public virtual string Filename { get { return "./"; } }
 		public virtual void Initialize() { }
 		public virtual bool Load(string path) { return false; }
