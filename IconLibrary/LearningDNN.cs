@@ -70,7 +70,7 @@ namespace IconLibrary
 		}
 
 		public override LearningUnit.LearningStyle Style { get { return LearningStyle.InputOutput; } }
-		public override void Learn(List<LearningImagePair> pairs)
+		public override void Learn(List<LearningImagePair> pairs, LearningStyle style)
 		{
 			Log.Instance.Info("[DNN.Learn]");
 			List<double[]> dataIn = new List<double[]>();

@@ -68,12 +68,15 @@ namespace IconLibrary
 		}
 		public LearningImage(LearningImage image) : this(image._Frame, image.Data) { }
 
-		public unsafe static LearningImage LoadPng(string path, ColorType color = ColorType.Color)
+		public static LearningImage Load(string path, ColorType color = ColorType.Color)
 		{
 			if (!File.Exists(path)) return null;
+			return Load(new Bitmap(path), color);
+		}
+		public unsafe static LearningImage Load(Bitmap src, ColorType color = ColorType.Color)
+		{
 			try
 			{
-				Bitmap src = new Bitmap(path);
 				PixelFormat format = PixelFormat.Format24bppRgb;
 				int plane = 3;
 				if (color == ColorType.Gray)
@@ -97,6 +100,41 @@ namespace IconLibrary
 				return i;
 			}
 			catch(Exception ex)
+			{
+				Log.Instance.Error(ex.Message + "@" + ex.StackTrace);
+				return null;
+			}
+		}
+
+		public static LearningImage LoadByZoom(string path, int block_size)
+		{
+			try
+			{
+				if (!File.Exists(path)) return null;
+
+				Bitmap src = new Bitmap(path);
+				float zoom = 1, x = 0, y = 0, h = 0, w = 0;
+				if(src.Width > src.Height)
+				{
+					zoom = (float)block_size / (float)src.Height;
+					x = -(src.Width - src.Height) / 2.0f * zoom;
+					h = block_size;
+					w = src.Width * zoom;
+				}
+				else
+				{
+					zoom = (float)block_size / (float)src.Width;
+					y = -(src.Height - src.Width) / 2.0f * zoom;
+					h = src.Height * zoom;
+					w = block_size;
+				}
+				Bitmap dest = new Bitmap(block_size, block_size);
+				Graphics g = Graphics.FromImage(dest);
+				g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+				g.DrawImage(src, x, y, w, h);
+				return Load(dest);
+			}
+			catch (Exception ex)
 			{
 				Log.Instance.Error(ex.Message + "@" + ex.StackTrace);
 				return null;

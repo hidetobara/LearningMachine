@@ -15,38 +15,48 @@ namespace IconLibrary
 		public LearningPseudo2CNN()
 		{
 			_Units = new List<LearningUnit>();
-			_Units.Add(new LearningIPCA_Slicing(3, 16));	// 64,64,3
-			_Units.Add(new LearningPool(4));				// 64,64,16
-			_Units.Add(new LearningNormalize());			// 16,16,16
-			_Units.Add(new LearningIPCA_Slicing(16, 32));	// 16,16,16
-			_Units.Add(new LearningPool(4));				// 16,16,32
-			_Units.Add(new LearningNormalize());			// 4,4,32
-			_Units.Add(new LearningDNN(4, 32, 4, 1));		// 4,4,32 > 4,4,1
+			_Units.Add(new LearningIPCA_Slicing(3, 32));	// 64,64,3
+			_Units.Add(new LearningPool(4));				// 64,64,32
+			_Units.Add(new LearningNormalize());			// 16,16,32
+			_Units.Add(new LearningIPCA_Slicing(32, 64));	// 16,16,32
+			_Units.Add(new LearningPool(4));				// 16,16,64
+			_Units.Add(new LearningNormalize());			// 4,4,64
+			_Units.Add(new LearningDNN(4, 64, 4, 1));		// 4,4,64 > 4,4,1
 		}
 
 		public override void Learn(List<string> paths)
 		{
 			int divide = paths.Count / LearningLimit + 1;
 			int limit = paths.Count / divide + 1;
-
-			List<LearningImagePair> pairs = new List<LearningImagePair>();
-			for(int i = 0; i < paths.Count; i++)
+			// 部分学習
+			for (int start = 0, end = limit; start < paths.Count; start += limit, end += limit)
 			{
-				string path = paths[i];
-				LearningImage image = PrepareImage(path);
-				LearningImage result = MakeOutimage(FrameOut.Height, FrameOut.Width, path);
-				if (result == null) continue;
-				LearningImagePair pair = new LearningImagePair(image, result);
-				pairs.Add(pair);
-
-				if(pairs.Count >= limit)
-				{
-					Learn(pairs);
-					pairs.Clear();
-					Log.Instance.Info("[PCNN.Learn] " + i + "/" + paths.Count);
-				}
+				Log.Instance.Info("[PCNN.Learn] start=" + start + " end=" + end);
+				Learn(MakeLearningPairs(paths, start, end), LearningStyle.Input);
 			}
-			Learn(pairs);
+			// 全体
+			Log.Instance.Info("[PCNN.Learn] LAST");
+			Learn(MakeLearningPairs(paths, 0, paths.Count), LearningStyle.InputOutput);
+		}
+
+		private List<LearningImagePair> MakeLearningPairs(List<string> paths, int start, int end)
+		{
+			List<LearningImagePair> list = new List<LearningImagePair>();
+			for(int i = start; i < end; i++)
+			{
+				if (i >= paths.Count) break;
+				var pair = MakeLearningPair(paths[i]);
+				if (pair != null) list.Add(pair);
+			}
+			return list;
+		}
+
+		private LearningImagePair MakeLearningPair(string path)
+		{
+			LearningImage image = PrepareImage(path);
+			LearningImage result = MakeOutimage(FrameOut.Height, FrameOut.Width, path);
+			if (result == null) return null;
+			return new LearningImagePair(image, result);
 		}
 
 		public override void Forecast(string path, string outdir)
@@ -76,7 +86,8 @@ namespace IconLibrary
 
 		public override LearningImage PrepareImage(string path)
 		{
-			return CvImage.Load(path).Zoom(IMAGE_SIZE).ToLearningImage();
+			return LearningImage.LoadByZoom(path, IMAGE_SIZE);
+			//return CvImage.Load(path).Zoom(IMAGE_SIZE).ToLearningImage();	// 古い
 		}
 	}
 

@@ -8,7 +8,7 @@ namespace IconLibrary
 {
 	public class LearningUnit
 	{
-		public enum LearningStyle { None, InputOnly, InputOutput };
+		public enum LearningStyle { None, Input, Output, InputOutput };
 
 		private static LearningUnit _Instance;
 		public static LearningUnit Instance
@@ -36,7 +36,7 @@ namespace IconLibrary
 		public virtual LearningStyle Style { get { return LearningStyle.None; } }
 		public virtual bool IsEnoughToLearn { get { return false; } }
 		public virtual void Learn(List<LearningImage> images) { }
-		public virtual void Learn(List<LearningImagePair> pairs) { }
+		public virtual void Learn(List<LearningImagePair> pairs, LearningStyle style = LearningStyle.InputOutput) { }
 		public virtual void Learn(List<string> paths) { }
 
 		public virtual LearningImage Project(LearningImage image) { return image; }
@@ -44,7 +44,7 @@ namespace IconLibrary
 		public virtual LearningImage Forecast(LearningImage image) { return image; }
 		public virtual LearningImage Forecast(string path) { return null; }
 		public virtual void Forecast(string path, string outdir) { }
-		public virtual LearningImage PrepareImage(string path) { return CvImage.Load(path).ToLearningImage(); }
+		public virtual LearningImage PrepareImage(string path) { return LearningImage.Load(path); }
 	}
 
 	public struct LearningFrame

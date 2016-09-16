@@ -98,14 +98,14 @@ namespace IconLibrary
 			List<LearningImage> images = new List<LearningImage>();
 			foreach (string path in paths)
 			{
-				LearningImage image = CvImage.Load(path).Zoom(limit).ToLearningImage();
+				LearningImage image = LearningImage.LoadByZoom(path, limit);
 				if (image.Height != Height || image.Width != Width) continue;
 				images.Add(image);
 			}
 			Learn(images);
 		}
 
-		public override LearningUnit.LearningStyle Style { get { return LearningStyle.InputOnly; } }
+		public override LearningUnit.LearningStyle Style { get { return LearningStyle.Input; } }
 		public override void Learn(List<LearningImage> images)
 		{
 			foreach (var image in images)

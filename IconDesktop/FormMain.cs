@@ -22,7 +22,7 @@ namespace IconDesktop
 			InitializeComponent();
 			//LearningUnit.Instance = new LearningDigits();
 			//LearningUnit.Instance = new LearningIPCA();
-			LearningUnit.Instance = new LearningPseudo3CNN();
+			LearningUnit.Instance = new LearningPseudo2CNN();
 		}
 
 		private void ButtonDirectory_Click(object sender, EventArgs e)

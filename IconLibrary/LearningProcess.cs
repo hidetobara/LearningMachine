@@ -33,7 +33,7 @@ namespace IconLibrary
 			}
 		}
 
-		public override void Learn(List<LearningImagePair> pairs)
+		public override void Learn(List<LearningImagePair> pairs, LearningStyle style)
 		{
 			List<LearningImage> samples = new List<LearningImage>();
 			List<LearningImage> compresses = new List<LearningImage>();
@@ -47,18 +47,21 @@ namespace IconLibrary
 				for (int j = 0; j < samples.Count; j++)
 				{
 					compresses.Add(_Units[i - 1].Project(samples[j]));
-					if (j % 1000 == 0) Log.Instance.Info("[Process.Learn] " + i + "." + j);
 				}
-				switch(_Units[i].Style)
+
+				if (_Units[i].IsEnoughToLearn)
 				{
-					case LearningStyle.InputOnly:
-						if (!_Units[i].IsEnoughToLearn) _Units[i].Learn(compresses);
-						break;
-					case LearningStyle.InputOutput:
-						List<LearningImagePair> list = new List<LearningImagePair>();
-						for (int j = 0; j < compresses.Count; j++) list.Add(new LearningImagePair(compresses[j], pairs[j].Out));
-						_Units[i].Learn(list);
-						break;
+					// 何もしない
+				}
+				else if ((style == LearningStyle.Input || style == LearningStyle.InputOutput) && _Units[i].Style == LearningStyle.Input)
+				{
+					_Units[i].Learn(compresses);
+				}
+				else if ((style == LearningStyle.InputOutput) && _Units[i].Style == LearningStyle.InputOutput)
+				{
+					List<LearningImagePair> list = new List<LearningImagePair>();
+					for (int j = 0; j < compresses.Count; j++) list.Add(new LearningImagePair(compresses[j], pairs[j].Out));
+					_Units[i].Learn(list);
 				}
 
 				samples.Clear();

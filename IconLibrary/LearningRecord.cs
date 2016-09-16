@@ -17,7 +17,7 @@ namespace IconLibrary
 			this._Tag = tag;
 		}
 
-		public override LearningStyle Style { get { return LearningStyle.InputOnly; } }
+		public override LearningStyle Style { get { return LearningStyle.Input; } }
 		public override string Filename { get { return "Record-" + _Tag; } }
 		public override bool Load(string path) { return true; }
 		public override void Save(string path)
