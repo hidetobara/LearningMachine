@@ -39,7 +39,7 @@ namespace IconLibrary
 
 		public override void Initialize()
 		{
-			_Network = new DeepBeliefNetwork(Length, new int[] { _MiddleCount, FrameOut.Length });
+			_Network = new DeepBeliefNetwork(Length + 1, new int[] { _MiddleCount, FrameOut.Length + 1 });	// 斉次座標
 			new GaussianWeights(_Network).Randomize();
 			_Network.UpdateVisibleWeights();
 			InitializeTeacher();
@@ -77,8 +77,8 @@ namespace IconLibrary
 			List<double[]> dataOut = new List<double[]>();
 			foreach (var p in pairs)
 			{
-				dataIn.Add(p.In.Data);
-				dataOut.Add(p.Out.Data);
+				dataIn.Add(p.In.Homogenize());
+				dataOut.Add(p.Out.Homogenize());
 			}
 			var dataInPrepared = _Teacher.GetLayerInput(dataIn.ToArray());
 
@@ -97,7 +97,7 @@ namespace IconLibrary
 
 		public override LearningImage Project(LearningImage image)
 		{
-			double[] data = _Network.Compute(image.Data);
+			double[] data = _Network.Compute(image.Homogenize());
 			return new LearningImage(FrameOut, data);
 		}
 	}

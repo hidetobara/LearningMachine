@@ -54,7 +54,7 @@ namespace IconLibrary
 			Array.Copy(p.Data, 0, Data, (Width * h + w) * Plane, Plane);
 		}
 
-		public LearningImage(LearningFrame f, double[] data =null)
+		public LearningImage(LearningFrame f, double[] data = null)
 		{
 			_Frame = f;
 			Data = new double[Length];
@@ -155,7 +155,7 @@ namespace IconLibrary
 					List<int> list = new List<int>();
 					for (int hh = hs; hh < hs + scale; hh++)
 						for (int ww = ws; ww < ws + scale; ww++) list.Add(this.Width * hh + ww);
-					int postion = (i.Width * h + w) * 3;
+					int postion = (i.Width * h + w) * i.Plane;
 					for (int l = 0; l < Plane; l++)
 						i.Data[postion + l] = Average(list, Plane, l);
 				}
@@ -365,19 +365,13 @@ namespace IconLibrary
 			}
 		}
 
-		public LearningImage Mask(Rectangle r)
+		// 斉次座標化
+		public double[] Homogenize()
 		{
-			LearningImage i = new LearningImage(_Frame);
-			for (int h = r.Top; h < r.Bottom; h++)
-			{
-				for (int w = r.Left; w < r.Right; w++)
-				{
-					if (h < 0 || h >= this.Height || w < 0 || w >= this.Width) continue;
-					int p = (Width * h + w) * Plane;
-					Array.Copy(this.Data, p, i.Data, p, Plane);
-				}
-			}
-			return i;
+			double[] data = new double[Length + 1];
+			Array.Copy(this.Data, 0, data, 0, Length);
+			data[Length] = 1.0;
+			return data;
 		}
 	}
 
