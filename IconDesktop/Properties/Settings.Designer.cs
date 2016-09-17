@@ -70,5 +70,29 @@ namespace IconDesktop.Properties {
                 this["ForecastOutputDirectory"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("500")]
+        public decimal ImageLimit {
+            get {
+                return ((decimal)(this["ImageLimit"]));
+            }
+            set {
+                this["ImageLimit"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("ComboBoxMethod")]
+        public string Method {
+            get {
+                return ((string)(this["Method"]));
+            }
+            set {
+                this["Method"] = value;
+            }
+        }
     }
 }

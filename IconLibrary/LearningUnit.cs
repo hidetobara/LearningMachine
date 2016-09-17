@@ -13,7 +13,7 @@ namespace IconLibrary
 		private static LearningUnit _Instance;
 		public static LearningUnit Instance
 		{
-			get { if (_Instance == null) _Instance = new LearningUnit(); return _Instance; }
+			get { return _Instance; }
 			set { if (_Instance == null) _Instance = value; }
 		}
 
@@ -26,7 +26,7 @@ namespace IconLibrary
 		public int Plane { get { return FrameIn.Plane; } }
 		public int Length { get { return FrameIn.Length; } }
 
-		public virtual int LearningLimit { get { return 500; } }
+		public int LearningLimit;
 
 		public virtual string Filename { get { return "./"; } }
 		public virtual void Initialize() { }

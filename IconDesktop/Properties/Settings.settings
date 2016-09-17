@@ -14,5 +14,11 @@
     <Setting Name="ForecastOutputDirectory" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="ImageLimit" Type="System.Decimal" Scope="User">
+      <Value Profile="(Default)">500</Value>
+    </Setting>
+    <Setting Name="Method" Type="System.String" Scope="User">
+      <Value Profile="(Default)">ComboBoxMethod</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

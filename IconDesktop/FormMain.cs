@@ -20,9 +20,6 @@ namespace IconDesktop
 		public FormMain()
 		{
 			InitializeComponent();
-			//LearningUnit.Instance = new LearningDigits();
-			//LearningUnit.Instance = new LearningIPCA();
-			LearningUnit.Instance = new LearningPseudo2CNN();
 		}
 
 		private void ButtonDirectory_Click(object sender, EventArgs e)
@@ -42,20 +39,22 @@ namespace IconDesktop
 
 		private void ButtonRun_Click(object sender, EventArgs e)
 		{
-			IconTask task = new IconTask() { NeuroDirectory = TextBoxNeuroDirectory.Text };
+			MainTask task = new MainTask() { NeuroDirectory = TextBoxNeuroDirectory.Text };
+			task.ImageLimit = (int)NumericUpDownImageLimit.Value;
+			task.ParseMethod(ComboBoxMethod.Text);
 			if (sender == ButtonRunTraining)
 			{
-				task.Type = IconTaskType.Training;
+				task.Type = MainTaskType.Training;
 				task.Inputs = GetFiles(TextBoxInputDirectory.Text);
 			}
 			else if(sender == ButtonRunForecast)
 			{
-				task.Type = IconTaskType.Forecast;
+				task.Type = MainTaskType.Forecast;
 				task.Inputs = GetFiles(TextBoxForecast.Text);
 				task.Outputs.Add(TextBoxForecastOutput.Text);
 			}
 			Properties.Settings.Default.Save();
-			if (task.Type == IconTaskType.None) return;
+			if (task.Type == MainTaskType.None) return;
 
 			EnableButtons(false);
 			BackgroundWorkerMain.RunWorkerAsync(task);
@@ -72,8 +71,18 @@ namespace IconDesktop
 		{
 			try
 			{
-				IconTask task = e.Argument as IconTask;
+				MainTask task = e.Argument as MainTask;
 				if (task == null) return;
+
+				if (LearningUnit.Instance == null)
+				{
+					if (task.Method == MainMethod.DIGITS) LearningUnit.Instance = new LearningDigits();
+					if (task.Method == MainMethod.CNN2) LearningUnit.Instance = new LearningPseudo2CNN();
+					if (task.Method == MainMethod.CNN3) LearningUnit.Instance = new LearningPseudo3CNN();
+					if (LearningUnit.Instance == null) throw new Exception("No executable method !");
+
+					LearningUnit.Instance.LearningLimit = task.ImageLimit;
+				}
 
 				if (_Learning == null)
 				{
@@ -81,16 +90,16 @@ namespace IconDesktop
 					if (!_Learning.Load(GetNeuroPath(task.NeuroDirectory))) _Learning.Initialize();
 				}
 
-				if (task.Type == IconTaskType.Training)
+				if (task.Type == MainTaskType.Training)
 				{
 					task.Inputs = task.Inputs.OrderBy(i => Guid.NewGuid()).ToList();
 #if DEBUG
-					task.Inputs = task.Inputs.Take(10).ToList();
+					task.Inputs = task.Inputs.Take(30).ToList();
 #endif
 					_Learning.Learn(task.Inputs);
 					_Learning.Save(GetNeuroPath(task.NeuroDirectory));
 				}
-				else if (task.Type == IconTaskType.Forecast && task.Inputs.Count > 0)
+				else if (task.Type == MainTaskType.Forecast && task.Inputs.Count > 0)
 				{
 					foreach (var path in task.Inputs)
 					{
@@ -132,13 +141,24 @@ namespace IconDesktop
 			ButtonRunForecast.Enabled = enable;
 		}
 
-		enum IconTaskType { None, Training, Forecast }
-		class IconTask
+		enum MainTaskType { None, Training, Forecast }
+		enum MainMethod { DIGITS, CNN2, CNN3 }
+		class MainTask
 		{
-			public IconTaskType Type = IconTaskType.None;
+			public MainTaskType Type = MainTaskType.None;
 			public string NeuroDirectory;
 			public List<string> Inputs = new List<string>();
 			public List<string> Outputs = new List<string>();
+			public int ImageLimit;
+			public MainMethod Method = MainMethod.CNN2;
+
+			public void ParseMethod(string name)
+			{
+				foreach(MainMethod m in Enum.GetValues(typeof(MainMethod)))
+				{
+					if (m.ToString() == name) Method = m;
+				}
+			}
 		}
 
 		private void TimerMain_Tick(object sender, EventArgs e)
