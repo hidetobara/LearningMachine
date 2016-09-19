@@ -19,6 +19,7 @@ namespace IconLibrary
 	public class LearningDNN : LearningUnit
 	{
 		private int _MiddleCount = 64;
+		private int _Padding = 0;
 
 		private LearningFrame _FrameIn;
 		private LearningFrame _FrameOut;
@@ -30,11 +31,12 @@ namespace IconLibrary
 
 		public override string Filename { get { return "DNN_" + FrameIn.Height + "." + FrameIn.Plane + "-" + FrameOut.Height + "." + FrameOut.Plane + ".bin"; } }
 
-		public LearningDNN(int inHeight, int inPlane, int outHeight, int outPlane, int middle = 64)
+		public LearningDNN(int inHeight, int inPlane, int outHeight, int outPlane, int middle = 64, int padding = 0)
 		{
 			_FrameIn = new LearningFrame() { Height = inHeight, Width = inHeight, Plane = inPlane };
 			_FrameOut = new LearningFrame(){ Height = outHeight, Width = outHeight, Plane = outPlane };
 			_MiddleCount = middle;
+			_Padding = padding;
 		}
 
 		public override void Initialize()
@@ -79,20 +81,39 @@ namespace IconLibrary
 			{
 				dataIn.Add(p.In.Homogenize());
 				dataOut.Add(p.Out.Homogenize());
+				// 水増し学習
+				for(int i = 0; i < _Padding; i++)
+				{
+					dataIn.Add(p.In.DropOut(0.2f).Homogenize());
+					dataOut.Add(p.Out.Homogenize());
+				}
 			}
 			var dataInPrepared = _Teacher.GetLayerInput(dataIn.ToArray());
 
-			for (int i = 0; i < 200; i++)
+			for (int i = 0; i < 300; i++)
 			{
 				_Teacher.RunEpoch(dataInPrepared, dataOut.ToArray());
 				_Network.UpdateVisibleWeights();
-				var tmpOut = _Network.Compute(dataIn[0]);
-				var diff = Accord.Math.Matrix.Subtract(dataOut[0], tmpOut);
-				double lengthOut = Accord.Math.Norm.Euclidean(dataOut[0]);
-				double lengthDiff = Accord.Math.Norm.Euclidean(diff);
-				if (i % 10 == 0) Log.Instance.Info("[DNN.Learn]" + i + " " + lengthDiff + "/" + lengthOut);
-				if (lengthDiff / lengthOut < 0.05) break;
+
+				double amount = 0;
+				int count = 0;
+				for(int j = 0; j < dataIn.Count; j += _Padding * 10)	// 適当に省いて評価
+				{
+					amount += TestCompute(dataIn[j], dataOut[j]);
+					count++;
+				}
+				if (i % 10 == 0) Log.Instance.Info("[DNN.Learn]" + i + " " + (amount / count));
+				if (amount / count < 0.05) break;
 			}
+		}
+
+		private double TestCompute(double[] input, double[] output)
+		{
+			var tmpOut = _Network.Compute(input);
+			var diff = Accord.Math.Matrix.Subtract(output, tmpOut);
+			double lengthOut = Accord.Math.Norm.Euclidean(output);
+			double lengthDiff = Accord.Math.Norm.Euclidean(diff);
+			return lengthDiff / lengthOut;
 		}
 
 		public override LearningImage Project(LearningImage image)

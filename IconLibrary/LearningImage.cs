@@ -365,6 +365,18 @@ namespace IconLibrary
 			}
 		}
 
+		// ドロップアウト
+		public LearningImage DropOut(double rate)
+		{
+			LearningImage i = new LearningImage(this);
+			Random random = new Random();
+			for(int j = 0; j < i.Length; j++)
+			{
+				if (random.NextDouble() < rate) i.Data[j] = 0;
+			}
+			return i;
+		}
+
 		// 斉次座標化
 		public double[] Homogenize()
 		{

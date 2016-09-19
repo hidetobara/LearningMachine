@@ -21,7 +21,7 @@ namespace IconLibrary
 			_Units.Add(new LearningIPCA_Slicing(32, 64));	// 16,16,32
 			_Units.Add(new LearningPool(4));				// 16,16,64
 			_Units.Add(new LearningNormalize());			// 4,4,64
-			_Units.Add(new LearningDNN(4, 64, 4, 1));		// 4,4,64 > 4,4,1
+			_Units.Add(new LearningDNN(4, 64, 4, 1, 64, 5));		// 4,4,64 > 4,4,1
 		}
 
 		public override void Learn(List<string> paths)

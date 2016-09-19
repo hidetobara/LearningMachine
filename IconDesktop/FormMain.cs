@@ -94,7 +94,7 @@ namespace IconDesktop
 				{
 					task.Inputs = task.Inputs.OrderBy(i => Guid.NewGuid()).ToList();
 #if DEBUG
-					task.Inputs = task.Inputs.Take(30).ToList();
+					task.Inputs = task.Inputs.Take(15).ToList();
 #endif
 					_Learning.Learn(task.Inputs);
 					_Learning.Save(GetNeuroPath(task.NeuroDirectory));
