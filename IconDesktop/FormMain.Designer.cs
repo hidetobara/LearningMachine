@@ -29,10 +29,12 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
 			this.label1 = new System.Windows.Forms.Label();
 			this.ButtonNeuroDirectory = new System.Windows.Forms.Button();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
 			this.ButtonInputDirectory = new System.Windows.Forms.Button();
+			this.TextBoxInputDirectory = new System.Windows.Forms.TextBox();
 			this.label2 = new System.Windows.Forms.Label();
 			this.ButtonRunTraining = new System.Windows.Forms.Button();
 			this.TextBoxLog = new System.Windows.Forms.TextBox();
@@ -40,9 +42,11 @@
 			this.BackgroundWorkerMain = new System.ComponentModel.BackgroundWorker();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
 			this.ButtonForecastOutput = new System.Windows.Forms.Button();
+			this.TextBoxForecastOutput = new System.Windows.Forms.TextBox();
 			this.label4 = new System.Windows.Forms.Label();
 			this.ButtonRunForecast = new System.Windows.Forms.Button();
 			this.ButtonForecast = new System.Windows.Forms.Button();
+			this.TextBoxForecast = new System.Windows.Forms.TextBox();
 			this.label3 = new System.Windows.Forms.Label();
 			this.OpenFileDialogMain = new System.Windows.Forms.OpenFileDialog();
 			this.TimerMain = new System.Windows.Forms.Timer(this.components);
@@ -50,9 +54,6 @@
 			this.label6 = new System.Windows.Forms.Label();
 			this.ComboBoxMethod = new System.Windows.Forms.ComboBox();
 			this.NumericUpDownImageLimit = new System.Windows.Forms.NumericUpDown();
-			this.TextBoxForecastOutput = new System.Windows.Forms.TextBox();
-			this.TextBoxForecast = new System.Windows.Forms.TextBox();
-			this.TextBoxInputDirectory = new System.Windows.Forms.TextBox();
 			this.TextBoxNeuroDirectory = new System.Windows.Forms.TextBox();
 			this.groupBox1.SuspendLayout();
 			this.groupBox2.SuspendLayout();
@@ -104,6 +105,17 @@
 			this.ButtonInputDirectory.Text = "Select";
 			this.ButtonInputDirectory.UseVisualStyleBackColor = true;
 			this.ButtonInputDirectory.Click += new System.EventHandler(this.ButtonDirectory_Click);
+			// 
+			// TextBoxInputDirectory
+			// 
+			this.TextBoxInputDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.TextBoxInputDirectory.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::IconDesktop.Properties.Settings.Default, "InputDirectory", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+			this.TextBoxInputDirectory.Location = new System.Drawing.Point(114, 20);
+			this.TextBoxInputDirectory.Name = "TextBoxInputDirectory";
+			this.TextBoxInputDirectory.Size = new System.Drawing.Size(159, 19);
+			this.TextBoxInputDirectory.TabIndex = 4;
+			this.TextBoxInputDirectory.Text = global::IconDesktop.Properties.Settings.Default.InputDirectory;
 			// 
 			// label2
 			// 
@@ -173,6 +185,17 @@
 			this.ButtonForecastOutput.UseVisualStyleBackColor = true;
 			this.ButtonForecastOutput.Click += new System.EventHandler(this.ButtonDirectory_Click);
 			// 
+			// TextBoxForecastOutput
+			// 
+			this.TextBoxForecastOutput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.TextBoxForecastOutput.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::IconDesktop.Properties.Settings.Default, "ForecastOutputDirectory", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+			this.TextBoxForecastOutput.Location = new System.Drawing.Point(114, 49);
+			this.TextBoxForecastOutput.Name = "TextBoxForecastOutput";
+			this.TextBoxForecastOutput.Size = new System.Drawing.Size(159, 19);
+			this.TextBoxForecastOutput.TabIndex = 11;
+			this.TextBoxForecastOutput.Text = global::IconDesktop.Properties.Settings.Default.ForecastOutputDirectory;
+			// 
 			// label4
 			// 
 			this.label4.AutoSize = true;
@@ -203,6 +226,17 @@
 			this.ButtonForecast.Text = "Select";
 			this.ButtonForecast.UseVisualStyleBackColor = true;
 			this.ButtonForecast.Click += new System.EventHandler(this.ButtonDirectory_Click);
+			// 
+			// TextBoxForecast
+			// 
+			this.TextBoxForecast.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.TextBoxForecast.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::IconDesktop.Properties.Settings.Default, "ForecastInputDirectory", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+			this.TextBoxForecast.Location = new System.Drawing.Point(114, 20);
+			this.TextBoxForecast.Name = "TextBoxForecast";
+			this.TextBoxForecast.Size = new System.Drawing.Size(159, 19);
+			this.TextBoxForecast.TabIndex = 7;
+			this.TextBoxForecast.Text = global::IconDesktop.Properties.Settings.Default.ForecastInputDirectory;
 			// 
 			// label3
 			// 
@@ -269,39 +303,6 @@
 			this.NumericUpDownImageLimit.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
 			this.NumericUpDownImageLimit.Value = global::IconDesktop.Properties.Settings.Default.ImageLimit;
 			// 
-			// TextBoxForecastOutput
-			// 
-			this.TextBoxForecastOutput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.TextBoxForecastOutput.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::IconDesktop.Properties.Settings.Default, "ForecastOutputDirectory", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-			this.TextBoxForecastOutput.Location = new System.Drawing.Point(114, 49);
-			this.TextBoxForecastOutput.Name = "TextBoxForecastOutput";
-			this.TextBoxForecastOutput.Size = new System.Drawing.Size(159, 19);
-			this.TextBoxForecastOutput.TabIndex = 11;
-			this.TextBoxForecastOutput.Text = global::IconDesktop.Properties.Settings.Default.ForecastOutputDirectory;
-			// 
-			// TextBoxForecast
-			// 
-			this.TextBoxForecast.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.TextBoxForecast.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::IconDesktop.Properties.Settings.Default, "ForecastInputDirectory", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-			this.TextBoxForecast.Location = new System.Drawing.Point(114, 20);
-			this.TextBoxForecast.Name = "TextBoxForecast";
-			this.TextBoxForecast.Size = new System.Drawing.Size(159, 19);
-			this.TextBoxForecast.TabIndex = 7;
-			this.TextBoxForecast.Text = global::IconDesktop.Properties.Settings.Default.ForecastInputDirectory;
-			// 
-			// TextBoxInputDirectory
-			// 
-			this.TextBoxInputDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.TextBoxInputDirectory.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::IconDesktop.Properties.Settings.Default, "InputDirectory", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-			this.TextBoxInputDirectory.Location = new System.Drawing.Point(114, 20);
-			this.TextBoxInputDirectory.Name = "TextBoxInputDirectory";
-			this.TextBoxInputDirectory.Size = new System.Drawing.Size(159, 19);
-			this.TextBoxInputDirectory.TabIndex = 4;
-			this.TextBoxInputDirectory.Text = global::IconDesktop.Properties.Settings.Default.InputDirectory;
-			// 
 			// TextBoxNeuroDirectory
 			// 
 			this.TextBoxNeuroDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -328,6 +329,7 @@
 			this.Controls.Add(this.ButtonNeuroDirectory);
 			this.Controls.Add(this.TextBoxNeuroDirectory);
 			this.Controls.Add(this.label1);
+			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "FormMain";
