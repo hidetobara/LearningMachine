@@ -84,7 +84,7 @@ namespace IconLibrary
 				// 水増し学習
 				for(int i = 0; i < _Padding; i++)
 				{
-					dataIn.Add(p.In.DropOut(0.2f).Homogenize());
+					dataIn.Add(p.In.DropOut(0.25f).Homogenize());
 					dataOut.Add(p.Out.Homogenize());
 				}
 			}

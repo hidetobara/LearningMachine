@@ -73,7 +73,7 @@ namespace IconDesktop.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("500")]
+        [global::System.Configuration.DefaultSettingValueAttribute("600")]
         public decimal ImageLimit {
             get {
                 return ((decimal)(this["ImageLimit"]));
@@ -85,7 +85,7 @@ namespace IconDesktop.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ComboBoxMethod")]
+        [global::System.Configuration.DefaultSettingValueAttribute("CNN2")]
         public string Method {
             get {
                 return ((string)(this["Method"]));

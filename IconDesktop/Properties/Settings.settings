@@ -15,10 +15,10 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="ImageLimit" Type="System.Decimal" Scope="User">
-      <Value Profile="(Default)">500</Value>
+      <Value Profile="(Default)">600</Value>
     </Setting>
     <Setting Name="Method" Type="System.String" Scope="User">
-      <Value Profile="(Default)">ComboBoxMethod</Value>
+      <Value Profile="(Default)">CNN2</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -20,6 +20,7 @@ namespace IconDesktop
 		public FormMain()
 		{
 			InitializeComponent();
+			ComboBoxMethod.SelectedIndex = 0;
 		}
 
 		private void ButtonDirectory_Click(object sender, EventArgs e)
