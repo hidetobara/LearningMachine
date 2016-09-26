@@ -14,6 +14,7 @@ namespace IconLibrary
 
 		public LearningPseudo2CNN()
 		{
+			Log.Instance.Info("PCNN2 is active");
 			_Units = new List<LearningUnit>();
 			_Units.Add(new LearningIPCA_Slicing(3, 32));	// 64,64,3
 			_Units.Add(new LearningPool(4));				// 64,64,32
@@ -21,7 +22,10 @@ namespace IconLibrary
 			_Units.Add(new LearningIPCA_Slicing(32, 64));	// 16,16,32
 			_Units.Add(new LearningPool(4));				// 16,16,64
 			_Units.Add(new LearningNormalize());			// 4,4,64
-			_Units.Add(new LearningDNN(4, 64, 4, 1, 64, 10));		// 4,4,64 > 4,4,1
+			var dnn = new LearningDNN(4, 64, 4, 1, 64);
+			dnn.DropoutRate = 0.5;
+			dnn.DropoutPadding = 15;
+			_Units.Add(dnn);		// 4,4,64 > 4,4,1
 		}
 
 		public override void Learn(List<string> paths)
@@ -100,6 +104,7 @@ namespace IconLibrary
 
 		public LearningPseudo3CNN()
 		{
+			Log.Instance.Info("PCNN3 is active");
 			_Units = new List<LearningUnit>();
 			_Units.Add(new LearningIPCA_Slicing(3, 16));		// 128,128,3
 			_Units.Add(new LearningPool(4));					// 128,128,16
@@ -110,7 +115,10 @@ namespace IconLibrary
 			_Units.Add(new LearningIPCA_Slicing(32, 64, 4));	// 8,8,32
 			_Units.Add(new LearningPool(2));					// 8,8,64
 			_Units.Add(new LearningNormalize());				// 4,4,64
-			_Units.Add(new LearningDNN(4, 64, 4, 1));			// 4,4,64 > 4,4,1
+			var dnn = new LearningDNN(4, 64, 4, 1);				// 4,4,64 > 4,4,1
+			dnn.DropoutRate = 0.5;
+			dnn.DropoutPadding = 15;
+			_Units.Add(dnn);
 		}
 	}
 }

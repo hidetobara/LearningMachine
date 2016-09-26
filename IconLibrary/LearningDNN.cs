@@ -19,7 +19,9 @@ namespace IconLibrary
 	public class LearningDNN : LearningUnit
 	{
 		private int _MiddleCount = 64;
-		private int _Padding = 0;
+		// Dropout
+		public int DropoutPadding = 0;
+		public double DropoutRate = 0;
 
 		private LearningFrame _FrameIn;
 		private LearningFrame _FrameOut;
@@ -31,12 +33,11 @@ namespace IconLibrary
 
 		public override string Filename { get { return "DNN_" + FrameIn.Height + "." + FrameIn.Plane + "-" + FrameOut.Height + "." + FrameOut.Plane + ".bin"; } }
 
-		public LearningDNN(int inHeight, int inPlane, int outHeight, int outPlane, int middle = 64, int padding = 0)
+		public LearningDNN(int inHeight, int inPlane, int outHeight, int outPlane, int middle = 64)
 		{
 			_FrameIn = new LearningFrame() { Height = inHeight, Width = inHeight, Plane = inPlane };
 			_FrameOut = new LearningFrame(){ Height = outHeight, Width = outHeight, Plane = outPlane };
 			_MiddleCount = middle;
-			_Padding = padding;
 		}
 
 		public override void Initialize()
@@ -82,10 +83,13 @@ namespace IconLibrary
 				dataIn.Add(p.In.Homogenize());
 				dataOut.Add(p.Out.Homogenize());
 				// 水増し学習
-				for(int i = 0; i < _Padding; i++)
+				if (DropoutRate > 0)
 				{
-					dataIn.Add(p.In.DropOut(0.25f).Homogenize());
-					dataOut.Add(p.Out.Homogenize());
+					for (int i = 0; i < DropoutPadding; i++)
+					{
+						dataIn.Add(p.In.DropOut(DropoutRate).Homogenize());
+						dataOut.Add(p.Out.Homogenize());
+					}
 				}
 			}
 			var dataInPrepared = _Teacher.GetLayerInput(dataIn.ToArray());
@@ -97,7 +101,7 @@ namespace IconLibrary
 
 				double amount = 0;
 				int count = 0;
-				for(int j = 0; j < dataIn.Count; j += _Padding * 10)	// 適当に省いて評価
+				for(int j = 0; j < dataIn.Count; j += DropoutPadding * 10)	// 適当に省いて評価
 				{
 					amount += TestCompute(dataIn[j], dataOut[j]);
 					count++;
