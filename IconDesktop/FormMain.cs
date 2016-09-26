@@ -82,6 +82,7 @@ namespace IconDesktop
 					if (task.Method == MainMethod.CNN3) LearningUnit.Instance = new LearningPseudo3CNN();
 					if (LearningUnit.Instance == null) throw new Exception("No executable method !");
 
+					LearningUnit.Instance.Initialize();
 					LearningUnit.Instance.LearningLimit = task.ImageLimit;
 				}
 

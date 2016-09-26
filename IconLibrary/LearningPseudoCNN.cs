@@ -12,7 +12,7 @@ namespace IconLibrary
 
 		public override LearningFrame FrameOut { get { return new LearningFrame(4, 4, 1); } }
 
-		public LearningPseudo2CNN()
+		public override void Initialize()
 		{
 			Log.Instance.Info("PCNN2 is active");
 			_Units = new List<LearningUnit>();
@@ -102,7 +102,7 @@ namespace IconLibrary
 	{
 		protected override int IMAGE_SIZE { get { return 128; } }
 
-		public LearningPseudo3CNN()
+		public override void Initialize()
 		{
 			Log.Instance.Info("PCNN3 is active");
 			_Units = new List<LearningUnit>();
