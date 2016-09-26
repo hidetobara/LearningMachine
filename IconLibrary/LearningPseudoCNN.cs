@@ -32,6 +32,7 @@ namespace IconLibrary
 		{
 			int divide = paths.Count / LearningLimit + 1;
 			int limit = paths.Count / divide + 1;
+			Log.Instance.Info("[PCNN.Learn] paths.Count=" + paths.Count + " path=" + paths[0]);
 			// 部分学習、分割が1より大きい時に有効
 			if (divide > 1)
 			{
