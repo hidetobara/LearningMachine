@@ -101,22 +101,22 @@ namespace IconLibrary
 
 	public class LearningPseudo3CNN : LearningPseudo2CNN
 	{
-		protected override int IMAGE_SIZE { get { return 128; } }
+		protected override int IMAGE_SIZE { get { return 256; } }
 
 		public override void Initialize()
 		{
 			Log.Instance.Info("PCNN3 is active");
 			_Units = new List<LearningUnit>();
-			_Units.Add(new LearningIPCA_Slicing(3, 16));		// 128,128,3
-			_Units.Add(new LearningPool(4));					// 128,128,16
-			_Units.Add(new LearningNormalize());				// 32,32,16
-			_Units.Add(new LearningIPCA_Slicing(16, 32));		// 32,32,16
-			_Units.Add(new LearningPool(4));					// 32,32,32
-			_Units.Add(new LearningNormalize());				// 8,8,32
-			_Units.Add(new LearningIPCA_Slicing(32, 64, 4));	// 8,8,32
-			_Units.Add(new LearningPool(2));					// 8,8,64
-			_Units.Add(new LearningNormalize());				// 4,4,64
-			var dnn = new LearningDNN(4, 64, 4, 1);				// 4,4,64 > 4,4,1
+			_Units.Add(new LearningIPCA_Slicing(3, 32));		// 256x,3
+			_Units.Add(new LearningPool(4));					// 256x,32
+			_Units.Add(new LearningNormalize());				// 64x,32
+			_Units.Add(new LearningIPCA_Slicing(32, 64));		// 64x,32
+			_Units.Add(new LearningPool(4));					// 64x,64
+			_Units.Add(new LearningNormalize());				// 16x,64
+			_Units.Add(new LearningIPCA_Slicing(64, 96));		// 16x,64
+			_Units.Add(new LearningPool(4));					// 16x,96
+			_Units.Add(new LearningNormalize());				// 4,4,96
+			var dnn = new LearningDNN(4, 64, 4, 1, 96);			// 4,4,96 > 4,4,1
 			dnn.DropoutRate = 0.5;
 			dnn.DropoutPadding = 15;
 			_Units.Add(dnn);
