@@ -15,7 +15,7 @@ namespace IconLibrary
 		}
 
 		public bool Updated { private set; get; }
-		public int Limit = 50;
+		public int Limit = 300;
 		private void Cut() { while (_Strips.Count >= Limit) _Strips.RemoveAt(0); }
 
 		private List<Strip> _Strips = new List<Strip>();

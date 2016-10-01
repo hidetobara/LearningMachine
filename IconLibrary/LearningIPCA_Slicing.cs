@@ -35,6 +35,11 @@ namespace IconLibrary
 				{
 					var trimed = i.Trim(new Rectangle(w, h, Width, Height));
 					var projected = base.Project(trimed);
+					if(projected.Data[0] == double.NaN)
+					{
+						Log.Instance.Info("NaN happened (" + h + "," + w + ")");
+						throw new Exception("IPCA parameter is wrong");
+					}
 					results.AddRange(projected.Data);
 					scaledW++;
 				}
