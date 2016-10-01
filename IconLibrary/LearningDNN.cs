@@ -94,7 +94,7 @@ namespace IconLibrary
 			}
 			var dataInPrepared = _Teacher.GetLayerInput(dataIn.ToArray());
 
-			for (int i = 0; i < 300; i++)
+			for (int i = 0; i < 500; i++)
 			{
 				_Teacher.RunEpoch(dataInPrepared, dataOut.ToArray());
 				_Network.UpdateVisibleWeights();
