@@ -17,7 +17,7 @@ namespace IconLibrary
 		{
 			Log.Instance.Info("PCNN2 is active");
 			_Units = new List<LearningUnit>();
-			_Units.Add(new LearningIPCA_Slicing(3, 32));	// 64,64,3
+			_Units.Add(new LearningIPCA_Slicing(3, 32, 16));	// 64,64,3
 			_Units.Add(new LearningPool(4));				// 64,64,32
 			_Units.Add(new LearningNormalize());			// 16,16,32
 			_Units.Add(new LearningIPCA_Slicing(32, 64));	// 16,16,32
