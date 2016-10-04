@@ -115,7 +115,7 @@ namespace IconLibrary
 			_Units.Add(new LearningIPCA_Slicing(3, 32, 16));	// 128x,3
 			_Units.Add(new LearningPool(4));					// 128x,32
 			_Units.Add(new LearningNormalize());				// 32x,32
-			_Units.Add(new LearningIPCA_Slicing(32, 64));		// 32x,32
+			_Units.Add(new LearningIPCA_Slicing(32, 64, 16));	// 32x,32
 			_Units.Add(new LearningPool(4));					// 32x,64
 			_Units.Add(new LearningNormalize());				// 8x,64
 			_Units.Add(new LearningIPCA_Slicing(64, 128, 4));	// 8x,64
