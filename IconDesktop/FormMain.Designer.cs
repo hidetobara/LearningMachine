@@ -279,10 +279,6 @@
 			this.ComboBoxMethod.DataBindings.Add(new System.Windows.Forms.Binding("Name", global::IconDesktop.Properties.Settings.Default, "Method", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
 			this.ComboBoxMethod.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.ComboBoxMethod.FormattingEnabled = true;
-			this.ComboBoxMethod.Items.AddRange(new object[] {
-            "CNN2",
-            "CNN3",
-            "DIGITS"});
 			this.ComboBoxMethod.Location = new System.Drawing.Point(272, 249);
 			this.ComboBoxMethod.Name = global::IconDesktop.Properties.Settings.Default.Method;
 			this.ComboBoxMethod.Size = new System.Drawing.Size(60, 20);

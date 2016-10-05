@@ -37,7 +37,7 @@ namespace IconLibrary
 		LearningImage[] _TmpImages;		// 副成分
 
 		long _FrameNow;
-		public override bool IsEnoughToLearn { get { return _FrameNow > 100000; } }
+		public override bool IsEnoughToLearn { get { return _FrameNow > 30000; } }
 
 		public override void Initialize()
 		{

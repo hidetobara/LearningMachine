@@ -20,6 +20,9 @@ namespace IconDesktop
 		public FormMain()
 		{
 			InitializeComponent();
+
+			foreach (MainMethod m in Enum.GetValues(typeof(MainMethod)))
+				ComboBoxMethod.Items.Add(m.ToString());
 			ComboBoxMethod.SelectedIndex = 0;
 		}
 
@@ -78,8 +81,10 @@ namespace IconDesktop
 				if (LearningUnit.Instance == null)
 				{
 					if (task.Method == MainMethod.DIGITS) LearningUnit.Instance = new LearningDigits();
-					if (task.Method == MainMethod.CNN2) LearningUnit.Instance = new LearningPseudo2CNN();
-					if (task.Method == MainMethod.CNN3) LearningUnit.Instance = new LearningPseudo3CNN();
+					if (task.Method == MainMethod.CNN) LearningUnit.Instance = new LearningPseudoCNN();
+					if (task.Method == MainMethod.CNN_B16) LearningUnit.Instance = new LearningPseudoCNN_B16();
+					if (task.Method == MainMethod.CNN_L3) LearningUnit.Instance = new LearningPseudoCNN_L3();
+					if (task.Method == MainMethod.CNN_L3_O2) LearningUnit.Instance = new LearningPseudoCNN_L3_O2();
 					if (LearningUnit.Instance == null) throw new Exception("No executable method !");
 
 					LearningUnit.Instance.Initialize();
@@ -144,7 +149,7 @@ namespace IconDesktop
 		}
 
 		enum MainTaskType { None, Training, Forecast }
-		enum MainMethod { DIGITS, CNN2, CNN3 }
+		enum MainMethod { DIGITS, CNN, CNN_B16, CNN_L3, CNN_L3_O2 }
 		class MainTask
 		{
 			public MainTaskType Type = MainTaskType.None;
@@ -152,7 +157,7 @@ namespace IconDesktop
 			public List<string> Inputs = new List<string>();
 			public List<string> Outputs = new List<string>();
 			public int ImageLimit;
-			public MainMethod Method = MainMethod.CNN2;
+			public MainMethod Method = MainMethod.CNN;
 
 			public void ParseMethod(string name)
 			{

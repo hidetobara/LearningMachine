@@ -6,7 +6,7 @@ using System.Text;
 
 namespace IconLibrary
 {
-	public class LearningPseudo2CNN : LearningProcess
+	public class LearningPseudoCNN : LearningProcess
 	{
 		public virtual int IMAGE_SIZE { get { return 64; } }	// 画像サイズ
 		public virtual double ForecastThreshold { get { return 0.3; } }	// 推定の閾値
@@ -15,9 +15,9 @@ namespace IconLibrary
 
 		public override void Initialize()
 		{
-			Log.Instance.Info("PCNN2 is active");
+			Log.Instance.Info("PCNN is active");
 			_Units = new List<LearningUnit>();
-			_Units.Add(new LearningIPCA_Slicing(3, 32, 16));	// 64,64,3
+			_Units.Add(new LearningIPCA_Slicing(3, 32));	// 64,64,3
 			_Units.Add(new LearningPool(4));				// 64,64,32
 			_Units.Add(new LearningNormalize());			// 16,16,32
 			_Units.Add(new LearningIPCA_Slicing(32, 64));	// 16,16,32
@@ -31,12 +31,12 @@ namespace IconLibrary
 
 		public override void Learn(List<string> paths)
 		{
-			int divide = paths.Count / LearningLimit + 1;
-			int limit = paths.Count / divide + 1;
-			Log.Instance.Info("[PCNN.Learn] paths.Count=" + paths.Count + " path=" + paths[0]);
-			// 部分学習、分割が1より大きい時に有効
-			if (divide > 1)
+			if (LearningLimit > 0)
 			{
+				int divide = paths.Count / LearningLimit + 1;
+				int limit = paths.Count / divide + 1;
+				Log.Instance.Info("[PCNN.Learn] paths.Count=" + paths.Count + " path=" + paths[0]);
+				// 部分学習、分割が1より大きい時に有効
 				for (int start = 0, end = limit; start < paths.Count; start += limit, end += limit)
 				{
 					Log.Instance.Info("[PCNN.Learn] start=" + start + " end=" + end);
@@ -104,19 +104,63 @@ namespace IconLibrary
 		}
 	}
 
-	public class LearningPseudo3CNN : LearningPseudo2CNN
+	public class LearningPseudoCNN_B16 : LearningPseudoCNN
 	{
-		public override int IMAGE_SIZE { get { return 128; } }
+		public override int IMAGE_SIZE { get { return 64; } }
+		public override void Initialize()
+		{
+			Log.Instance.Info("PCNN-B16 is active");
+			_Units = new List<LearningUnit>();
+			_Units.Add(new LearningIPCA_Slicing(3, 32, 16));// 64,64,3
+			_Units.Add(new LearningPool(4));				// 64,64,32
+			_Units.Add(new LearningNormalize());			// 16,16,32
+			_Units.Add(new LearningIPCA_Slicing(32, 64));	// 16,16,32
+			_Units.Add(new LearningPool(4));				// 16,16,64
+			_Units.Add(new LearningNormalize());			// 4,4,64
+			var dnn = new LearningDNN(4, 64, 4, 1, 64);
+			dnn.DropoutRate = 0.5;
+			dnn.DropoutPadding = 15;
+			_Units.Add(dnn);		// 4,4,64 > 4,4,1
+		}
+	}
+
+	public class LearningPseudoCNN_L3 : LearningPseudoCNN
+	{
+		public override int IMAGE_SIZE { get { return 64; } }
 
 		public override void Initialize()
 		{
-			Log.Instance.Info("PCNN3 is active");
+			Log.Instance.Info("PCNN-L3 is active");
 			_Units = new List<LearningUnit>();
-			_Units.Add(new LearningIPCA_Slicing(3, 32, 16));	// 128x,3
-			_Units.Add(new LearningPool(4));					// 128x,32
-			_Units.Add(new LearningNormalize());				// 32x,32
-			_Units.Add(new LearningIPCA_Slicing(32, 64, 16));	// 32x,32
-			_Units.Add(new LearningPool(4));					// 32x,64
+			_Units.Add(new LearningIPCA_Slicing(3, 32, 8));		// 64x,3
+			_Units.Add(new LearningPool(4));					// 64x,32
+			_Units.Add(new LearningNormalize());				// 16x,32
+			_Units.Add(new LearningIPCA_Slicing(32, 64, 8));	// 16x,32
+			_Units.Add(new LearningPool(2));					// 16x,64
+			_Units.Add(new LearningNormalize());				// 8x,64
+			_Units.Add(new LearningIPCA_Slicing(64, 128, 4));	// 8x,64
+			_Units.Add(new LearningPool(2));					// 8x,128
+			_Units.Add(new LearningNormalize());				// 4,4,128
+			var dnn = new LearningDNN(4, 128, 4, 1, 128);		// 4,4,128 > 4,4,1
+			dnn.DropoutRate = 0.5;
+			dnn.DropoutPadding = 15;
+			_Units.Add(dnn);
+		}
+	}
+
+	public class LearningPseudoCNN_L3_O2 : LearningPseudoCNN
+	{
+		public override int IMAGE_SIZE { get { return 64; } }
+
+		public override void Initialize()
+		{
+			Log.Instance.Info("PCNN-L3-O2 is active");
+			_Units = new List<LearningUnit>();
+			_Units.Add(new LearningIPCA_Slicing(3, 32, 8));		// 64x,3
+			_Units.Add(new LearningPool(4));					// 64x,32
+			_Units.Add(new LearningNormalize());				// 16x,32
+			_Units.Add(new LearningIPCA_Slicing(32, 64, 8));	// 16x,32
+			_Units.Add(new LearningPool(2));					// 16x,64
 			_Units.Add(new LearningNormalize());				// 8x,64
 			_Units.Add(new LearningIPCA_Slicing(64, 128, 4));	// 8x,64
 			_Units.Add(new LearningPool(4));					// 8x,128
