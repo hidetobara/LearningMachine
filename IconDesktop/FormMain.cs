@@ -80,11 +80,7 @@ namespace IconDesktop
 
 				if (LearningUnit.Instance == null)
 				{
-					if (task.Method == MainMethod.DIGITS) LearningUnit.Instance = new LearningDigits();
-					if (task.Method == MainMethod.CNN) LearningUnit.Instance = new LearningPseudoCNN();
-					if (task.Method == MainMethod.CNN_B16) LearningUnit.Instance = new LearningPseudoCNN_B16();
-					if (task.Method == MainMethod.CNN_L3) LearningUnit.Instance = new LearningPseudoCNN_L3();
-					if (task.Method == MainMethod.CNN_L3_O2) LearningUnit.Instance = new LearningPseudoCNN_L3_O2();
+					LearningUnit.Instance = ParseUnit(task.Method);
 					if (LearningUnit.Instance == null) throw new Exception("No executable method !");
 
 					LearningUnit.Instance.Initialize();
@@ -149,7 +145,23 @@ namespace IconDesktop
 		}
 
 		enum MainTaskType { None, Training, Forecast }
-		enum MainMethod { DIGITS, CNN, CNN_B16, CNN_L3, CNN_L3_O2 }
+		enum MainMethod { DIGITS, CNN, CNN_B16, CNN_L3, CNN_L3_O2, CNN_L3_I128, CNN_L3_I128_B16 }
+
+		private LearningUnit ParseUnit(MainMethod method)
+		{
+			switch (method)
+			{
+				case MainMethod.DIGITS: return new LearningDigits();
+				case MainMethod.CNN: return new LearningPseudoCNN();
+				case MainMethod.CNN_B16: return new LearningPseudoCNN_B16();
+				case MainMethod.CNN_L3: return new LearningPseudoCNN_L3();
+				case MainMethod.CNN_L3_O2: return new LearningPseudoCNN_L3_O2();
+				case MainMethod.CNN_L3_I128: return new LearningPseudoCNN_L3_I128();
+				case MainMethod.CNN_L3_I128_B16: return new LearningPseudoCNN_L3_I128_B16();
+			}
+			return null;
+		}
+
 		class MainTask
 		{
 			public MainTaskType Type = MainTaskType.None;

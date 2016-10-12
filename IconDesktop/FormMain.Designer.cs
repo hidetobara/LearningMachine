@@ -268,7 +268,7 @@
 			// label6
 			// 
 			this.label6.AutoSize = true;
-			this.label6.Location = new System.Drawing.Point(222, 252);
+			this.label6.Location = new System.Drawing.Point(187, 252);
 			this.label6.Name = "label6";
 			this.label6.Size = new System.Drawing.Size(44, 12);
 			this.label6.TabIndex = 8;
@@ -276,12 +276,14 @@
 			// 
 			// ComboBoxMethod
 			// 
+			this.ComboBoxMethod.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.ComboBoxMethod.DataBindings.Add(new System.Windows.Forms.Binding("Name", global::IconDesktop.Properties.Settings.Default, "Method", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
 			this.ComboBoxMethod.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.ComboBoxMethod.FormattingEnabled = true;
-			this.ComboBoxMethod.Location = new System.Drawing.Point(272, 249);
+			this.ComboBoxMethod.Location = new System.Drawing.Point(237, 249);
 			this.ComboBoxMethod.Name = global::IconDesktop.Properties.Settings.Default.Method;
-			this.ComboBoxMethod.Size = new System.Drawing.Size(60, 20);
+			this.ComboBoxMethod.Size = new System.Drawing.Size(129, 20);
 			this.ComboBoxMethod.TabIndex = 9;
 			// 
 			// NumericUpDownImageLimit
