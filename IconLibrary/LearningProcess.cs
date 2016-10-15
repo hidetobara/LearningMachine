@@ -109,9 +109,9 @@ namespace IconLibrary
 		}
 
 		#region 並列処理
-		public virtual void ParallelForecast(List<string> paths, string outdir)
+		public override void ParallelForecast(List<string> paths, string outdir)
 		{
-			Parallel.ForEach(paths, path => Forecast(path, outdir));
+			Parallel.ForEach(paths, GetParallelOptions(), path => Forecast(path, outdir));
 		}
 		#endregion
 	}

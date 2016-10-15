@@ -28,6 +28,17 @@ namespace IconLibrary
 
 		public int LearningLimit;
 
+		protected ParallelOptions GetParallelOptions()
+		{
+			ParallelOptions o = new ParallelOptions();
+#if DEBUG
+			o.MaxDegreeOfParallelism = 1;
+#else
+			// デフォルトのまま
+#endif
+			return o;
+		}
+
 		public virtual string Filename { get { return "./"; } }
 		public virtual void Initialize() { }
 		public virtual bool Load(string path) { return false; }
@@ -48,7 +59,7 @@ namespace IconLibrary
 		public virtual void ParallelProject(List<LearningImage> inputs, out List<LearningImage> outputs)
 		{
 			LearningImage[] array = new LearningImage[inputs.Count];
-			Parallel.For(0, inputs.Count, i => array[i] = Project(inputs[i]));
+			Parallel.For(0, inputs.Count, GetParallelOptions(), i => array[i] = Project(inputs[i]));
 			outputs = new List<LearningImage>(array);
 		}
 		public virtual void ParallelForecast(List<string> paths, string outdir){ }
