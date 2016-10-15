@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Drawing;
+using System.Threading.Tasks;
+
 
 namespace IconLibrary
 {
@@ -44,10 +46,7 @@ namespace IconLibrary
 			for (int i = 1; i < _Units.Count; i++)
 			{
 				Log.Instance.Info("[Process.Learn] " + i + " " + samples.Count);
-				for (int j = 0; j < samples.Count; j++)
-				{
-					compresses.Add(_Units[i - 1].Project(samples[j]));
-				}
+				_Units[i - 1].ParallelProject(samples, out compresses);
 
 				if (_Units[i].IsEnoughToLearn)
 				{
@@ -88,7 +87,7 @@ namespace IconLibrary
 			return ForecastUnit(0, PrepareImage(path));
 		}
 
-		public override void Forecast(string path, string outdir)
+		protected override void Forecast(string path, string outdir)
 		{
 			LearningImage forecasted = this.Forecast(path);
 			string filename = Path.GetFileName(path);
@@ -108,5 +107,12 @@ namespace IconLibrary
 			if (0 <= number && number < height * width) result.Data[number] = 1;
 			return result;
 		}
+
+		#region 並列処理
+		public virtual void ParallelForecast(List<string> paths, string outdir)
+		{
+			Parallel.ForEach(paths, path => Forecast(path, outdir));
+		}
+		#endregion
 	}
 }

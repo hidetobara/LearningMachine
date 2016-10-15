@@ -37,13 +37,22 @@ namespace IconLibrary
 		public virtual bool IsEnoughToLearn { get { return false; } }
 		public virtual void Learn(List<LearningImage> images) { }
 		public virtual void Learn(List<LearningImagePair> pairs, LearningStyle style = LearningStyle.InputOutput) { }
-		public virtual void Learn(List<string> paths) { }
 
 		public virtual LearningImage Project(LearningImage image) { return image; }
 		public virtual LearningImage BackProject(LearningImage image) { return image; }
 		public virtual LearningImage Forecast(LearningImage image) { return image; }
 		public virtual LearningImage Forecast(string path) { return null; }
-		public virtual void Forecast(string path, string outdir) { }
+		protected virtual void Forecast(string path, string outdir) { }
+
+		public virtual void ParallelLearn(List<string> paths) { }
+		public virtual void ParallelProject(List<LearningImage> inputs, out List<LearningImage> outputs)
+		{
+			LearningImage[] array = new LearningImage[inputs.Count];
+			Parallel.For(0, inputs.Count, i => array[i] = Project(inputs[i]));
+			outputs = new List<LearningImage>(array);
+		}
+		public virtual void ParallelForecast(List<string> paths, string outdir){ }
+
 		public virtual LearningImage PrepareImage(string path) { return LearningImage.Load(path); }
 	}
 

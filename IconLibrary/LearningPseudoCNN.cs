@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+
 
 namespace IconLibrary
 {
@@ -29,7 +31,7 @@ namespace IconLibrary
 			_Units.Add(dnn);		// 4,4,64 > 4,4,1
 		}
 
-		public override void Learn(List<string> paths)
+		public override void ParallelLearn(List<string> paths)
 		{
 			if (LearningLimit > 0)
 			{
@@ -68,14 +70,19 @@ namespace IconLibrary
 			return new LearningImagePair(image, result);
 		}
 
-		public override void Forecast(string path, string outdir)
+		public override void ParallelForecast(List<string> paths, string outdir)
 		{
-			for(int i = 0; i < FrameOut.Area; i++)
+			for (int i = 0; i < FrameOut.Area; i++)
 			{
 				string dir = Path.Combine(outdir, i.ToString());
 				if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 			}
 
+			Parallel.ForEach(paths, path => Forecast(path, outdir));
+		}
+
+		protected override void Forecast(string path, string outdir)
+		{
 			LearningImage forecasted = this.Forecast(path);
 			double count = ForecastThreshold;
 			int index = -1;

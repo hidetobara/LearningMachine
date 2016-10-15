@@ -21,7 +21,7 @@ namespace IconLibrary
 			_Units.Add(new LearningDNN(7, 16, 4, 1));
 		}
 
-		public override void Learn(List<string> paths)
+		public override void ParallelLearn(List<string> paths)
 		{
 			List<LearningImagePair> pairs = new List<LearningImagePair>();
 			foreach (string path in paths)

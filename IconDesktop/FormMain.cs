@@ -99,17 +99,12 @@ namespace IconDesktop
 #if DEBUG
 					task.Inputs = task.Inputs.Take(15).ToList();
 #endif
-					_Learning.Learn(task.Inputs);
+					_Learning.ParallelLearn(task.Inputs);
 					_Learning.Save(GetNeuroPath(task.NeuroDirectory));
 				}
 				else if (task.Type == MainTaskType.Forecast && task.Inputs.Count > 0)
 				{
-					foreach (var path in task.Inputs)
-					{
-						string dir = "../";
-						if(task.Outputs.Count > 0) dir = task.Outputs[0];
-						_Learning.Forecast(path, dir);
-					}
+					_Learning.ParallelForecast(task.Inputs, task.Outputs.Count > 0 ? task.Outputs[0] : "../");
 				}
 			}
 			catch(Exception ex)

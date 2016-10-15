@@ -5,6 +5,7 @@ using System.Text;
 using Accord.Statistics.Analysis;
 using Accord.Math;
 using System.IO;
+using System.Threading.Tasks;
 
 using MiniJSON;
 
@@ -92,16 +93,16 @@ namespace IconLibrary
 			File.WriteAllText(Path.Combine(path, "state.json"), context);
 		}
 
-		public override void Learn(List<string> paths)
+		public override void ParallelLearn(List<string> paths)
 		{
 			int limit = Height > Width ? Height : Width;
 			List<LearningImage> images = new List<LearningImage>();
-			foreach (string path in paths)
-			{
-				LearningImage image = LearningImage.LoadByZoom(path, limit);
-				if (image.Height != Height || image.Width != Width) continue;
-				images.Add(image);
-			}
+			Parallel.ForEach(paths, path =>
+				{
+					LearningImage image = LearningImage.Load(path);
+					if (image == null || image.Height != Height || image.Width != Width) return;
+					lock (images) { images.Add(image); }
+				});
 			Learn(images);
 		}
 
