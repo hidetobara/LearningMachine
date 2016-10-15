@@ -377,6 +377,18 @@ namespace IconLibrary
 			return i;
 		}
 
+		// ノイズ追加
+		public LearningImage AddNoise(double range)
+		{
+			LearningImage i = new LearningImage(this);
+			Random random = new Random();
+			for (int j = 0; j < i.Length; j++)
+			{
+				i.Data[j] += (random.NextDouble() - 0.5) * range;
+			}
+			return i;
+		}
+
 		// 斉次座標化
 		public double[] Homogenize()
 		{

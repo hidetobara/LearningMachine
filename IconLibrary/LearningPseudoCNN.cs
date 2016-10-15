@@ -194,7 +194,8 @@ namespace IconLibrary
 			_Units.Add(new LearningNormalize());				// 4,4,144
 			var dnn = new LearningDNN(4, 144, 4, 1, 144);		// 4,4,144 > 4,4,1
 			dnn.DropoutRate = 0.5;
-			dnn.DropoutPadding = 15;
+			dnn.DropoutPadding = 30;
+			dnn.NoiseRange = 0.1;
 			_Units.Add(dnn);
 		}
 	}

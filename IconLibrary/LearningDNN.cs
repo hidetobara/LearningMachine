@@ -22,6 +22,7 @@ namespace IconLibrary
 		// Dropout
 		public int DropoutPadding = 0;
 		public double DropoutRate = 0;
+		public double NoiseRange = 0.1;
 
 		private LearningFrame _FrameIn;
 		private LearningFrame _FrameOut;
@@ -87,7 +88,7 @@ namespace IconLibrary
 				{
 					for (int i = 0; i < DropoutPadding; i++)
 					{
-						dataIn.Add(p.In.DropOut(DropoutRate).Homogenize());
+						dataIn.Add(p.In.AddNoise(NoiseRange).DropOut(DropoutRate).Homogenize());
 						dataOut.Add(p.Out.Homogenize());
 					}
 				}
