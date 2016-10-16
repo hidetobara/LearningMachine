@@ -180,7 +180,7 @@ namespace IconLibrary
 
 		public override void Initialize()
 		{
-			Log.Instance.Info("PCNN-L3 is active");
+			Log.Instance.Info("PCNN-L3-D48 is active");
 			_Units = new List<LearningUnit>();
 			_Units.Add(new LearningIPCA_Slicing(3, 48, 8));		// 64x,3
 			_Units.Add(new LearningPool(4));					// 64x,48
