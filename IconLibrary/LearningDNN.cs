@@ -88,7 +88,7 @@ namespace IconLibrary
 				{
 					for (int i = 0; i < DropoutPadding; i++)
 					{
-						dataIn.Add(p.In.AddNoise(NoiseRange).DropOut(DropoutRate).Homogenize());
+						dataIn.Add(p.In.ZeroToOne().DropOut(DropoutRate).Homogenize());
 						dataOut.Add(p.Out.Homogenize());
 					}
 				}

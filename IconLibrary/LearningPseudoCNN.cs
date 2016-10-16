@@ -107,7 +107,6 @@ namespace IconLibrary
 		public override LearningImage PrepareImage(string path)
 		{
 			return LearningImage.LoadByZoom(path, IMAGE_SIZE);
-			//return CvImage.Load(path).Zoom(IMAGE_SIZE).ToLearningImage();	// 古い
 		}
 	}
 
@@ -194,8 +193,7 @@ namespace IconLibrary
 			_Units.Add(new LearningNormalize());				// 4,4,144
 			var dnn = new LearningDNN(4, 144, 4, 1, 144);		// 4,4,144 > 4,4,1
 			dnn.DropoutRate = 0.5;
-			dnn.DropoutPadding = 30;
-			dnn.NoiseRange = 0.1;
+			dnn.DropoutPadding = 15;
 			_Units.Add(dnn);
 		}
 	}

@@ -389,6 +389,14 @@ namespace IconLibrary
 			return i;
 		}
 
+		// 0から1へ値を調整
+		public LearningImage ZeroToOne()
+		{
+			LearningImage i = new LearningImage(this);
+			for (int j = 0; j < Length; j++) i.Data[j] = (i.Data[j] + 1.0) * 0.5;
+			return i;
+		}
+
 		// 斉次座標化
 		public double[] Homogenize()
 		{
