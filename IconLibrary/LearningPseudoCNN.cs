@@ -106,7 +106,7 @@ namespace IconLibrary
 
 		public override LearningImage PrepareImage(string path)
 		{
-			return LearningImage.LoadByZoom(path, IMAGE_SIZE);
+			return LearningImage.LoadByZoom(path, IMAGE_SIZE).Normalize();
 		}
 	}
 

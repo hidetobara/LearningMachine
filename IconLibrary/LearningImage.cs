@@ -377,7 +377,7 @@ namespace IconLibrary
 			return i;
 		}
 
-		// ノイズ追加
+		// ノイズ追加、
 		public LearningImage AddNoise(double range)
 		{
 			LearningImage i = new LearningImage(this);
@@ -404,6 +404,26 @@ namespace IconLibrary
 			Array.Copy(this.Data, 0, data, 0, Length);
 			data[Length] = 1.0;
 			return data;
+		}
+
+		// 正規化
+		public LearningImage Normalize()
+		{
+			double amount_x = 0;
+			double amount_xx = 0;
+			for(int j = 0; j < this.Length; j++)
+			{
+				double x = this.Data[j];
+				amount_x += x;
+				amount_xx += x * x;
+			}
+			double average = amount_x / this.Length;
+			double deviation = Math.Sqrt(amount_xx / this.Length - average * average);
+			if (deviation == 0) deviation = 1.0;
+
+			LearningImage i = new LearningImage(this);
+			for (int j = 0; j < Length; j++) i.Data[j] = (i.Data[j] - average) / deviation;
+			return i;
 		}
 	}
 
