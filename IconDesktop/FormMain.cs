@@ -140,21 +140,22 @@ namespace IconDesktop
 		}
 
 		enum MainTaskType { None, Training, Forecast }
-		enum MainMethod { DIGITS, CNN, CNN_B16, CNN_D48, CNN_L3, CNN_L3_D48, CNN_L3_O2, CNN_L3_I128, CNN_L3_I128_B16 }
+		enum MainMethod { CNN_L3, CNN_L4, CNN_L2, CNN_L2_B16, CNN_L2_D48, CNN_L3_D48, CNN_L3_O2, CNN_L3_I128, CNN_L3_I128_B16, DIGITS }
 
 		private LearningUnit ParseUnit(MainMethod method)
 		{
 			switch (method)
 			{
 				case MainMethod.DIGITS: return new LearningDigits();
-				case MainMethod.CNN: return new LearningPseudoCNN();
-				case MainMethod.CNN_B16: return new LearningPseudoCNN_B16();
-				case MainMethod.CNN_D48: return new LearningPseudoCNN_D48();
+				case MainMethod.CNN_L2: return new LearningPseudoCNN();
+				case MainMethod.CNN_L2_B16: return new LearningPseudoCNN_B16();
+				case MainMethod.CNN_L2_D48: return new LearningPseudoCNN_D48();
 				case MainMethod.CNN_L3: return new LearningPseudoCNN_L3();
 				case MainMethod.CNN_L3_D48: return new LearningPseudoCNN_L3_D48();
 				case MainMethod.CNN_L3_O2: return new LearningPseudoCNN_L3_O2();
 				case MainMethod.CNN_L3_I128: return new LearningPseudoCNN_L3_I128();
 				case MainMethod.CNN_L3_I128_B16: return new LearningPseudoCNN_L3_I128_B16();
+				case MainMethod.CNN_L4: return new LearningPseudoCNN_L4();
 			}
 			return null;
 		}
@@ -166,7 +167,7 @@ namespace IconDesktop
 			public List<string> Inputs = new List<string>();
 			public List<string> Outputs = new List<string>();
 			public int ImageLimit;
-			public MainMethod Method = MainMethod.CNN;
+			public MainMethod Method = MainMethod.CNN_L2;
 
 			public void ParseMethod(string name)
 			{
