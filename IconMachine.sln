@@ -1,11 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IconDesktop", "IconDesktop\IconDesktop.csproj", "{D8B4ADDD-0E28-4839-923B-19636D9F0CD7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IconLibrary", "IconLibrary\IconLibrary.csproj", "{1C617645-1302-4225-8CB7-D487242939E4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwitterDesktop", "TwitterDesktop\TwitterDesktop.csproj", "{E4559721-D7A2-42FC-885A-B3B7A24BD7AB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1C617645-1302-4225-8CB7-D487242939E4} = {1C617645-1302-4225-8CB7-D487242939E4}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +26,10 @@ Global
 		{1C617645-1302-4225-8CB7-D487242939E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C617645-1302-4225-8CB7-D487242939E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1C617645-1302-4225-8CB7-D487242939E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4559721-D7A2-42FC-885A-B3B7A24BD7AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4559721-D7A2-42FC-885A-B3B7A24BD7AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4559721-D7A2-42FC-885A-B3B7A24BD7AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4559721-D7A2-42FC-885A-B3B7A24BD7AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

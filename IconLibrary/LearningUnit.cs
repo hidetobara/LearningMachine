@@ -26,7 +26,7 @@ namespace IconLibrary
 		public int Plane { get { return FrameIn.Plane; } }
 		public int Length { get { return FrameIn.Length; } }
 
-		public int LearningLimit;
+		public int LearningLimit = 300;
 
 		protected ParallelOptions GetParallelOptions()
 		{
