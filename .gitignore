@@ -6,6 +6,7 @@ Release/
 Learning/
 Neuro/
 
+*.define.cs
 *.user
 *.bin
 *.png

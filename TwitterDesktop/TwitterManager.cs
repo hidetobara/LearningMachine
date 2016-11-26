@@ -14,6 +14,8 @@ namespace TwitterDesktop
 {
 	class TwitterManager
 	{
+		CategoryManager _Category = new CategoryManager();
+
 		private Tweetinvi.Streaming.ISampleStream _Stream;
 
 		private const int QueueMax = 100;
@@ -58,10 +60,27 @@ namespace TwitterDesktop
 					if (IsFull()) return;
 
 					WebClient client = new WebClient();
-					string ext = System.IO.Path.GetExtension(by.ProfileImageUrl400x400);
-					string path = System.IO.Path.Combine(imageDir, by.ScreenName + ext);
-					client.DownloadFile(tweet.CreatedBy.ProfileImageUrl400x400, path);
-					u.IconPath = path;
+					string filename = by.ScreenName + System.IO.Path.GetExtension(by.ProfileImageUrl400x400);
+					string path0 = System.IO.Path.Combine(imageDir, "0", filename);
+					CheckDirectory(path0);
+					client.DownloadFile(tweet.CreatedBy.ProfileImageUrl400x400, path0);
+
+					List<int> list = _Category.GetCategories(by.Description);
+					if (list.Count == 0)	// どこにも属さない場合
+					{
+						u.IconPaths.Add(path0);
+					}
+					else // グループ付けされた場合
+					{
+						foreach (int n in list)
+						{
+							string path = System.IO.Path.Combine(imageDir, n.ToString(), filename);
+							u.IconPaths.Add(path);
+							CheckDirectory(path);
+							System.IO.File.Copy(path0, path);
+						}
+						System.IO.File.Delete(path0);
+					}
 					Add(t);
 				}
 				catch(Exception ex)
@@ -71,6 +90,12 @@ namespace TwitterDesktop
 			};
 
 			_Stream.StartStreamAsync();
+		}
+
+		private void CheckDirectory(string path)
+		{
+			string dir = System.IO.Path.GetDirectoryName(path);
+			if (!System.IO.Directory.Exists(dir)) System.IO.Directory.CreateDirectory(dir);
 		}
 
 		public void EndStream()
@@ -89,6 +114,6 @@ namespace TwitterDesktop
 	{
 		public string Name;
 		public string Description;
-		public string IconPath;
+		public List<string> IconPaths = new List<string>();
 	}
 }

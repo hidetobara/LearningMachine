@@ -75,7 +75,7 @@ namespace TwitterDesktop
 				{
 					string dirNeuro = Path.Combine(task.RootPath, "neuro");
 					_Learning.Load(dirNeuro);
-					string dir = Path.Combine(task.RootPath, "images\\0");
+					string dir = Path.Combine(task.RootPath, "images");
 					if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 					_Twitter.StartStream(dir);
 
@@ -90,7 +90,7 @@ namespace TwitterDesktop
 
 							System.Threading.Thread.Sleep(1);
 							var t = _Twitter.Get();
-							if (t != null) paths.Add(t.User.IconPath);
+							if (t != null) paths.AddRange(t.User.IconPaths);
 							if (paths.Count > LearnImageLimit) break;
 						}
 						_Learning.ParallelLearn(paths);
