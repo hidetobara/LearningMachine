@@ -65,7 +65,7 @@ namespace IconLibrary
 		private LearningImagePair MakeLearningPair(string path)
 		{
 			LearningImage image = PrepareImage(path);
-			LearningImage result = MakeOutimage(FrameOut.Height, FrameOut.Width, path);
+			LearningImage result = MakeOutimageByDirectory(FrameOut.Height, FrameOut.Width, path);
 			if (result == null) return null;
 			return new LearningImagePair(image, result);
 		}

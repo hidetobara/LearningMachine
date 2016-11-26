@@ -68,6 +68,7 @@
     <Compile Include="LearningImage.cs" />
     <Compile Include="LearningDNN.cs" />
     <Compile Include="LearningIPCA_Slicing.cs" />
+    <Compile Include="LearningPseudoCNNFilter.cs" />
     <Compile Include="LearningRecord.cs" />
     <Compile Include="LearningUnit.cs" />
     <Compile Include="LearningIPCA.cs" />

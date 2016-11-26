@@ -95,7 +95,7 @@ namespace IconLibrary
 			Log.Instance.Info("forecasted: " + filename);
 		}
 
-		protected LearningImage MakeOutimage(int height, int width, string path)
+		protected LearningImage MakeOutimageByDirectory(int height, int width, string path)
 		{
 			string dir = Path.GetDirectoryName(path);
 			int index = dir.LastIndexOf('\\');

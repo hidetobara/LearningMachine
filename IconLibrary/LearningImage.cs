@@ -71,9 +71,9 @@ namespace IconLibrary
 		public static LearningImage Load(string path, ColorType color = ColorType.Color)
 		{
 			if (!File.Exists(path)) return null;
-			return Load(new Bitmap(path), color);
+			return FromBitmap(new Bitmap(path), color);
 		}
-		public unsafe static LearningImage Load(Bitmap src, ColorType color = ColorType.Color)
+		public unsafe static LearningImage FromBitmap(Bitmap src, ColorType color = ColorType.Color)
 		{
 			try
 			{
@@ -108,11 +108,16 @@ namespace IconLibrary
 
 		public static LearningImage LoadByZoom(string path, int block_size)
 		{
+			if (!File.Exists(path)) return null;
+			Bitmap src = new Bitmap(path);
+			Bitmap dest = Zoom(src, block_size);
+			return FromBitmap(dest);
+		}
+
+		private static Bitmap Zoom(Bitmap src, int block_size)
+		{
 			try
 			{
-				if (!File.Exists(path)) return null;
-
-				Bitmap src = new Bitmap(path);
 				float zoom = 1, x = 0, y = 0, h = 0, w = 0;
 				if(src.Width > src.Height)
 				{
@@ -132,7 +137,7 @@ namespace IconLibrary
 				Graphics g = Graphics.FromImage(dest);
 				g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
 				g.DrawImage(src, x, y, w, h);
-				return Load(dest);
+				return dest;
 			}
 			catch (Exception ex)
 			{
@@ -141,35 +146,21 @@ namespace IconLibrary
 			}
 		}
 
-		public LearningImage Shrink(int scale = 2)
+		public LearningImage Shrink(int size)
 		{
-			if (scale <= 1) return this;
-
-			LearningImage i = new LearningImage(this.Height / scale, this.Width / scale);
-			for (int h = 0; h < i.Height; h++)
-			{
-				int hs = h * scale;
-				for (int w = 0; w < i.Width; w++)
-				{
-					int ws = w * scale;
-					List<int> list = new List<int>();
-					for (int hh = hs; hh < hs + scale; hh++)
-						for (int ww = ws; ww < ws + scale; ww++) list.Add(this.Width * hh + ww);
-					int postion = (i.Width * h + w) * i.Plane;
-					for (int l = 0; l < Plane; l++)
-						i.Data[postion + l] = Average(list, Plane, l);
-				}
-			}
-			return i;
-		}
-		private double Average(List<int> list, int scale = 3, int bias = 0)
-		{
-			double amount = 0;
-			foreach (int i in list) amount += Data[i * scale + bias];
-			return amount / list.Count;
+			Bitmap src = ToBitmap();
+			Bitmap dest = Zoom(src, size);
+			return FromBitmap(dest);
 		}
 
 		unsafe public void SavePng(string path, double low = 0, double high = 1, int start = 0)
+		{
+			Bitmap b = ToBitmap(low, high, start);
+			string dir = Path.GetDirectoryName(path);
+			if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
+			b.Save(path, ImageFormat.Png);
+		}
+		unsafe public Bitmap ToBitmap(double low = 0, double high = 1, int start = 0)
 		{
 			//Bitmap b = new Bitmap(this.Width, this.Height, PixelFormat.Format32bppArgb);
 			Bitmap b = new Bitmap(this.Width, this.Height, PixelFormat.Format24bppRgb);
@@ -189,9 +180,7 @@ namespace IconLibrary
 				}
 			}
 			b.UnlockBits(d);
-			string dir = Path.GetDirectoryName(path);
-			if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
-			b.Save(path, ImageFormat.Png);
+			return b;
 		}
 		private byte Step(double v, double low = 0, double high = 1)
 		{

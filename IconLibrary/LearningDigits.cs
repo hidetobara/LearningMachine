@@ -27,7 +27,7 @@ namespace IconLibrary
 			foreach (string path in paths)
 			{
 				LearningImage image = LearningImage.Load(path, LearningImage.ColorType.Gray);
-				LearningImage result = MakeOutimage(4, 4, path);
+				LearningImage result = MakeOutimageByDirectory(4, 4, path);
 				if (result == null) continue;
 				pairs.Add(new LearningImagePair(image, result));
 			}

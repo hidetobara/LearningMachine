@@ -140,13 +140,14 @@ namespace IconDesktop
 		}
 
 		enum MainTaskType { None, Training, Forecast }
-		enum MainMethod { CNN_L3, CNN_L4, CNN_L2, CNN_L2_B16, CNN_L2_D48, CNN_L3_D48, CNN_L3_O2, CNN_L3_I128, CNN_L3_I128_B16, DIGITS }
+		enum MainMethod { FILTER, CNN_L3, CNN_L4, CNN_L2, CNN_L2_B16, CNN_L2_D48, CNN_L3_D48, CNN_L3_O2, CNN_L3_I128, CNN_L3_I128_B16, DIGITS }
 
 		private LearningUnit ParseUnit(MainMethod method)
 		{
 			switch (method)
 			{
 				case MainMethod.DIGITS: return new LearningDigits();
+				case MainMethod.FILTER: return new LearningPseudoCNNFilter();
 				case MainMethod.CNN_L2: return new LearningPseudoCNN();
 				case MainMethod.CNN_L2_B16: return new LearningPseudoCNN_B16();
 				case MainMethod.CNN_L2_D48: return new LearningPseudoCNN_D48();
