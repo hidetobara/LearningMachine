@@ -26,6 +26,7 @@ namespace CrawlerDesktop
 			_Crawler.LimitRank = (int)numericUpDownLimitRank.Value;
 
 			_Crawler.OnAddLog += AddLog;
+			_Crawler.OnProgress += UpdateProgress;
 			_Crawler.Start(textBoxUrl.Text);
 			_Crawler.StartDownloading();
 			Properties.Settings.Default.Save();
@@ -34,6 +35,13 @@ namespace CrawlerDesktop
 		private void AddLog(string message)
 		{
 			textBoxLog.AppendText(message + Environment.NewLine);
+		}
+
+		private void UpdateProgress(int pageCount, int crawled)
+		{
+			progressBarPages.Maximum = pageCount;
+			progressBarPages.Value = crawled;
+			textBoxPages.Text = crawled + "/" + pageCount;
 		}
 	}
 }

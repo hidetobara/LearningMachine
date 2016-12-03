@@ -34,5 +34,41 @@ namespace CrawlerDesktop.Properties {
                 this["CrawlerImageDirectory"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("150")]
+        public decimal LimitSize {
+            get {
+                return ((decimal)(this["LimitSize"]));
+            }
+            set {
+                this["LimitSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public decimal LimitRank {
+            get {
+                return ((decimal)(this["LimitRank"]));
+            }
+            set {
+                this["LimitRank"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string CrawlerRootUrl {
+            get {
+                return ((string)(this["CrawlerRootUrl"]));
+            }
+            set {
+                this["CrawlerRootUrl"] = value;
+            }
+        }
     }
 }

@@ -14,7 +14,9 @@ namespace CrawlerDesktop
 	{
 		WebBrowser _Browser;
 		string _ImageDirectory;
+		WebObject _RootWeb;
 		WebObject _CurrentWeb;
+		System.Security.Cryptography.SHA256 _Sha256;
 
 		public int LimitSize = 100;
 		public int LimitRank = 3;
@@ -33,6 +35,7 @@ namespace CrawlerDesktop
 		private void SetImageStatus(string url, DownloadStatus s) { lock (_Images) { _Images[url].Status = s; } }
 
 		public event Action<string> OnAddLog;
+		public event Action<int, int> OnProgress;
 
 		public WebCrawler(WebBrowser browser, string dir)
 		{
@@ -40,38 +43,50 @@ namespace CrawlerDesktop
 			//_Browser.ScriptErrorsSuppressed = true;
 			_Browser.DocumentCompleted += DocumentCompleted;
 			_ImageDirectory = dir;
+			_Sha256 = System.Security.Cryptography.SHA256Managed.Create();
 		}
 
 		private void DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
 		{
-			foreach(HtmlElement element in _Browser.Document.GetElementsByTagName("a"))
+			try
 			{
-				string url = element.GetAttribute("href");
-				if (string.IsNullOrEmpty(url)) continue;
-				if (IsIgnoring(url)) continue;
-				if (IsImage(url))
+				foreach (HtmlElement element in _Browser.Document.GetElementsByTagName("a"))
 				{
-					PushImage(url);
-					continue;
+					string url = element.GetAttribute("href");
+					if (string.IsNullOrEmpty(url)) continue;
+					if (IsIgnoring(url)) continue;
+					if (IsImageExtension(url))
+					{
+						PushImage(url);
+						continue;
+					}
+					if (!IsHttp(url)) continue;
+					if (_Webs.ContainsKey(url)) continue;
+					_Webs[url] = new WebObject() { Rank = _CurrentWeb.Rank + 1, Url = url };
 				}
-				if (!IsHttp(url)) continue;
-				if (_Webs.ContainsKey(url)) continue;
-				_Webs[url] = new WebObject() { Rank = _CurrentWeb.Rank + 1, Url = url };
+				foreach (HtmlElement element in _Browser.Document.GetElementsByTagName("img"))
+				{
+					string src = element.GetAttribute("src");
+					if (string.IsNullOrEmpty(src)) continue;
+					//if (!IsImage(src)) continue;
+					if (_Images.ContainsKey(src)) continue;
+					PushImage(src);
+				}
 			}
-			foreach(HtmlElement element in _Browser.Document.GetElementsByTagName("img"))
+			catch (Exception ex)
 			{
-				string src = element.GetAttribute("src");
-				if (string.IsNullOrEmpty(src)) continue;
-				if (!IsImage(src)) continue;
-				if (_Images.ContainsKey(src)) continue;
-				PushImage(src);
+				OnAddLog(ex.Message + "@" + _CurrentWeb.Url);
 			}
-			_CurrentWeb.IsCrawled = true;
+			finally
+			{
+				_CurrentWeb.IsCrawled = true;
+			}
 
 			foreach(var w in _Webs.Values)
 			{
 				if (w.IsCrawled) continue;
 				if (w.Rank > LimitRank) continue;
+				if (!w.Url.Contains(_RootWeb.HostName)) continue;
 
 				try
 				{
@@ -87,16 +102,19 @@ namespace CrawlerDesktop
 				_CurrentWeb = w;
 				break;
 			}
-			OnAddLog("[Info] crawled=" + CountCrawled() + "/" + _Webs.Count + " image=" + _Images.Count + " URL=" + _CurrentWeb.Url);
+			OnProgress(CountGoingToCrawl(), CountCrawled());
+			OnAddLog("[Info] URL=" + _CurrentWeb.Url + " image=" + _Images.Count);
 			GC.Collect();
 		}
 
 		private int CountCrawled() { return _Webs.Count(p => { return p.Value.IsCrawled; }); }
+		private int CountGoingToCrawl() { return _Webs.Count(p => { return p.Value.Rank < LimitRank && p.Value.Url.Contains(_RootWeb.HostName); }); }
 
 		public void Start(string url)
 		{
-			_CurrentWeb = new WebObject() { Rank = 1, Url = url };
-			_Webs[url] = _CurrentWeb;
+			_RootWeb = new WebObject() { Rank = 1, Url = url };
+			_CurrentWeb = _RootWeb;
+			_Webs[url] = _RootWeb;
 			_Browser.Url = new Uri(url);
 		}
 
@@ -106,7 +124,7 @@ namespace CrawlerDesktop
 			return false;
 		}
 
-		private bool IsImage(string src)
+		private bool IsImageExtension(string src)
 		{
 			string ext = Path.GetExtension(src).ToLower();
 			if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") return true;
@@ -135,18 +153,24 @@ namespace CrawlerDesktop
 						continue;
 					}
 					WebClient client = new WebClient();
-					string filename = Path.GetFileName(url);
-					string path = Path.Combine(_ImageDirectory, filename);
-					await client.DownloadFileTaskAsync(url, path);
-					FileInfo info = new FileInfo(path);
-					if(info.Length / 1024 < LimitSize)
+					byte[] bytes = await client.DownloadDataTaskAsync(url);
+					if (bytes == null || bytes.Length / 1024 < LimitSize)
 					{
-						File.Delete(path);
 						SetImageStatus(url, DownloadStatus.Skip);
 						continue;
 					}
+					string filename = Path.GetFileName(url);
+					if (!IsImageExtension(filename))
+					{
+						filename = Hash(url);
+						if (IsPng(bytes)) filename += ".png";
+						else if (IsJpg(bytes)) filename += ".jpg";
+						else continue;
+					}
+					string path = Path.Combine(_ImageDirectory, filename);
+					File.WriteAllBytes(path, bytes);
 					SetImageStatus(url, DownloadStatus.Done);
-					OnAddLog("[Image] downloaded=" + path);
+					OnAddLog("[Image] downloaded=" + url);
 				}
 				catch(Exception ex)
 				{
@@ -155,6 +179,28 @@ namespace CrawlerDesktop
 				}
 			}
 		}
+
+		private string Hash(string str)
+		{
+			byte[] bytes = System.Text.Encoding.UTF8.GetBytes(str);
+			byte[] hashed =_Sha256.ComputeHash(bytes);
+			StringBuilder output = new StringBuilder();
+			for (int i = 0; i < 8; i++)
+				output.Append(hashed[i].ToString("x2"));
+			return output.ToString();
+		}
+
+		private bool IsPng(byte[] bytes)
+		{
+			if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) return true;
+			return false;
+		}
+
+		private bool IsJpg(byte[] bytes)
+		{
+			if (bytes[0] == 0xFF && bytes[1] == 0xD8) return true;
+			return false;
+		}
 	}
 
 	class WebObject
@@ -162,6 +208,8 @@ namespace CrawlerDesktop
 		public int Rank;
 		public string Url;
 		public bool IsCrawled;
+
+		public string HostName { get { Uri u = new Uri(Url); return u.DnsSafeHost; } }
 	}
 
 	enum DownloadStatus { None, Doing, Done, Skip, Error }
