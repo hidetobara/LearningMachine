@@ -34,8 +34,9 @@ namespace CrawlerDesktop
 		}
 		private void SetImageStatus(string url, DownloadStatus s) { lock (_Images) { _Images[url].Status = s; } }
 
-		public event Action<string> OnAddLog;
-		public event Action<int, int> OnProgress;
+		public Action<string> OnAddLog;
+		public Action<int, int> OnUpdatePageProgress;
+		public Action<int, int> OnUpdateImageProgress;
 
 		public WebCrawler(WebBrowser browser, string dir)
 		{
@@ -44,6 +45,13 @@ namespace CrawlerDesktop
 			_Browser.DocumentCompleted += DocumentCompleted;
 			_ImageDirectory = dir;
 			_Sha256 = System.Security.Cryptography.SHA256Managed.Create();
+		}
+
+		public void Close()
+		{
+			OnAddLog = null;
+			OnUpdatePageProgress = null;
+			OnUpdateImageProgress = null;
 		}
 
 		private void DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
@@ -102,20 +110,23 @@ namespace CrawlerDesktop
 				_CurrentWeb = w;
 				break;
 			}
-			OnProgress(CountGoingToCrawl(), CountCrawled());
+			OnUpdatePageProgress(CountPagesGoingToCrawl(), CountPagesCrawled());
 			OnAddLog("[Info] URL=" + _CurrentWeb.Url + " image=" + _Images.Count);
 			GC.Collect();
 		}
 
-		private int CountCrawled() { return _Webs.Count(p => { return p.Value.IsCrawled; }); }
-		private int CountGoingToCrawl() { return _Webs.Count(p => { return p.Value.Rank < LimitRank && p.Value.Url.Contains(_RootWeb.HostName); }); }
+		private int CountPagesCrawled() { return _Webs.Count(p => { return p.Value.IsCrawled; }); }
+		private int CountPagesGoingToCrawl() { return _Webs.Count(p => { return p.Value.Rank < LimitRank && p.Value.Url.Contains(_RootWeb.HostName); }); }
+		private int CountImagesCrawled() { return _Images.Count(p => { return p.Value.IsCrawled; }); }
+		private int CountImages() { return _Images.Count; }
 
-		public void Start(string url)
+		public void Open(string url)
 		{
 			_RootWeb = new WebObject() { Rank = 1, Url = url };
 			_CurrentWeb = _RootWeb;
 			_Webs[url] = _RootWeb;
 			_Browser.Url = new Uri(url);
+			StartDownloading();
 		}
 
 		private bool IsHttp(string url)
@@ -134,12 +145,14 @@ namespace CrawlerDesktop
 		private bool IsIgnoring(string url)
 		{
 			string ext = Path.GetExtension(url).ToLower();
-			if (ext == ".pdf") return true;	// pdfは不要
+			if (ext == ".pdf") return true; // pdfは不要
+			if (ext == ".doc" || ext == ".docx") return true;
+			if (ext == ".xls" || ext == ".xlsx") return true;
 			if (url.Contains("#")) return true;	// ページ内ジャンプは不要
 			return false;
 		}
 
-		public async void StartDownloading()
+		private async void StartDownloading()
 		{
 			while(true)
 			{
@@ -165,14 +178,15 @@ namespace CrawlerDesktop
 						filename = Hash(url);
 						if (IsPng(bytes)) filename += ".png";
 						else if (IsJpg(bytes)) filename += ".jpg";
-						else continue;
+						else { SetImageStatus(url, DownloadStatus.Skip); continue; }
 					}
 					string path = Path.Combine(_ImageDirectory, filename);
 					File.WriteAllBytes(path, bytes);
 					SetImageStatus(url, DownloadStatus.Done);
+					OnUpdateImageProgress(CountImages(), CountImagesCrawled());
 					OnAddLog("[Image] downloaded=" + url);
 				}
-				catch(Exception ex)
+				catch (Exception ex)
 				{
 					if (!string.IsNullOrEmpty(url)) SetImageStatus(url, DownloadStatus.Error);
 					OnAddLog("[Error]" + ex.Message + "@" + ex.StackTrace);
@@ -218,5 +232,7 @@ namespace CrawlerDesktop
 		public string Url;
 		public WebObject ParentWeb;
 		public DownloadStatus Status;
+		
+		public bool IsCrawled { get { return Status == DownloadStatus.Done || Status == DownloadStatus.Skip || Status == DownloadStatus.Error; } }
 	}
 }
