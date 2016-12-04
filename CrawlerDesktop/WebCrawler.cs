@@ -37,9 +37,11 @@ namespace CrawlerDesktop
 		public Action<string> OnAddLog;
 		public Action<int, int> OnUpdatePageProgress;
 		public Action<int, int> OnUpdateImageProgress;
+		private bool _IsActive;
 
 		public WebCrawler(WebBrowser browser, string dir)
 		{
+			_IsActive = true;
 			_Browser = browser;
 			//_Browser.ScriptErrorsSuppressed = true;
 			_Browser.DocumentCompleted += DocumentCompleted;
@@ -49,6 +51,8 @@ namespace CrawlerDesktop
 
 		public void Close()
 		{
+			_IsActive = false;
+			_Browser.DocumentCompleted -= DocumentCompleted;
 			OnAddLog = null;
 			OnUpdatePageProgress = null;
 			OnUpdateImageProgress = null;
@@ -111,12 +115,12 @@ namespace CrawlerDesktop
 				break;
 			}
 			OnUpdatePageProgress(CountPagesGoingToCrawl(), CountPagesCrawled());
-			OnAddLog("[Info] URL=" + _CurrentWeb.Url + " image=" + _Images.Count);
+			OnAddLog("[Info] URL=" + _CurrentWeb.Url);
 			GC.Collect();
 		}
 
 		private int CountPagesCrawled() { return _Webs.Count(p => { return p.Value.IsCrawled; }); }
-		private int CountPagesGoingToCrawl() { return _Webs.Count(p => { return p.Value.Rank < LimitRank && p.Value.Url.Contains(_RootWeb.HostName); }); }
+		private int CountPagesGoingToCrawl() { return _Webs.Count(p => { return p.Value.Rank <= LimitRank && p.Value.Url.Contains(_RootWeb.HostName); }); }
 		private int CountImagesCrawled() { return _Images.Count(p => { return p.Value.IsCrawled; }); }
 		private int CountImages() { return _Images.Count; }
 
@@ -154,9 +158,10 @@ namespace CrawlerDesktop
 
 		private async void StartDownloading()
 		{
-			while(true)
+			while(_IsActive)
 			{
 				string url = null;
+				OnUpdateImageProgress(CountImages(), CountImagesCrawled());
 				try
 				{
 					url = PopImage();
@@ -178,12 +183,11 @@ namespace CrawlerDesktop
 						filename = Hash(url);
 						if (IsPng(bytes)) filename += ".png";
 						else if (IsJpg(bytes)) filename += ".jpg";
-						else { SetImageStatus(url, DownloadStatus.Skip); continue; }
+						else throw new Exception("Unknown extension url=" + url);
 					}
 					string path = Path.Combine(_ImageDirectory, filename);
 					File.WriteAllBytes(path, bytes);
 					SetImageStatus(url, DownloadStatus.Done);
-					OnUpdateImageProgress(CountImages(), CountImagesCrawled());
 					OnAddLog("[Image] downloaded=" + url);
 				}
 				catch (Exception ex)

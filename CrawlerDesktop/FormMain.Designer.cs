@@ -182,9 +182,9 @@
 			// 
 			// progressBarPages
 			// 
-			this.progressBarPages.Location = new System.Drawing.Point(55, 41);
+			this.progressBarPages.Location = new System.Drawing.Point(55, 43);
 			this.progressBarPages.Name = "progressBarPages";
-			this.progressBarPages.Size = new System.Drawing.Size(157, 23);
+			this.progressBarPages.Size = new System.Drawing.Size(157, 19);
 			this.progressBarPages.Step = 1;
 			this.progressBarPages.TabIndex = 11;
 			// 
@@ -245,9 +245,9 @@
 			// 
 			// progressBarImages
 			// 
-			this.progressBarImages.Location = new System.Drawing.Point(55, 70);
+			this.progressBarImages.Location = new System.Drawing.Point(55, 72);
 			this.progressBarImages.Name = "progressBarImages";
-			this.progressBarImages.Size = new System.Drawing.Size(157, 23);
+			this.progressBarImages.Size = new System.Drawing.Size(157, 19);
 			this.progressBarImages.Step = 1;
 			this.progressBarImages.TabIndex = 14;
 			// 
