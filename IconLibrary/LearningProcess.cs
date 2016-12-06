@@ -100,8 +100,11 @@ namespace IconLibrary
 			string dir = Path.GetDirectoryName(path);
 			int index = dir.LastIndexOf('\\');
 			string group = dir.Substring(index + 1);
+			index = group.IndexOf('-');
+			if (index == 0) return null;	// 頭に-がついているフォルダは無視
+			if (index > 0) group = group.Substring(0, index);
 			int number = 0;
-			if (!int.TryParse(group, out number)) return null;
+			int.TryParse(group, out number);	// 番号未記入の場合は0に
 
 			LearningImage result = new LearningImage(height, width, 1);
 			if (0 <= number && number < height * width) result.Data[number] = 1;
