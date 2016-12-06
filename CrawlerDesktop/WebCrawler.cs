@@ -150,6 +150,7 @@ namespace CrawlerDesktop
 		{
 			string ext = Path.GetExtension(url).ToLower();
 			if (ext == ".pdf") return true; // pdfは不要
+			if (ext == ".mp3" || ext == ".mp4" || ext == ".ogg" || ext == ".mov" || ext == ".wav") return true;
 			if (ext == ".doc" || ext == ".docx") return true;
 			if (ext == ".xls" || ext == ".xlsx") return true;
 			if (url.Contains("#")) return true;	// ページ内ジャンプは不要
