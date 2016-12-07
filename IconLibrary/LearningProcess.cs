@@ -104,7 +104,7 @@ namespace IconLibrary
 			if (index == 0) return null;	// 頭に-がついているフォルダは無視
 			if (index > 0) group = group.Substring(0, index);
 			int number = 0;
-			int.TryParse(group, out number);	// 番号未記入の場合は0に
+			if (!int.TryParse(group, out number)) return null;
 
 			LearningImage result = new LearningImage(height, width, 1);
 			if (0 <= number && number < height * width) result.Data[number] = 1;
