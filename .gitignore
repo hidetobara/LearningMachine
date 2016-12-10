@@ -4,6 +4,7 @@ packages/
 Debug/
 Release/
 Learning/
+Crawler/
 Neuro/
 
 *.user

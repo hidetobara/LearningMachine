@@ -37,18 +37,6 @@ namespace CrawlerDesktop.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("150")]
-        public decimal LimitSize {
-            get {
-                return ((decimal)(this["LimitSize"]));
-            }
-            set {
-                this["LimitSize"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("10")]
         public decimal LimitRank {
             get {
@@ -68,6 +56,42 @@ namespace CrawlerDesktop.Properties {
             }
             set {
                 this["CrawlerRootUrl"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("150")]
+        public decimal LowerSize {
+            get {
+                return ((decimal)(this["LowerSize"]));
+            }
+            set {
+                this["LowerSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1000")]
+        public decimal UpperSize {
+            get {
+                return ((decimal)(this["UpperSize"]));
+            }
+            set {
+                this["UpperSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool HostFixed {
+            get {
+                return ((bool)(this["HostFixed"]));
+            }
+            set {
+                this["HostFixed"] = value;
             }
         }
     }

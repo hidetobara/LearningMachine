@@ -18,8 +18,10 @@ namespace CrawlerDesktop
 		WebObject _CurrentWeb;
 		System.Security.Cryptography.SHA256 _Sha256;
 
-		public int LimitSize = 100;
 		public int LimitRank = 3;
+		public bool IsFixedHost = true;
+		public int LowerSize = 100;
+		public int UpperSize = 1000;
 
 		Dictionary<string, WebObject> _Webs = new Dictionary<string, WebObject>();
 		Dictionary<string, ImageObject> _Images = new Dictionary<string, ImageObject>();
@@ -32,11 +34,12 @@ namespace CrawlerDesktop
 				return null;
 			}
 		}
-		private void SetImageStatus(string url, DownloadStatus s) { lock (_Images) { _Images[url].Status = s; } }
+		private void SetImageStatus(string url, DownloadStatus s, int size = 0) { lock (_Images) { var o = _Images[url]; o.Status = s; o.Size = size; } }
 
 		public Action<string> OnAddLog;
 		public Action<int, int> OnUpdatePageProgress;
 		public Action<int, int> OnUpdateImageProgress;
+		public Action<List<int>> OnUpdateChart;
 		private bool _IsActive;
 
 		public WebCrawler(WebBrowser browser, string dir)
@@ -53,9 +56,6 @@ namespace CrawlerDesktop
 		{
 			_IsActive = false;
 			_Browser.DocumentCompleted -= DocumentCompleted;
-			OnAddLog = null;
-			OnUpdatePageProgress = null;
-			OnUpdateImageProgress = null;
 		}
 
 		private void DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
@@ -98,7 +98,7 @@ namespace CrawlerDesktop
 			{
 				if (w.IsCrawled) continue;
 				if (w.Rank > LimitRank) continue;
-				if (!w.Url.Contains(_RootWeb.HostName)) continue;
+				if (IsFixedHost && !w.IsFixedHost(_RootWeb)) continue;
 
 				try
 				{
@@ -120,7 +120,7 @@ namespace CrawlerDesktop
 		}
 
 		private int CountPagesCrawled() { return _Webs.Count(p => { return p.Value.IsCrawled; }); }
-		private int CountPagesGoingToCrawl() { return _Webs.Count(p => { return p.Value.Rank <= LimitRank && p.Value.Url.Contains(_RootWeb.HostName); }); }
+		private int CountPagesGoingToCrawl() { return _Webs.Count(p => { return p.Value.Rank <= LimitRank && (IsFixedHost && p.Value.IsFixedHost(_RootWeb)); }); }
 		private int CountImagesCrawled() { return _Images.Count(p => { return p.Value.IsCrawled; }); }
 		private int CountImages() { return _Images.Count; }
 
@@ -150,7 +150,8 @@ namespace CrawlerDesktop
 		{
 			string ext = Path.GetExtension(url).ToLower();
 			if (ext == ".pdf") return true; // pdfは不要
-			if (ext == ".mp3" || ext == ".mp4" || ext == ".ogg" || ext == ".mov" || ext == ".wav") return true;
+			if (ext == ".mp3" || ext == ".ogg" || ext == ".wma" || ext == ".wav") return true;
+			if (ext == ".mp4" || ext == ".avi" || ext == ".wmv" || ext == ".mov") return true;
 			if (ext == ".doc" || ext == ".docx") return true;
 			if (ext == ".xls" || ext == ".xlsx") return true;
 			if (url.Contains("#")) return true;	// ページ内ジャンプは不要
@@ -163,6 +164,7 @@ namespace CrawlerDesktop
 			{
 				string url = null;
 				OnUpdateImageProgress(CountImages(), CountImagesCrawled());
+				if (CountImagesCrawled() % 20 == 19) UpdatingChart();
 				try
 				{
 					url = PopImage();
@@ -173,9 +175,11 @@ namespace CrawlerDesktop
 					}
 					WebClient client = new WebClient();
 					byte[] bytes = await client.DownloadDataTaskAsync(url);
-					if (bytes == null || bytes.Length / 1024 < LimitSize)
+					int size = 0;
+					if (bytes != null) size = bytes.Length / 1024;
+					if (size < LowerSize || UpperSize < size)
 					{
-						SetImageStatus(url, DownloadStatus.Skip);
+						SetImageStatus(url, DownloadStatus.Skip, size);
 						continue;
 					}
 					string filename = Path.GetFileName(url);
@@ -188,7 +192,7 @@ namespace CrawlerDesktop
 					}
 					string path = Path.Combine(_ImageDirectory, filename);
 					File.WriteAllBytes(path, bytes);
-					SetImageStatus(url, DownloadStatus.Done);
+					SetImageStatus(url, DownloadStatus.Done, size);
 					OnAddLog("[Image] downloaded=" + url);
 				}
 				catch (Exception ex)
@@ -220,6 +224,16 @@ namespace CrawlerDesktop
 			if (bytes[0] == 0xFF && bytes[1] == 0xD8) return true;
 			return false;
 		}
+
+		private void UpdatingChart()
+		{
+			List<int> sizes = new List<int>();
+			lock (_Images)
+			{
+				foreach (var o in _Images.Values) if (o.IsCrawled) sizes.Add(o.Size);
+			}
+			OnUpdateChart(sizes);
+		}
 	}
 
 	class WebObject
@@ -229,12 +243,14 @@ namespace CrawlerDesktop
 		public bool IsCrawled;
 
 		public string HostName { get { Uri u = new Uri(Url); return u.DnsSafeHost; } }
+		public bool IsFixedHost(WebObject root) { return this.Url.Contains(root.HostName); }
 	}
 
 	enum DownloadStatus { None, Doing, Done, Skip, Error }
 	class ImageObject
 	{
 		public string Url;
+		public int Size;
 		public WebObject ParentWeb;
 		public DownloadStatus Status;
 		
