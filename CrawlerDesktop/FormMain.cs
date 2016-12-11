@@ -29,6 +29,8 @@ namespace CrawlerDesktop
 				_Crawler = null;
 			}
 
+			buttonGo.Enabled = false;
+
 			_Crawler = new WebCrawler(webBrowserMain, textBoxImageDirectory.Text);
 			_Crawler.LimitRank = (int)numericUpDownLimitRank.Value;
 			_Crawler.IsFixedHost = checkBoxHostFixed.Checked;
@@ -39,6 +41,7 @@ namespace CrawlerDesktop
 			_Crawler.OnUpdatePageProgress = UpdatePageProgress;
 			_Crawler.OnUpdateImageProgress = UpdateImageProgress;
 			_Crawler.OnUpdateChart = UpdateChart;
+			_Crawler.OnStop = StopCrawl;
 			_Crawler.Open(textBoxUrl.Text);
 			Properties.Settings.Default.Save();
 		}
@@ -85,6 +88,21 @@ namespace CrawlerDesktop
 
 			chartResult.Series.Add(series);
 			chartResult.Legends.Add(legend);
+		}
+
+		private void buttonJump_Click(object sender, EventArgs e)
+		{
+			webBrowserMain.Navigate(textBoxUrl.Text);
+		}
+
+		private void StopCrawl()
+		{
+			buttonGo.Enabled = true;
+		}
+
+		private void FormMain_FormClosed(object sender, FormClosedEventArgs e)
+		{
+			if (_Crawler != null) _Crawler.Close();
 		}
 	}
 }

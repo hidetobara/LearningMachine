@@ -40,6 +40,7 @@ namespace CrawlerDesktop
 		public Action<int, int> OnUpdatePageProgress;
 		public Action<int, int> OnUpdateImageProgress;
 		public Action<List<int>> OnUpdateChart;
+		public Action OnStop;
 		private bool _IsActive;
 
 		public WebCrawler(WebBrowser browser, string dir)
@@ -94,6 +95,7 @@ namespace CrawlerDesktop
 				_CurrentWeb.IsCrawled = true;
 			}
 
+			bool isJumping = false;
 			foreach(var w in _Webs.Values)
 			{
 				if (w.IsCrawled) continue;
@@ -112,11 +114,20 @@ namespace CrawlerDesktop
 					continue;
 				}
 				_CurrentWeb = w;
+				isJumping = true;
 				break;
 			}
 			OnUpdatePageProgress(CountPagesGoingToCrawl(), CountPagesCrawled());
-			OnAddLog("[Info] URL=" + _CurrentWeb.Url);
 			GC.Collect();
+
+			if(isJumping)
+			{
+				OnAddLog("[Info] URL=" + _CurrentWeb.Url);
+			}
+			else
+			{
+				OnStop();
+			}
 		}
 
 		private int CountPagesCrawled() { return _Webs.Count(p => { return p.Value.IsCrawled; }); }
@@ -163,10 +174,11 @@ namespace CrawlerDesktop
 			while(_IsActive)
 			{
 				string url = null;
-				OnUpdateImageProgress(CountImages(), CountImagesCrawled());
-				if (CountImagesCrawled() % 20 == 19) UpdatingChart();
 				try
 				{
+					OnUpdateImageProgress(CountImages(), CountImagesCrawled());
+					if (CountImagesCrawled() % 20 == 19) UpdatingChart();
+
 					url = PopImage();
 					if (string.IsNullOrEmpty(url))
 					{
@@ -193,12 +205,12 @@ namespace CrawlerDesktop
 					string path = Path.Combine(_ImageDirectory, filename);
 					File.WriteAllBytes(path, bytes);
 					SetImageStatus(url, DownloadStatus.Done, size);
-					OnAddLog("[Image] downloaded=" + url);
+					if (_IsActive) OnAddLog("[Image] downloaded=" + url);
 				}
 				catch (Exception ex)
 				{
 					if (!string.IsNullOrEmpty(url)) SetImageStatus(url, DownloadStatus.Error);
-					OnAddLog("[Error]" + ex.Message + "@" + ex.StackTrace);
+					if (_IsActive) OnAddLog("[Error]" + ex.Message + "@" + ex.StackTrace);
 				}
 			}
 		}
