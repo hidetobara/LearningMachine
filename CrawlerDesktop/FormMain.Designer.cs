@@ -43,6 +43,7 @@
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
 			this.checkBoxHostFixed = new System.Windows.Forms.CheckBox();
 			this.numericUpDownLowerSize = new System.Windows.Forms.NumericUpDown();
+			this.textBoxImageDirectory = new System.Windows.Forms.TextBox();
 			this.label7 = new System.Windows.Forms.Label();
 			this.label6 = new System.Windows.Forms.Label();
 			this.textBoxImages = new System.Windows.Forms.TextBox();
@@ -51,7 +52,6 @@
 			this.numericUpDownUpperSize = new System.Windows.Forms.NumericUpDown();
 			this.numericUpDownLimitRank = new System.Windows.Forms.NumericUpDown();
 			this.chartResult = new System.Windows.Forms.DataVisualization.Charting.Chart();
-			this.textBoxImageDirectory = new System.Windows.Forms.TextBox();
 			this.textBoxUrl = new System.Windows.Forms.TextBox();
 			this.splitContainerMain = new System.Windows.Forms.SplitContainer();
 			this.buttonGo = new System.Windows.Forms.Button();
@@ -68,10 +68,9 @@
 			// 
 			// buttonStart
 			// 
-			this.buttonStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.buttonStart.Location = new System.Drawing.Point(249, 10);
+			this.buttonStart.Location = new System.Drawing.Point(3, 3);
 			this.buttonStart.Name = "buttonStart";
-			this.buttonStart.Size = new System.Drawing.Size(75, 23);
+			this.buttonStart.Size = new System.Drawing.Size(60, 23);
 			this.buttonStart.TabIndex = 1;
 			this.buttonStart.Text = "Start";
 			this.buttonStart.UseVisualStyleBackColor = true;
@@ -88,7 +87,7 @@
 			this.webBrowserMain.MinimumSize = new System.Drawing.Size(20, 20);
 			this.webBrowserMain.Name = "webBrowserMain";
 			this.webBrowserMain.ScriptErrorsSuppressed = true;
-			this.webBrowserMain.Size = new System.Drawing.Size(274, 372);
+			this.webBrowserMain.Size = new System.Drawing.Size(291, 372);
 			this.webBrowserMain.TabIndex = 2;
 			// 
 			// textBoxLog
@@ -100,7 +99,7 @@
 			this.textBoxLog.Multiline = true;
 			this.textBoxLog.Name = "textBoxLog";
 			this.textBoxLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-			this.textBoxLog.Size = new System.Drawing.Size(359, 106);
+			this.textBoxLog.Size = new System.Drawing.Size(379, 106);
 			this.textBoxLog.TabIndex = 3;
 			// 
 			// label2
@@ -157,7 +156,6 @@
 			this.groupBox1.Controls.Add(this.label2);
 			this.groupBox1.Controls.Add(this.textBoxImageDirectory);
 			this.groupBox1.Controls.Add(this.label7);
-			this.groupBox1.Controls.Add(this.buttonStart);
 			this.groupBox1.Controls.Add(this.label6);
 			this.groupBox1.Controls.Add(this.textBoxImages);
 			this.groupBox1.Controls.Add(this.progressBarImages);
@@ -207,6 +205,17 @@
 			this.numericUpDownLowerSize.TabIndex = 16;
 			this.numericUpDownLowerSize.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
 			this.numericUpDownLowerSize.Value = global::CrawlerDesktop.Properties.Settings.Default.LowerSize;
+			// 
+			// textBoxImageDirectory
+			// 
+			this.textBoxImageDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.textBoxImageDirectory.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::CrawlerDesktop.Properties.Settings.Default, "CrawlerImageDirectory", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+			this.textBoxImageDirectory.Location = new System.Drawing.Point(69, 12);
+			this.textBoxImageDirectory.Name = "textBoxImageDirectory";
+			this.textBoxImageDirectory.Size = new System.Drawing.Size(249, 19);
+			this.textBoxImageDirectory.TabIndex = 5;
+			this.textBoxImageDirectory.Text = global::CrawlerDesktop.Properties.Settings.Default.CrawlerImageDirectory;
 			// 
 			// label7
 			// 
@@ -304,29 +313,18 @@
 			series1.Legend = "Legend1";
 			series1.Name = "Series1";
 			this.chartResult.Series.Add(series1);
-			this.chartResult.Size = new System.Drawing.Size(359, 128);
+			this.chartResult.Size = new System.Drawing.Size(379, 128);
 			this.chartResult.TabIndex = 14;
 			this.chartResult.Text = "chart1";
-			// 
-			// textBoxImageDirectory
-			// 
-			this.textBoxImageDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.textBoxImageDirectory.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::CrawlerDesktop.Properties.Settings.Default, "CrawlerImageDirectory", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-			this.textBoxImageDirectory.Location = new System.Drawing.Point(69, 12);
-			this.textBoxImageDirectory.Name = "textBoxImageDirectory";
-			this.textBoxImageDirectory.Size = new System.Drawing.Size(174, 19);
-			this.textBoxImageDirectory.TabIndex = 5;
-			this.textBoxImageDirectory.Text = global::CrawlerDesktop.Properties.Settings.Default.CrawlerImageDirectory;
 			// 
 			// textBoxUrl
 			// 
 			this.textBoxUrl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.textBoxUrl.DataBindings.Add(new System.Windows.Forms.Binding("Text", global::CrawlerDesktop.Properties.Settings.Default, "CrawlerRootUrl", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
-			this.textBoxUrl.Location = new System.Drawing.Point(3, 5);
+			this.textBoxUrl.Location = new System.Drawing.Point(69, 5);
 			this.textBoxUrl.Name = "textBoxUrl";
-			this.textBoxUrl.Size = new System.Drawing.Size(193, 19);
+			this.textBoxUrl.Size = new System.Drawing.Size(159, 19);
 			this.textBoxUrl.TabIndex = 0;
 			this.textBoxUrl.Text = global::CrawlerDesktop.Properties.Settings.Default.CrawlerRootUrl;
 			// 
@@ -348,18 +346,19 @@
 			this.splitContainerMain.Panel2.Controls.Add(this.buttonGo);
 			this.splitContainerMain.Panel2.Controls.Add(this.textBoxUrl);
 			this.splitContainerMain.Panel2.Controls.Add(this.webBrowserMain);
-			this.splitContainerMain.Size = new System.Drawing.Size(653, 409);
-			this.splitContainerMain.SplitterDistance = 367;
+			this.splitContainerMain.Panel2.Controls.Add(this.buttonStart);
+			this.splitContainerMain.Size = new System.Drawing.Size(690, 409);
+			this.splitContainerMain.SplitterDistance = 387;
 			this.splitContainerMain.TabIndex = 15;
 			// 
 			// buttonGo
 			// 
 			this.buttonGo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.buttonGo.Location = new System.Drawing.Point(202, 3);
+			this.buttonGo.Location = new System.Drawing.Point(234, 3);
 			this.buttonGo.Name = "buttonGo";
-			this.buttonGo.Size = new System.Drawing.Size(75, 23);
+			this.buttonGo.Size = new System.Drawing.Size(60, 23);
 			this.buttonGo.TabIndex = 3;
-			this.buttonGo.Text = "Go";
+			this.buttonGo.Text = "Jump";
 			this.buttonGo.UseVisualStyleBackColor = true;
 			this.buttonGo.Click += new System.EventHandler(this.buttonJump_Click);
 			// 
@@ -367,7 +366,7 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(653, 409);
+			this.ClientSize = new System.Drawing.Size(690, 409);
 			this.Controls.Add(this.splitContainerMain);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "FormMain";

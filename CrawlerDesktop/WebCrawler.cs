@@ -110,6 +110,7 @@ namespace CrawlerDesktop
 				{
 					OnAddLog("[Error] URL=" + w.Url + " message=" + ex.Message + "@" + ex.StackTrace);
 					if (_Browser.IsBusy) _Browser.Stop();
+					w.IsCrawled = true;
 					System.Threading.Thread.Sleep(1);
 					continue;
 				}
