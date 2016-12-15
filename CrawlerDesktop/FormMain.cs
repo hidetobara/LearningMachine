@@ -79,7 +79,7 @@ namespace CrawlerDesktop
 				int key = (value / 10) * 10;
 				if (!table.ContainsKey(key)) table[key] = 1; else table[key] += 1;
 			}
-			foreach (var pair in table) series.Points.AddXY(pair.Key, pair.Value);
+			foreach (var pair in table) series.Points.AddXY(pair.Key, Math.Log10(pair.Value));
 			series.Name = "Size(KB)";
 
 			Legend legend = new Legend();

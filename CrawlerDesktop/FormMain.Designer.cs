@@ -99,7 +99,7 @@
 			this.textBoxLog.Multiline = true;
 			this.textBoxLog.Name = "textBoxLog";
 			this.textBoxLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-			this.textBoxLog.Size = new System.Drawing.Size(379, 106);
+			this.textBoxLog.Size = new System.Drawing.Size(379, 89);
 			this.textBoxLog.TabIndex = 3;
 			// 
 			// label2
@@ -303,17 +303,19 @@
 			// 
 			this.chartResult.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+			chartArea1.AxisX.Title = "Sizes(KB)";
+			chartArea1.AxisY.Title = "Count (log10)";
 			chartArea1.Name = "ChartArea1";
 			this.chartResult.ChartAreas.Add(chartArea1);
 			legend1.Name = "Legend1";
 			this.chartResult.Legends.Add(legend1);
-			this.chartResult.Location = new System.Drawing.Point(3, 276);
+			this.chartResult.Location = new System.Drawing.Point(3, 259);
 			this.chartResult.Name = "chartResult";
 			series1.ChartArea = "ChartArea1";
 			series1.Legend = "Legend1";
 			series1.Name = "Series1";
 			this.chartResult.Series.Add(series1);
-			this.chartResult.Size = new System.Drawing.Size(379, 128);
+			this.chartResult.Size = new System.Drawing.Size(379, 145);
 			this.chartResult.TabIndex = 14;
 			this.chartResult.Text = "chart1";
 			// 
