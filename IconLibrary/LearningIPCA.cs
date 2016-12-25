@@ -26,7 +26,6 @@ namespace IconLibrary
 		}
 		public int TemporaryMainMax = 0;
 
-		public override int Scale { get { return 1; } }
 		protected virtual double DynamicAmnesic
 		{
 			get { return 2.0 * (1 - Math.Exp(-_FrameNow / 32.0)); }	// 2.0fくらいが良い
@@ -74,9 +73,9 @@ namespace IconLibrary
 			return true;
 		}
 
-		public override void Save(string path)
+		public override bool Save(string path)
 		{
-			if (_FrameNow == 0) return;
+			if (_FrameNow == 0) return false;
 
 			for(int m = 0; m < MainMax; m++)
 			{
@@ -91,6 +90,7 @@ namespace IconLibrary
 			hash[FRAME_KEY] = _FrameNow;
 			string context = Json.Serialize(hash);
 			File.WriteAllText(Path.Combine(path, "state.json"), context);
+			return true;
 		}
 
 		public override void ParallelLearn(List<string> paths)
@@ -162,13 +162,6 @@ namespace IconLibrary
 				LearningImage.Sub(_TmpImages[i], imgC, _TmpImages[i + 1]);
 			}
 			_FrameNow++;
-		}
-
-		public override LearningImage Forecast(LearningImage image)
-		{
-			var results = Project(image);
-			Log.Instance.Info("project: " + string.Join(",", results));
-			return BackProject(results);
 		}
 
 		public override LearningImage Project(LearningImage i)

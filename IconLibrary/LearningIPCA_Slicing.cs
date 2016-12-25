@@ -28,10 +28,10 @@ namespace IconLibrary
 			List<double> results = new List<double>();
 			int scaledH = 0;
 			int scaledW = 0;
-			for (int h = -Height / 2; h < i.Height - Height / 2; h += this.Scale)
+			for (int h = -Height / 2; h < i.Height - Height / 2; h += 1)
 			{
 				scaledW = 0;
-				for (int w = -Width / 2; w < i.Width - Width / 2; w += this.Scale)
+				for (int w = -Width / 2; w < i.Width - Width / 2; w += 1)
 				{
 					var trimed = i.Trim(new Rectangle(w, h, Width, Height));
 					var projected = base.Project(trimed);
@@ -45,7 +45,7 @@ namespace IconLibrary
 
 		public override LearningImage BackProject(LearningImage i)
 		{
-			int Scale = this.Scale;
+			int Scale = 1;
 			ListImage li = new ListImage(i.Height * Scale + Height, i.Width * Scale + Width);
 			for (int h = 0; h < i.Height; h++)
 			{

@@ -19,10 +19,13 @@ namespace IconLibrary
 	public class LearningDNN : LearningUnit
 	{
 		private int _MiddleCount = 64;
+		public int IterationCount = 500;
 		// Dropout
 		public int DropoutPadding = 0;
 		public double DropoutRate = 0;
 		public double NoiseRange = 0.1;
+		// 参照設定
+		public int OutputReference = 0;
 
 		private LearningFrame _FrameIn;
 		private LearningFrame _FrameOut;
@@ -37,13 +40,16 @@ namespace IconLibrary
 		public LearningDNN(int inHeight, int inPlane, int outHeight, int outPlane, int middle = 64)
 		{
 			_FrameIn = new LearningFrame() { Height = inHeight, Width = inHeight, Plane = inPlane };
-			_FrameOut = new LearningFrame(){ Height = outHeight, Width = outHeight, Plane = outPlane };
+			_FrameOut = new LearningFrame() { Height = outHeight, Width = outHeight, Plane = outPlane };
 			_MiddleCount = middle;
+#if DEBUG
+			IterationCount = 100;
+#endif
 		}
 
 		public override void Initialize()
 		{
-			_Network = new DeepBeliefNetwork(Length + 1, new int[] { _MiddleCount, FrameOut.Length + 1 });	// 斉次座標
+			_Network = new DeepBeliefNetwork(Length + 1, new int[] { _MiddleCount, FrameOut.Length + 1 });  // 斉次座標
 			new GaussianWeights(_Network).Randomize();
 			_Network.UpdateVisibleWeights();
 			InitializeTeacher();
@@ -66,11 +72,12 @@ namespace IconLibrary
 			};
 		}
 
-		public override void Save(string path)
+		public override bool Save(string path)
 		{
 			string dir = System.IO.Path.GetDirectoryName(path);
 			if (!System.IO.Directory.Exists(dir)) System.IO.Directory.CreateDirectory(dir);
 			_Network.Save(path);
+			return true;
 		}
 
 		public override LearningUnit.LearningStyle Style { get { return LearningStyle.InputOutput; } }
@@ -95,7 +102,7 @@ namespace IconLibrary
 			}
 			var dataInPrepared = _Teacher.GetLayerInput(dataIn.ToArray());
 
-			for (int i = 0; i < 500; i++)
+			for (int i = 0; i < IterationCount; i++)
 			{
 				_Teacher.RunEpoch(dataInPrepared, dataOut.ToArray());
 				_Network.UpdateVisibleWeights();
@@ -110,6 +117,18 @@ namespace IconLibrary
 				if (i % 10 == 0) Log.Instance.Info("[DNN.Learn]" + i + " " + (amount / count));
 				if (amount / count < 0.05) break;
 			}
+		}
+
+		public override void Learn(LearningNodeGroup group)
+		{
+			List<LearningImagePair> pairs = new List<LearningImagePair>();
+			List<LearningImage> SlotIn = group.Slots[0];
+			List<LearningImage> SlotOut = group.Slots[OutputReference];
+			for(int i = 0; i < SlotIn.Count; i++)
+			{
+				pairs.Add(new LearningImagePair(SlotIn[i], SlotOut[i]));
+			}
+			Learn(pairs, LearningStyle.InputOutput);
 		}
 
 		private double TestCompute(double[] input, double[] output)

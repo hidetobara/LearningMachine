@@ -68,13 +68,15 @@
     <Compile Include="LearningImage.cs" />
     <Compile Include="LearningDNN.cs" />
     <Compile Include="LearningIPCA_Slicing.cs" />
-    <Compile Include="LearningPseudoCNNFilter.cs" />
     <Compile Include="LearningRecord.cs" />
     <Compile Include="LearningUnit.cs" />
     <Compile Include="LearningIPCA.cs" />
     <Compile Include="LearningPool.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="MiniJSON.cs" />
+    <Compile Include="Nodes\LearningNode.cs" />
+    <Compile Include="Nodes\LearningNodeConnection.cs" />
+    <Compile Include="Nodes\LearningNodeImageFilter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

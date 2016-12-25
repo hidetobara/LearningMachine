@@ -6,52 +6,22 @@ using System.Threading.Tasks;
 
 namespace IconLibrary
 {
-	public class LearningUnit
+	public class LearningUnit : LearningNode
 	{
 		public enum LearningStyle { None, Input, Output, InputOutput };
-
-		private static LearningUnit _Instance;
-		public static LearningUnit Instance
-		{
-			get { return _Instance; }
-			set { if (_Instance == null) _Instance = value; }
-		}
-
-		public virtual LearningFrame FrameIn { get { return new LearningFrame(); } }
-		public virtual LearningFrame FrameOut { get { return new LearningFrame(); } }
-		public virtual int Scale { get { return 1; } }
 
 		public int Height { get { return FrameIn.Height; } }
 		public int Width { get { return FrameIn.Width; } }
 		public int Plane { get { return FrameIn.Plane; } }
 		public int Length { get { return FrameIn.Length; } }
 
-		public int LearningLimit;
-
-		protected ParallelOptions GetParallelOptions()
-		{
-			ParallelOptions o = new ParallelOptions();
-#if DEBUG
-			o.MaxDegreeOfParallelism = 1;
-#else
-			// デフォルトのまま
-#endif
-			return o;
-		}
-
-		public virtual string Filename { get { return "./"; } }
-		public virtual void Initialize() { }
-		public virtual bool Load(string path) { return false; }
-		public virtual void Save(string path) { }
-
+		#region 旧
 		public virtual LearningStyle Style { get { return LearningStyle.None; } }
 		public virtual bool IsEnoughToLearn { get { return false; } }
-		public virtual void Learn(List<LearningImage> images) { }
 		public virtual void Learn(List<LearningImagePair> pairs, LearningStyle style = LearningStyle.InputOutput) { }
 
 		public virtual LearningImage Project(LearningImage image) { return image; }
 		public virtual LearningImage BackProject(LearningImage image) { return image; }
-		public virtual LearningImage Forecast(LearningImage image) { return image; }
 		public virtual LearningImage Forecast(string path) { return null; }
 		protected virtual void Forecast(string path, string outdir) { }
 
@@ -65,6 +35,11 @@ namespace IconLibrary
 		public virtual void ParallelForecast(List<string> paths, string outdir){ }
 
 		public virtual LearningImage PrepareImage(string path) { return LearningImage.Load(path); }
+		#endregion
+
+		#region 新
+		public override LearningImage Forecast(LearningImage i) { return Project(i); }
+		#endregion
 	}
 
 	public struct LearningFrame

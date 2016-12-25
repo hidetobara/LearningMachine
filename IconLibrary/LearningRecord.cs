@@ -20,7 +20,7 @@ namespace IconLibrary
 		public override LearningStyle Style { get { return LearningStyle.Input; } }
 		public override string Filename { get { return "Record-" + _Tag; } }
 		public override bool Load(string path) { return true; }
-		public override void Save(string path)
+		public override bool Save(string path)
 		{
 			for (int i = 0; i < _Images.Count; i++)
 			{
@@ -28,6 +28,7 @@ namespace IconLibrary
 				var highlow = LearningImage.HighLow(_Images[i]);
 				_Images[i].SavePng(filename, highlow[1], highlow[0], 1); 
 			}
+			return true;
 		}
 
 		public override void Learn(List<LearningImage> images)

@@ -18,7 +18,7 @@ namespace IconLibrary
 		public override string Filename { get { return "Pool.bin"; } }
 		public override void Initialize() { }
 		public override bool Load(string path) { return true; }
-		public override void Save(string path) { }
+		public override bool Save(string path) { return true; }
 
 		public LearningPool(int step = 2)
 		{
@@ -42,6 +42,7 @@ namespace IconLibrary
 			}
 			return projected;
 		}
+
 		public override LearningImage BackProject(LearningImage image)
 		{
 			int step = FrameIn.Height;

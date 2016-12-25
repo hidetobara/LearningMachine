@@ -27,12 +27,13 @@ namespace IconLibrary
 			}
 			return true;
 		}
-		public override void Save(string path)
+		public override bool Save(string path)
 		{
 			foreach(var unit in _Units)
 			{
 				unit.Save(Path.Combine(path, unit.Filename));
 			}
+			return true;
 		}
 
 		public override void Learn(List<LearningImagePair> pairs, LearningStyle style)

@@ -15,7 +15,9 @@ namespace IconDesktop
 {
 	public partial class FormMain : Form
 	{
-		LearningUnit _Learning;
+		LearningNode _LearningNode;
+		LearningProcess _LearningProcess { get { return _LearningNode as LearningProcess; } }
+		LearningNodeConnection _LearningConnection { get { return _LearningNode as LearningNodeConnection; } }
 
 		public FormMain()
 		{
@@ -36,11 +38,6 @@ namespace IconDesktop
 			if (sender == ButtonForecastOutput) TextBoxForecastOutput.Text = FolderBrowserDialogMain.SelectedPath;
 		}
 
-		private void ButtonPath_Click(object sender, EventArgs e)
-		{
-
-		}
-
 		private void ButtonRun_Click(object sender, EventArgs e)
 		{
 			MainTask task = new MainTask() { NeuroDirectory = TextBoxNeuroDirectory.Text };
@@ -55,6 +52,11 @@ namespace IconDesktop
 			{
 				task.Type = MainTaskType.Forecast;
 				task.Inputs = GetFiles(TextBoxForecast.Text);
+				if(string.IsNullOrEmpty(TextBoxForecastOutput.Text))
+				{
+					Log.Instance.Error("No Output Directory !");
+					return;
+				}
 				task.Outputs.Add(TextBoxForecastOutput.Text);
 			}
 			Properties.Settings.Default.Save();
@@ -78,33 +80,43 @@ namespace IconDesktop
 				MainTask task = e.Argument as MainTask;
 				if (task == null) return;
 
-				if (LearningUnit.Instance == null)
+				if (_LearningNode == null)
 				{
-					LearningUnit.Instance = ParseUnit(task.Method);
-					if (LearningUnit.Instance == null) throw new Exception("No executable method !");
+					_LearningNode = ParseUnit(task.Method);
+					if (_LearningNode == null) throw new Exception("No executable method !");
 
-					LearningUnit.Instance.Initialize();
-					LearningUnit.Instance.LearningLimit = task.ImageLimit;
-				}
-
-				if (_Learning == null)
-				{
-					_Learning = LearningUnit.Instance;
-					if (!_Learning.Load(GetNeuroPath(task.NeuroDirectory))) _Learning.Initialize();
+					_LearningNode.Initialize();
+					_LearningNode.LearningLimit = task.ImageLimit;
+					if (!_LearningNode.Load(GetNeuroPath(task.NeuroDirectory))) _LearningNode.Initialize();
 				}
 
 				if (task.Type == MainTaskType.Training)
 				{
 					task.Inputs = task.Inputs.OrderBy(i => Guid.NewGuid()).ToList();
 #if DEBUG
-					task.Inputs = task.Inputs.Take(15).ToList();
+					task.Inputs = task.Inputs.Take(12).ToList();
 #endif
-					_Learning.ParallelLearn(task.Inputs);
-					_Learning.Save(GetNeuroPath(task.NeuroDirectory));
+					if (_LearningProcess != null)
+					{
+						_LearningProcess.ParallelLearn(task.Inputs);
+						_LearningProcess.Save(GetNeuroPath(task.NeuroDirectory));
+					}
+					if(_LearningConnection != null)
+					{
+						_LearningConnection.Learn(task.Inputs);
+						_LearningConnection.Save(GetNeuroPath(task.NeuroDirectory));
+					}
 				}
 				else if (task.Type == MainTaskType.Forecast && task.Inputs.Count > 0)
 				{
-					_Learning.ParallelForecast(task.Inputs, task.Outputs.Count > 0 ? task.Outputs[0] : "../");
+					if (_LearningProcess != null)
+					{
+						_LearningProcess.ParallelForecast(task.Inputs, task.Outputs[0]);
+					}
+					if(_LearningConnection != null)
+					{
+						_LearningConnection.Forecast(task.Inputs, task.Outputs[0]);
+					}
 				}
 			}
 			catch(Exception ex)
@@ -112,7 +124,7 @@ namespace IconDesktop
 				Log.Instance.Error(ex.Message + "@" + ex.StackTrace);
 			}
 		}
-		private string GetNeuroPath(string dir) { return Path.Combine(dir, _Learning.Filename); }
+		private string GetNeuroPath(string dir) { return Path.Combine(dir, _LearningNode.Filename); }
 
 		private void BackgroundWorkerMain_ProgressChanged(object sender, ProgressChangedEventArgs e)
 		{
@@ -142,12 +154,12 @@ namespace IconDesktop
 		enum MainTaskType { None, Training, Forecast }
 		enum MainMethod { FILTER, CNN_L3, CNN_L4, CNN_L2, CNN_L2_B16, CNN_L2_D48, CNN_L3_D48, CNN_L3_O2, CNN_L3_I128, CNN_L3_I128_B16, DIGITS }
 
-		private LearningUnit ParseUnit(MainMethod method)
+		private LearningNode ParseUnit(MainMethod method)
 		{
 			switch (method)
 			{
+				// 旧Process
 				case MainMethod.DIGITS: return new LearningDigits();
-				case MainMethod.FILTER: return new LearningPseudoCNNFilter();
 				case MainMethod.CNN_L2: return new LearningPseudoCNN();
 				case MainMethod.CNN_L2_B16: return new LearningPseudoCNN_B16();
 				case MainMethod.CNN_L2_D48: return new LearningPseudoCNN_D48();
@@ -157,6 +169,8 @@ namespace IconDesktop
 				case MainMethod.CNN_L3_I128: return new LearningPseudoCNN_L3_I128();
 				case MainMethod.CNN_L3_I128_B16: return new LearningPseudoCNN_L3_I128_B16();
 				case MainMethod.CNN_L4: return new LearningPseudoCNN_L4();
+				// 新Connection
+				case MainMethod.FILTER: return new LearningNodeImageFilter();
 			}
 			return null;
 		}
