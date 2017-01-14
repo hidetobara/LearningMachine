@@ -26,12 +26,11 @@ namespace IconLibrary
 			var dnn1 = new LearningDNN(4, 32, 16, 16, 32);
 			dnn1.OutputReference = -2;
 			dnn1.DropoutRate = 0.5;
-			dnn1.DropoutPadding = 15;
+			dnn1.DropoutPadding = 10;
 			_Nodes.Add(dnn1);
 			var dnn2 = new LearningDNN(16, 16, 64, 3, 64);
 			dnn2.OutputReference = -1;
-			dnn2.DropoutRate = 0.5;
-			dnn2.DropoutPadding = 15;
+			dnn2.DropoutRate = 0;
 			_Nodes.Add(dnn2);
 		}
 	}

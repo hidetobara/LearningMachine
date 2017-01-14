@@ -19,7 +19,8 @@ namespace IconLibrary
 	public class LearningDNN : LearningUnit
 	{
 		private int _MiddleCount = 64;
-		public int IterationCount = 500;
+		public int EpochCount = 50;
+		public int IterationCount = 10;
 		// Dropout
 		public int DropoutPadding = 0;
 		public double DropoutRate = 0;
@@ -42,9 +43,6 @@ namespace IconLibrary
 			_FrameIn = new LearningFrame() { Height = inHeight, Width = inHeight, Plane = inPlane };
 			_FrameOut = new LearningFrame() { Height = outHeight, Width = outHeight, Plane = outPlane };
 			_MiddleCount = middle;
-#if DEBUG
-			IterationCount = 100;
-#endif
 		}
 
 		public override void Initialize()
@@ -83,39 +81,50 @@ namespace IconLibrary
 		public override LearningUnit.LearningStyle Style { get { return LearningStyle.InputOutput; } }
 		public override void Learn(List<LearningImagePair> pairs, LearningStyle style)
 		{
-			Log.Instance.Info("[DNN.Learn]");
-			List<double[]> dataIn = new List<double[]>();
-			List<double[]> dataOut = new List<double[]>();
-			foreach (var p in pairs)
+			for(int e = 0; e < EpochCount; e++)
 			{
-				dataIn.Add(p.In.Homogenize());
-				dataOut.Add(p.Out.Homogenize());
-				// 水増し学習
-				if (DropoutRate > 0)
+				List<double[]> learnIn = new List<double[]>();
+				List<double[]> learnOut = new List<double[]>();
+				List<double[]> testIn = new List<double[]>();
+				List<double[]> testOut = new List<double[]>();
+
+				List<int> testList = GetRandomIndex(pairs.Count, pairs.Count / 5 + 1);
+				for(int p = 0; p < pairs.Count; p++)
 				{
-					for (int i = 0; i < DropoutPadding; i++)
+					var pair = pairs[p];
+					if (testList.Contains(p))
 					{
-						dataIn.Add(p.In.DropOut(DropoutRate).Homogenize());
-						dataOut.Add(p.Out.Homogenize());
+						testIn.Add(pair.In.Homogenize());
+						testOut.Add(pair.Out.Homogenize());
+					}
+					else
+					{
+						learnIn.Add(pair.In.Homogenize());
+						learnOut.Add(pair.Out.Homogenize());
+						// 水増し学習
+						if (DropoutRate > 0)
+						{
+							for (int i = 0; i < DropoutPadding; i++)
+							{
+								learnIn.Add(pair.In.DropOut(DropoutRate).Homogenize());
+								learnOut.Add(pair.Out.Homogenize());
+							}
+						}
 					}
 				}
-			}
-			var dataInPrepared = _Teacher.GetLayerInput(dataIn.ToArray());
 
-			for (int i = 0; i < IterationCount; i++)
-			{
-				_Teacher.RunEpoch(dataInPrepared, dataOut.ToArray());
-				_Network.UpdateVisibleWeights();
-
-				double amount = 0;
-				int count = 0;
-				for(int j = 0; j < dataIn.Count; j += DropoutPadding * 10)	// 適当に省いて評価
+				var dataInPrepared = _Teacher.GetLayerInput(learnIn.ToArray());
+				for (int i = 0; i < IterationCount; i++)
 				{
-					amount += TestCompute(dataIn[j], dataOut[j]);
-					count++;
+					_Teacher.RunEpoch(dataInPrepared, learnOut.ToArray());
+					_Network.UpdateVisibleWeights();
 				}
-				if (i % 10 == 0) Log.Instance.Info("[DNN.Learn]" + i + " " + (amount / count));
-				if (amount / count < 0.05) break;
+
+				double tested = 0;
+				for(int t = 0; t < testIn.Count; t++) tested += TestCompute(testIn[t], testOut[t]);
+				tested = tested / testIn.Count;
+				if (e % 10 == 0) Log.Instance.Info("[DNN.Learn] epoch=" + e + " diff=" + tested);
+				if (tested < 0.05) break;
 			}
 		}
 
@@ -144,6 +153,13 @@ namespace IconLibrary
 		{
 			double[] data = _Network.Compute(image.Homogenize());
 			return new LearningImage(FrameOut, data);
+		}
+
+		private List<int> GetRandomIndex(int amount, int count)
+		{
+			int[] array = new int[amount];
+			for (int i = 0; i < amount; i++) array[i] = i;
+			return array.OrderBy(i => Guid.NewGuid()).Take(count).ToList();
 		}
 	}
 }
