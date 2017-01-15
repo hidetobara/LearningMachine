@@ -124,7 +124,7 @@ namespace IconLibrary
 				for(int t = 0; t < testIn.Count; t++) tested += TestCompute(testIn[t], testOut[t]);
 				tested = tested / testIn.Count;
 				if (e % 10 == 0) Log.Instance.Info("[DNN.Learn] epoch=" + e + " diff=" + tested);
-				if (tested < 0.05) break;
+				if (tested < 0.03) break;
 			}
 		}
 

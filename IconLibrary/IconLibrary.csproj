@@ -74,6 +74,7 @@
     <Compile Include="LearningPool.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="MiniJSON.cs" />
+    <Compile Include="Nodes\LearningDNNConvolution.cs" />
     <Compile Include="Nodes\LearningNode.cs" />
     <Compile Include="Nodes\LearningNodeConnection.cs" />
     <Compile Include="Nodes\LearningNodeImageFilter.cs" />

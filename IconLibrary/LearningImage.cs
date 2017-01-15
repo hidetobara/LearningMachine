@@ -37,16 +37,27 @@ namespace IconLibrary
 			int h1 = (int)h + 1;
 			int w0 = (int)w;
 			int w1 = (int)w + 1;
-			var p00 = GetPlane(h0, w0);
-			var p10 = GetPlane(h1, w0);
-			var p01 = GetPlane(h0, w1);
-			var p11 = GetPlane(h1, w1);
 			double w00 = ((h1 - h) + (w1 - w)) * 0.25;
 			double w10 = ((h - h0) + (w1 - w)) * 0.25;
 			double w01 = ((h1 - h) + (w - w0)) * 0.25;
 			double w11 = ((h - h0) + (w - w0)) * 0.25;
 			LearningPlane p = new LearningPlane(Plane);
-			p.Add(p00.Scale(w00), p10.Scale(w10), p01.Scale(w01), p11.Scale(w11));
+			p.Add(GetPlane(h0, w0).Scale(w00), GetPlane(h1, w0).Scale(w10), GetPlane(h0, w1).Scale(w01), GetPlane(h1, w1).Scale(w11));
+			return p;
+		}
+		public LearningPlane GetPlane2(double h, double w)
+		{
+			int h0 = (int)h;
+			int h1 = (int)h + 1;
+			int w0 = (int)w;
+			int w1 = (int)w + 1;
+			double w00 = 1.0 / (Math.Abs(h - h0) + Math.Abs(w - w0) + 0.01);
+			double w10 = 1.0 / (Math.Abs(h - h1) + Math.Abs(w - w0) + 0.01);
+			double w01 = 1.0 / (Math.Abs(h - h0) + Math.Abs(w - w1) + 0.01);
+			double w11 = 1.0 / (Math.Abs(h - h1) + Math.Abs(w - w1) + 0.01);
+			double wSum = w00 + w10 + w01 + w11;
+			LearningPlane p = new LearningPlane(Plane);
+			p.Add(GetPlane(h0, w0).Scale(w00 / wSum), GetPlane(h1, w0).Scale(w10 / wSum), GetPlane(h0, w1).Scale(w01 / wSum), GetPlane(h1, w1).Scale(w11 / wSum));
 			return p;
 		}
 		public void SetPlane(int h, int w, LearningPlane p)
@@ -146,7 +157,7 @@ namespace IconLibrary
 			}
 		}
 
-		public LearningImage Shrink(int size)
+		public LearningImage ScaleBitmap(int size)
 		{
 			Bitmap src = ToBitmap();
 			Bitmap dest = Zoom(src, size);
@@ -325,21 +336,6 @@ namespace IconLibrary
 			return list;
 		}
 
-		public void Paste(int x, int y, LearningImage image)
-		{
-			for (int h = 0; h < image.Height; h++)
-			{
-				for (int w = 0; w < image.Width; w++)
-				{
-					if (h + y >= this.Height || w + x >= this.Width) continue;
-					int pt = (this.Width * (h + y) + (w + x)) * Plane;
-					int pi = (image.Width * h + w) * Plane;
-					for (int l = 0; l < Plane; l++)
-						this.Data[pt + l] = image.Data[pi + l];	// デフォルト
-				}
-			}
-		}
-
 		public void Blend(int x, int y, LearningImage image, double rate = 0.75)
 		{
 			for (int h = 0; h < image.Height; h++)
@@ -413,6 +409,22 @@ namespace IconLibrary
 			LearningImage i = new LearningImage(this);
 			for (int j = 0; j < Length; j++) i.Data[j] = (i.Data[j] - average) / deviation;
 			return i;
+		}
+
+		public LearningImage ScaleImage(int scale)
+		{
+			LearningImage scaled = new LearningImage(Height * scale, Width * scale, Plane);
+			for(int h = 0; h < scaled.Height; h++)
+			{
+				double hh = (double)h / (double)scale;
+				for(int w = 0; w < scaled.Width; w++)
+				{
+					double ww = (double)w / (double)scale;
+					var plane = GetPlane2(hh, ww);
+					scaled.SetPlane(h, w, plane);
+				}
+			}
+			return scaled;
 		}
 	}
 

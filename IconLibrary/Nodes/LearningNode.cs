@@ -72,6 +72,23 @@ namespace IconLibrary
 		}
 	}
 
+	/*
+	 * 画像サイズを等倍する
+	 */
+	 public class LearningNodeScaler : LearningNode
+	{
+		private int _Scale = 1;
+
+		public LearningNodeScaler(int scale)
+		{
+			_Scale = scale;
+		}
+		public override LearningImage Forecast(LearningImage i)
+		{
+			return i.ScaleImage(_Scale);
+		}
+	}
+
 	public class LearningNodeGroup
 	{
 		public Dictionary<int, LearningSlot> Slots = new Dictionary<int, LearningSlot>();
