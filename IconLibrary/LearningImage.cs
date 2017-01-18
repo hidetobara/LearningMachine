@@ -57,6 +57,7 @@ namespace IconLibrary
 			double w11 = 1.0 / (Math.Abs(h - h1) + Math.Abs(w - w1) + 0.01);
 			double wSum = w00 + w10 + w01 + w11;
 			LearningPlane p = new LearningPlane(Plane);
+			//if (wSum < 100) wSum = Math.Sqrt(wSum) * 10.0;	// 近接点以外の値を下げる
 			p.Add(GetPlane(h0, w0).Scale(w00 / wSum), GetPlane(h1, w0).Scale(w10 / wSum), GetPlane(h0, w1).Scale(w01 / wSum), GetPlane(h1, w1).Scale(w11 / wSum));
 			return p;
 		}
@@ -306,23 +307,25 @@ namespace IconLibrary
 			return list;
 		}
 
-		public LearningImage Trim(Rectangle r)
+		public LearningImage Trim(Rectangle r, bool isClamped = true)
 		{
 			LearningImage i = new LearningImage(r.Height, r.Width, Plane);
 			for(int h = r.Top; h < r.Bottom; h++)
 			{
 				for(int w = r.Left; w < r.Right; w++)
 				{
+					bool isOut = false;
 					int sh = h;
 					int sw = w;
-					if (sh < 0) sh = 0;
-					if (sh >= this.Height) sh = this.Height - 1;
-					if (sw < 0) sw = 0;
-					if (sw >= this.Width) sw = this.Width - 1;
+					if (sh < 0) { sh = 0; isOut = true; }
+					if (sh >= this.Height) { sh = this.Height - 1; isOut = true; }
+					if (sw < 0) { sw = 0; isOut = true; }
+					if (sw >= this.Width) { sw = this.Width - 1; isOut = true; }
 
 					int d = i.Width * (h - r.Top) + (w - r.Left);
 					int s = sh * this.Width + sw;
-					Array.Copy(this.Data, s * Plane, i.Data, d * Plane, Plane);
+					if (isOut && !isClamped) Array.Clear(i.Data, d * Plane, Plane);	// Clampしないなら0で埋める
+					else Array.Copy(this.Data, s * Plane, i.Data, d * Plane, Plane);
 				}
 			}
 			return i;

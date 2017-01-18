@@ -15,9 +15,10 @@ namespace IconLibrary
 	public class LearningDNNConvolution : LearningNode
 	{
 		private int _MiddleCount = 64;
+		private const int SampleLimit = 10000;
 
-		public int EpochCount = 50;
-		public int IterationCount = 10;
+		public int EpochCount = 1000;
+		public int IterationCount = 30;
 		public int OutputReference = 0;
 		public int BlockSize = 4;
 
@@ -36,6 +37,9 @@ namespace IconLibrary
 			_FrameIn = new LearningFrame() { Height = height, Width = height, Plane = inPlane };
 			_FrameOut = new LearningFrame() { Height = height, Width = height, Plane = outPlane };
 			_MiddleCount = middle;
+#if DEBUG
+			EpochCount = 100;
+#endif
 		}
 
 		public override void Initialize()
@@ -84,8 +88,8 @@ namespace IconLibrary
 					sampleOut.Add(pair.Out.Homogenize());
 				}
 			}
-			const int SampleLimit = 10000;
-			int sampleCount = sampleIn.Count > SampleLimit ? SampleLimit : sampleIn.Count;
+			int sampleCount = sampleIn.Count / 2;
+			if (sampleCount > SampleLimit) sampleCount = SampleLimit;
 
 			for (int e = 0; e < EpochCount; e++)
 			{
