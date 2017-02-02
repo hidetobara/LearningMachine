@@ -103,7 +103,7 @@ namespace IconDesktop
 					}
 					if(_LearningConnection != null)
 					{
-						_LearningConnection.Learn(task.Inputs);
+						_LearningConnection.LearnByFiles(task.Inputs);
 						_LearningConnection.Save(GetNeuroPath(task.NeuroDirectory));
 					}
 				}
@@ -115,7 +115,7 @@ namespace IconDesktop
 					}
 					if(_LearningConnection != null)
 					{
-						_LearningConnection.Forecast(task.Inputs, task.Outputs[0]);
+						_LearningConnection.ForecastByFiles(task.Inputs, task.Outputs[0]);
 					}
 				}
 			}
@@ -152,7 +152,7 @@ namespace IconDesktop
 		}
 
 		enum MainTaskType { None, Training, Forecast }
-		enum MainMethod { FILTER, CNN_L3, CNN_L4, CNN_L2, CNN_L2_B16, CNN_L2_D48, CNN_L3_D48, CNN_L3_O2, CNN_L3_I128, CNN_L3_I128_B16, DIGITS }
+		enum MainMethod { TRUTH, FILTER, CNN_L3, CNN_L4, CNN_L2, CNN_L2_B16, CNN_L2_D48, CNN_L3_D48, CNN_L3_O2, CNN_L3_I128, CNN_L3_I128_B16, DIGITS }
 
 		private LearningNode ParseUnit(MainMethod method)
 		{
@@ -171,6 +171,7 @@ namespace IconDesktop
 				case MainMethod.CNN_L4: return new LearningPseudoCNN_L4();
 				// 新Connection
 				case MainMethod.FILTER: return new LearningNodeImageFilter();
+				case MainMethod.TRUTH: return new LearningNodeTrueFalse();
 			}
 			return null;
 		}

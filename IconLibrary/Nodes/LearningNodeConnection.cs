@@ -56,7 +56,7 @@ namespace IconLibrary
 		}
 
 		#region 追加の関数
-		public void Learn(List<string> paths)
+		public virtual void LearnByFiles(List<string> paths)
 		{
 			List<LearningImage> list = new List<LearningImage>();
 			foreach(string path in paths)
@@ -68,7 +68,7 @@ namespace IconLibrary
 			Learn(group);
 		}
 
-		public void Forecast(List<string> paths, string outDir)
+		public virtual void ForecastByFiles(List<string> paths, string outDir)
 		{
 			if (!Directory.Exists(outDir)) Directory.CreateDirectory(outDir);
 			Parallel.ForEach(paths, GetParallelOptions(), path =>

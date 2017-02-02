@@ -45,21 +45,12 @@ namespace IconLibrary
 			p.Add(GetPlane(h0, w0).Scale(w00), GetPlane(h1, w0).Scale(w10), GetPlane(h0, w1).Scale(w01), GetPlane(h1, w1).Scale(w11));
 			return p;
 		}
-		public LearningPlane GetPlane2(double h, double w)
+		public LearningPlane GetPlaneStrict(double h, double w)
 		{
 			int h0 = (int)h;
-			int h1 = (int)h + 1;
 			int w0 = (int)w;
-			int w1 = (int)w + 1;
-			double w00 = 1.0 / (Math.Abs(h - h0) + Math.Abs(w - w0) + 0.01);
-			double w10 = 1.0 / (Math.Abs(h - h1) + Math.Abs(w - w0) + 0.01);
-			double w01 = 1.0 / (Math.Abs(h - h0) + Math.Abs(w - w1) + 0.01);
-			double w11 = 1.0 / (Math.Abs(h - h1) + Math.Abs(w - w1) + 0.01);
-			double wSum = w00 + w10 + w01 + w11;
-			LearningPlane p = new LearningPlane(Plane);
-			//if (wSum < 100) wSum = Math.Sqrt(wSum) * 10.0;	// 近接点以外の値を下げる
-			p.Add(GetPlane(h0, w0).Scale(w00 / wSum), GetPlane(h1, w0).Scale(w10 / wSum), GetPlane(h0, w1).Scale(w01 / wSum), GetPlane(h1, w1).Scale(w11 / wSum));
-			return p;
+			double d = Math.Abs(h - h0) + Math.Abs(w - w0);
+			return GetPlane(h0, w0).Scale(0.001 / (d + 0.001));
 		}
 		public void SetPlane(int h, int w, LearningPlane p)
 		{
@@ -423,7 +414,7 @@ namespace IconLibrary
 				for(int w = 0; w < scaled.Width; w++)
 				{
 					double ww = (double)w / (double)scale;
-					var plane = GetPlane2(hh, ww);
+					var plane = GetPlaneStrict(hh, ww);
 					scaled.SetPlane(h, w, plane);
 				}
 			}

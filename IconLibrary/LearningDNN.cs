@@ -38,10 +38,10 @@ namespace IconLibrary
 
 		public override string Filename { get { return "DNN_" + FrameIn.Height + "." + FrameIn.Plane + "-" + FrameOut.Height + "." + FrameOut.Plane + ".bin"; } }
 
-		public LearningDNN(int inHeight, int inPlane, int outHeight, int outPlane, int middle = 64)
+		public LearningDNN(int inSize, int inPlane, int outSize, int outPlane, int middle = 64)
 		{
-			_FrameIn = new LearningFrame() { Height = inHeight, Width = inHeight, Plane = inPlane };
-			_FrameOut = new LearningFrame() { Height = outHeight, Width = outHeight, Plane = outPlane };
+			_FrameIn = new LearningFrame() { Height = inSize, Width = inSize, Plane = inPlane };
+			_FrameOut = new LearningFrame() { Height = outSize, Width = outSize, Plane = outPlane };
 			_MiddleCount = middle;
 		}
 

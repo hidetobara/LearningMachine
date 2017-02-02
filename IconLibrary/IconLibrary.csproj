@@ -78,6 +78,7 @@
     <Compile Include="Nodes\LearningNode.cs" />
     <Compile Include="Nodes\LearningNodeConnection.cs" />
     <Compile Include="Nodes\LearningNodeImageFilter.cs" />
+    <Compile Include="Nodes\LearningNodeTrueFalse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -17,7 +17,7 @@ namespace IconLibrary
 		private int _MiddleCount = 64;
 		private const int SampleLimit = 10000;
 
-		public int EpochCount = 500;
+		public int EpochCount = 2000;
 		public int IterationCount = 30;
 		public int OutputReference = 0;
 		public int BlockSize = 4;

@@ -31,7 +31,7 @@ namespace IconLibrary
 			_Nodes.Add(dnnc1);
 
 			_Nodes.Add(new LearningNodeScaler(2));
-			var dnnc2 = new LearningDNNConvolution(64, 16, 3, 128);
+			var dnnc2 = new LearningDNNConvolution(64, 16, 3, 256);
 			dnnc2.OutputReference = -1;
 			_Nodes.Add(dnnc2);
 		}
