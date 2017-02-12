@@ -12,6 +12,7 @@ namespace IconLibrary
 		public override string Filename { get { return "TrueFalse"; } }
 
 		public override int IMAGE_SIZE { get { return 64; } }    // 画像サイズ
+		public bool IsParent = false;	// 親を持つかどうか
 
 		public LearningNodeTrueFalse()
 		{
@@ -20,10 +21,10 @@ namespace IconLibrary
 			_Nodes.Add(new LearningPool(4));                    // 64-16
 			_Nodes.Add(new LearningNormalize());                // 16-16
 
-			var dnn = new LearningDNN(16, 16, 1, 1, 128);
+			var dnn = new LearningDNN(16, 16, 1, 1, 64);
 			dnn.OutputReference = -1;
 			dnn.DropoutRate = 0.5;
-			dnn.DropoutPadding = 15;
+			dnn.DropoutPadding = 10;
 			_Nodes.Add(dnn);
 		}
 

@@ -321,12 +321,16 @@ namespace IconLibrary
 			}
 			return i;
 		}
-		public List<LearningImage> MakeSlices(Size s)
+		public List<LearningImage> MakeSlices(Size s, bool focus = true)
 		{
 			List<LearningImage> list = new List<LearningImage>();
 			for (int h = 0; h < Height - s.Height; h++)
-				for(int w = 0; w < Width - s.Width; w++)
-					list.Add(Trim(new Rectangle() { X = w, Y = h, Size = s }));
+				for (int w = 0; w < Width - s.Width; w++)
+				{
+					var trimed = Trim(new Rectangle() { X = w, Y = h, Size = s });
+					if (focus) trimed = trimed.Focus();
+					list.Add(trimed);
+				}
 			return list;
 		}
 
@@ -368,14 +372,6 @@ namespace IconLibrary
 			return i;
 		}
 
-		// 0から1へ値を調整
-		public LearningImage ZeroToOne()
-		{
-			LearningImage i = new LearningImage(this);
-			for (int j = 0; j < Length; j++) i.Data[j] = (i.Data[j] + 1.0) * 0.5;
-			return i;
-		}
-
 		// 斉次座標化
 		public double[] Homogenize()
 		{
@@ -405,6 +401,7 @@ namespace IconLibrary
 			return i;
 		}
 
+		// 等倍する
 		public LearningImage ScaleImage(int scale)
 		{
 			LearningImage scaled = new LearningImage(Height * scale, Width * scale, Plane);
@@ -419,6 +416,25 @@ namespace IconLibrary
 				}
 			}
 			return scaled;
+		}
+
+		// 中心の値を扱うようにする
+		public LearningImage Focus()
+		{
+			LearningImage focused = new LearningImage(this);
+			for(int h = 0; h < focused.Height; h++)
+			{
+				double sh = (Math.Abs(focused.Height / 2 - 0.5 - h)) / (focused.Height / 2);
+				double ah = Math.Sqrt(1 - sh * sh);
+				for(int w = 0; w < focused.Width; w++)
+				{
+					double sw = (Math.Abs(focused.Width / 2 - 0.5 - w)) / (focused.Width / 2);
+					double aw = Math.Sqrt(1 - sw * sw);
+					int index = h * focused.Width + w;
+					focused.Data[index] *= ah * aw; 
+				}
+			}
+			return focused;
 		}
 	}
 

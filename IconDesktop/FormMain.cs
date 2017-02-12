@@ -152,7 +152,7 @@ namespace IconDesktop
 		}
 
 		enum MainTaskType { None, Training, Forecast }
-		enum MainMethod { TRUTH, FILTER, CNN_L3, CNN_L4, CNN_L2, CNN_L2_B16, CNN_L2_D48, CNN_L3_D48, CNN_L3_O2, CNN_L3_I128, CNN_L3_I128_B16, DIGITS }
+		enum MainMethod { FILTER, TRUTH, CNN_L3, CNN_L4, CNN_L2, CNN_L2_B16, CNN_L2_D48, CNN_L3_D48, CNN_L3_O2, CNN_L3_I128, CNN_L3_I128_B16, DIGITS }
 
 		private LearningNode ParseUnit(MainMethod method)
 		{

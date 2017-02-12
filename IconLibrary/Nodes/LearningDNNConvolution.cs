@@ -17,8 +17,8 @@ namespace IconLibrary
 		private int _MiddleCount = 64;
 		private const int SampleLimit = 10000;
 
-		public int EpochCount = 2000;
-		public int IterationCount = 30;
+		public int EpochCount = 1000;
+		public int IterationCount = 50;
 		public int OutputReference = 0;
 		public int BlockSize = 4;
 
@@ -28,7 +28,9 @@ namespace IconLibrary
 		public override LearningFrame FrameOut { get { return _FrameOut; } }
 
 		protected DeepBeliefNetwork _Network;
-		protected DeepNeuralNetworkLearning _Teacher;
+		protected DeepNeuralNetworkLearning _InnerTeacher;
+
+		public LearningNodeConnection OuterTeacher = null;
 
 		public override string Filename { get { return "DNNC_" + FrameIn.Height + "." + FrameIn.Plane + "-" + FrameOut.Height + "." + FrameOut.Plane + ".bin"; } }
 
@@ -38,7 +40,8 @@ namespace IconLibrary
 			_FrameOut = new LearningFrame() { Height = height, Width = height, Plane = outPlane };
 			_MiddleCount = middle;
 #if DEBUG
-			EpochCount = 100;
+			EpochCount = 50;
+			IterationCount = 20;
 #endif
 		}
 
@@ -48,6 +51,8 @@ namespace IconLibrary
 			new GaussianWeights(_Network).Randomize();
 			_Network.UpdateVisibleWeights();
 			InitializeTeacher();
+
+			if (OuterTeacher != null) OuterTeacher.Initialize();
 		}
 
 		public override bool Load(string path)
@@ -58,9 +63,9 @@ namespace IconLibrary
 			return true;
 		}
 
-		private void InitializeTeacher()
+		protected void InitializeTeacher()
 		{
-			_Teacher = new DeepNeuralNetworkLearning(_Network)
+			_InnerTeacher = new DeepNeuralNetworkLearning(_Network)
 			{
 				Algorithm = (ann, i) => new ParallelResilientBackpropagationLearning(ann),
 				LayerIndex = _Network.Machines.Count - 1,
@@ -93,6 +98,8 @@ namespace IconLibrary
 
 			for (int e = 0; e < EpochCount; e++)
 			{
+				Log.Instance.Info("[DNNC.Learn] epoch=" + e);
+
 				List<double[]> learnIn = new List<double[]>();
 				List<double[]> learnOut = new List<double[]>();
 				foreach(int index in GetRandomIndex(sampleIn.Count, sampleCount))
@@ -101,25 +108,30 @@ namespace IconLibrary
 					learnOut.Add(sampleOut[index]);
 				}
 
-				var dataInPrepared = _Teacher.GetLayerInput(learnIn.ToArray());
+				var dataInPrepared = _InnerTeacher.GetLayerInput(learnIn.ToArray());
 				for (int i = 0; i < IterationCount; i++)
 				{
-					_Teacher.RunEpoch(dataInPrepared, learnOut.ToArray());
+					_InnerTeacher.RunEpoch(dataInPrepared, learnOut.ToArray());
 					_Network.UpdateVisibleWeights();
-				}
 
-				if (e % 10 == 0)
-				{
-					double tested = 0;
-					for (int t = 0; t < sampleIn.Count; t++) tested += TestCompute(sampleIn[t], sampleOut[t]);
-					tested = tested / sampleIn.Count;
-					Log.Instance.Info("[DNNC.Learn] epoch=" + e + " diff=" + tested);
-					if (tested < 0.03) break;
+					if (i % 10 == 0)
+					{
+						if (OuterTeacher == null) { if (InnerTest(i, sampleIn, sampleOut)) break; }
+						else { OuterLearn(group); if (OuterTest(i, group)) break; }
+					}
 				}
 			}
 		}
 
-		private double TestCompute(double[] input, double[] output)
+		protected bool InnerTest(int e, List<double[]> sampleIn, List<double[]> sampleOut)
+		{
+			double tested = 0;
+			for (int t = 0; t < sampleIn.Count; t++) tested += InnerTestCompute(sampleIn[t], sampleOut[t]);
+			tested = tested / sampleIn.Count;
+			//Log.Instance.Info("[DNNC.Learn] epoch=" + e + " diff=" + tested);
+			return tested < 0.03;
+		}
+		protected double InnerTestCompute(double[] input, double[] output)
 		{
 			var tmpOut = _Network.Compute(input);
 			var diff = Accord.Math.Matrix.Subtract(output, tmpOut);
@@ -128,7 +140,7 @@ namespace IconLibrary
 			return lengthDiff / lengthOut;
 		}
 
-		private List<LearningImagePair> PickupBlocks(LearningImage imageIn, LearningImage imageOut)
+		protected List<LearningImagePair> PickupBlocks(LearningImage imageIn, LearningImage imageOut)
 		{
 			List<LearningImagePair> pairs = new List<LearningImagePair>();
 			int half = BlockSize / 2;
@@ -164,6 +176,47 @@ namespace IconLibrary
 			int[] array = new int[amount];
 			for (int i = 0; i < amount; i++) array[i] = i;
 			return array.OrderBy(i => Guid.NewGuid()).Take(count).ToList();
+		}
+
+		const int OUTER_STEP = 5;
+
+		protected void OuterLearn(LearningNodeGroup g)
+		{
+			List<LearningImage> inputs = new List<LearningImage>();
+			List<LearningImage> outputs = new List<LearningImage>();
+
+			for(int i = 0; i < g.Slots[0].Count; i += OUTER_STEP)	// 後で調整
+			{
+				// 正解
+				inputs.Add(g.Slots[OutputReference][i]);
+				outputs.Add(new LearningImage(1, 1, 1, new double[] { 1.0 }));
+				// 不正解
+				LearningImage image = Forecast(g.Slots[0][i]);
+				inputs.Add(image);
+				outputs.Add(new LearningImage(1, 1, 1, new double[] { 0.0 }));
+			}
+
+			LearningNodeGroup group = new LearningNodeGroup() { Name = "DNNC" };
+			group.Slots[0] = inputs;
+			group.Slots[-1] = outputs;
+			OuterTeacher.Learn(group);
+		}
+		protected bool OuterTest(int ite, LearningNodeGroup g)
+		{
+			int count = 0, trues = 0;
+			for (int i = 0; i < g.Slots[0].Count; i += OUTER_STEP)
+			{
+				// 正解
+				LearningImage forecasted = OuterTeacher.Forecast(g.Slots[OutputReference][i]);
+				if (forecasted.Data[0] > 0.5) trues++;
+				count++;
+				// 不正解
+				forecasted = OuterTeacher.Forecast(Forecast(g.Slots[0][i]));
+				if (forecasted.Data[0] > 0.5) trues++;
+				count++;
+			}
+			Log.Instance.Info("[DNNC.Learn] ite=" + ite + " trues=" + trues + "/" + count);
+			return trues > count * 0.75;
 		}
 	}
 }

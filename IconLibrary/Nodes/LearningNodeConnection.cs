@@ -14,6 +14,11 @@ namespace IconLibrary
 
 		public virtual int IMAGE_SIZE { get { return 32; } }    // 画像サイズ
 
+		public override void Initialize()
+		{
+			foreach (var unit in _Nodes) unit.Initialize();
+		}
+
 		public override bool Load(string path)
 		{
 			foreach (var unit in _Nodes)
@@ -39,7 +44,7 @@ namespace IconLibrary
 			for (int n = 1; n < _Nodes.Count; n++)
 			{
 				temporaryGroup = _Nodes[n - 1].Forecast(temporaryGroup);
-				Log.Instance.Info("Learning...[" + n + "]");
+				Log.Instance.Info(group.Name + " Learning...[" + n + "]");
 				_Nodes[n].Learn(temporaryGroup);
 				GC.Collect();
 			}
@@ -63,7 +68,7 @@ namespace IconLibrary
 			{
 				list.Add(LearningImage.LoadByZoom(path, IMAGE_SIZE));
 			}
-			LearningNodeGroup group = new LearningNodeGroup();
+			LearningNodeGroup group = new LearningNodeGroup() { Name = "Main" };
 			group.Slots[0] = list;
 			Learn(group);
 		}

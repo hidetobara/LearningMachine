@@ -91,6 +91,7 @@ namespace IconLibrary
 
 	public class LearningNodeGroup
 	{
+		public string Name = "";
 		public Dictionary<int, LearningSlot> Slots = new Dictionary<int, LearningSlot>();
 		public void Update(LearningImage[] images, int index = 0) { Slots[index] = new LearningSlot(images);  }
 	}

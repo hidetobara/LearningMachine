@@ -18,7 +18,7 @@ namespace IconLibrary
 			foreach (var i in images)
 			{
 				List<LearningImage> list = new List<LearningImage>();
-				list.AddRange(i.MakeSlices(s));
+				list.AddRange(i.MakeSlices(s, true));
 				base.Learn(list);
 			}
 		}
