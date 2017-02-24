@@ -17,8 +17,8 @@ namespace IconLibrary
 		private int _MiddleCount = 64;
 		private const int SampleLimit = 10000;
 
-		public int EpochCount = 1000;
-		public int IterationCount = 50;
+		public int EpochCount = 200;
+		public int IterationCount = 20;
 		public int OutputReference = 0;
 		public int BlockSize = 4;
 
@@ -30,7 +30,7 @@ namespace IconLibrary
 		protected DeepBeliefNetwork _Network;
 		protected DeepNeuralNetworkLearning _InnerTeacher;
 
-		public LearningNodeConnection OuterTeacher = null;
+		public LearningNodeConnection OuterTeacher = null;	// あまり意味なさそう
 
 		public override string Filename { get { return "DNNC_" + FrameIn.Height + "." + FrameIn.Plane + "-" + FrameOut.Height + "." + FrameOut.Plane + ".bin"; } }
 
@@ -40,7 +40,7 @@ namespace IconLibrary
 			_FrameOut = new LearningFrame() { Height = height, Width = height, Plane = outPlane };
 			_MiddleCount = middle;
 #if DEBUG
-			EpochCount = 50;
+			EpochCount = 30;
 			IterationCount = 20;
 #endif
 		}

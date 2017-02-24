@@ -36,7 +36,7 @@ namespace IconLibrary
 				for(int w = 0; w < image.Width; w += step)
 				{
 					var list = image.GetPlanes(new Rectangle(w, h, step, step));
-					var best = list.OrderByDescending(x => x.SpecialEuclidean()).First();
+					var best = list.OrderByDescending(x => x.Euclidean()).First();
 					projected.SetPlane(h / step, w / step, best);
 				}
 			}
