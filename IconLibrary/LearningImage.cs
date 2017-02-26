@@ -37,12 +37,13 @@ namespace IconLibrary
 			int h1 = (int)h + 1;
 			int w0 = (int)w;
 			int w1 = (int)w + 1;
-			double w00 = ((h1 - h) + (w1 - w)) * 0.25;
-			double w10 = ((h - h0) + (w1 - w)) * 0.25;
-			double w01 = ((h1 - h) + (w - w0)) * 0.25;
-			double w11 = ((h - h0) + (w - w0)) * 0.25;
+			double w00 = (h1 - h) + (w1 - w);
+			double w10 = (h - h0) + (w1 - w);
+			double w01 = (h1 - h) + (w - w0);
+			double w11 = (h - h0) + (w - w0);
+			double sum = w00 + w10 + w01 + w11;
 			LearningPlane p = new LearningPlane(Plane);
-			p.Add(GetPlane(h0, w0).Scale(w00), GetPlane(h1, w0).Scale(w10), GetPlane(h0, w1).Scale(w01), GetPlane(h1, w1).Scale(w11));
+			p.Add(GetPlane(h0, w0).Scale(w00 / sum), GetPlane(h1, w0).Scale(w10 / sum), GetPlane(h0, w1).Scale(w01 / sum), GetPlane(h1, w1).Scale(w11 / sum));
 			return p;
 		}
 		public LearningPlane GetPlaneStrict(double h, double w)
@@ -411,7 +412,7 @@ namespace IconLibrary
 				for(int w = 0; w < scaled.Width; w++)
 				{
 					double ww = (double)w / (double)scale;
-					var plane = GetPlaneStrict(hh, ww);
+					var plane = GetPlane(hh, ww);
 					scaled.SetPlane(h, w, plane);
 				}
 			}

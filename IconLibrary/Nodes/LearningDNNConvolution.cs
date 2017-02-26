@@ -30,8 +30,6 @@ namespace IconLibrary
 		protected DeepBeliefNetwork _Network;
 		protected DeepNeuralNetworkLearning _InnerTeacher;
 
-		public LearningNodeConnection OuterTeacher = null;	// あまり意味なさそう
-
 		public override string Filename { get { return "DNNC_" + FrameIn.Height + "." + FrameIn.Plane + "-" + FrameOut.Height + "." + FrameOut.Plane + ".bin"; } }
 
 		public LearningDNNConvolution(int height, int inPlane, int outPlane, int middle = 64)
@@ -51,8 +49,6 @@ namespace IconLibrary
 			new GaussianWeights(_Network).Randomize();
 			_Network.UpdateVisibleWeights();
 			InitializeTeacher();
-
-			if (OuterTeacher != null) OuterTeacher.Initialize();
 		}
 
 		public override bool Load(string path)
@@ -116,8 +112,7 @@ namespace IconLibrary
 
 					if (i % 10 == 0)
 					{
-						if (OuterTeacher == null) { if (InnerTest(i, sampleIn, sampleOut)) break; }
-						else { OuterLearn(group); if (OuterTest(i, group)) break; }
+						if (InnerTest(i, sampleIn, sampleOut)) break;
 					}
 				}
 			}
@@ -176,47 +171,6 @@ namespace IconLibrary
 			int[] array = new int[amount];
 			for (int i = 0; i < amount; i++) array[i] = i;
 			return array.OrderBy(i => Guid.NewGuid()).Take(count).ToList();
-		}
-
-		const int OUTER_STEP = 5;
-
-		protected void OuterLearn(LearningNodeGroup g)
-		{
-			List<LearningImage> inputs = new List<LearningImage>();
-			List<LearningImage> outputs = new List<LearningImage>();
-
-			for(int i = 0; i < g.Slots[0].Count; i += OUTER_STEP)	// 後で調整
-			{
-				// 正解
-				inputs.Add(g.Slots[OutputReference][i]);
-				outputs.Add(new LearningImage(1, 1, 1, new double[] { 1.0 }));
-				// 不正解
-				LearningImage image = Forecast(g.Slots[0][i]);
-				inputs.Add(image);
-				outputs.Add(new LearningImage(1, 1, 1, new double[] { 0.0 }));
-			}
-
-			LearningNodeGroup group = new LearningNodeGroup() { Name = "DNNC" };
-			group.Slots[0] = inputs;
-			group.Slots[-1] = outputs;
-			OuterTeacher.Learn(group);
-		}
-		protected bool OuterTest(int ite, LearningNodeGroup g)
-		{
-			int count = 0, trues = 0;
-			for (int i = 0; i < g.Slots[0].Count; i += OUTER_STEP)
-			{
-				// 正解
-				LearningImage forecasted = OuterTeacher.Forecast(g.Slots[OutputReference][i]);
-				if (forecasted.Data[0] > 0.5) trues++;
-				count++;
-				// 不正解
-				forecasted = OuterTeacher.Forecast(Forecast(g.Slots[0][i]));
-				if (forecasted.Data[0] > 0.5) trues++;
-				count++;
-			}
-			Log.Instance.Info("[DNNC.Learn] ite=" + ite + " trues=" + trues + "/" + count);
-			return trues > count * 0.75;
 		}
 	}
 }
