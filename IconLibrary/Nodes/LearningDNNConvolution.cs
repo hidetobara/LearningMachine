@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Drawing;
+using System.Threading.Tasks;
 
 using Accord.Neuro;
 using Accord.Neuro.Learning;
@@ -12,6 +13,8 @@ using Accord.Neuro.Networks;
 
 namespace IconLibrary
 {
+	using LearningSlot = List<LearningImage>;
+
 	public class LearningDNNConvolution : LearningNode
 	{
 		private int _MiddleCount = 64;
@@ -19,7 +22,8 @@ namespace IconLibrary
 
 		public int EpochCount = 200;
 		public int IterationCount = 20;
-		public int OutputReference = 0;
+		public int InputReference = 0;
+		public int OutputReference = -1;
 		public int BlockSize = 4;
 
 		private LearningFrame _FrameIn;
@@ -80,9 +84,9 @@ namespace IconLibrary
 		{
 			List<double[]> sampleIn = new List<double[]>();
 			List<double[]> sampleOut = new List<double[]>();
-			for (int i = 0; i < group.Slots[0].Count; i++)
+			for (int i = 0; i < group.Slots[InputReference].Count; i++)
 			{
-				var pairs = PickupBlocks(group.Slots[0][i], group.Slots[OutputReference][i]);
+				var pairs = PickupBlocks(group.Slots[InputReference][i], group.Slots[OutputReference][i]);
 				foreach (var pair in pairs)
 				{
 					sampleIn.Add(pair.In.Homogenize());
@@ -164,6 +168,15 @@ namespace IconLibrary
 				imageOut.SetPlane(h, w, new LearningPlane(data));
 			}
 			return imageOut;
+		}
+
+		public override LearningNodeGroup Forecast(LearningNodeGroup group)
+		{
+			LearningSlot slot = group.Slots[InputReference];
+			LearningImage[] list = new LearningImage[slot.Count];
+			Parallel.For(0, slot.Count, GetParallelOptions(), i => { list[i] = Forecast(slot[i]); });
+			group.Update(list, OutputReference);
+			return group;
 		}
 
 		private List<int> GetRandomIndex(int amount, int count)

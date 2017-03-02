@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace IconLibrary
 {
 	using LearningSlot = List<LearningImage>;
@@ -60,11 +61,7 @@ namespace IconLibrary
 			_From = from;
 			_To = to;
 		}
-		public override void Learn(LearningNodeGroup group)
-		{
-			//group.Slots[_To] = group.Slots[_From];
-			base.Learn(group);
-		}
+		public override void Learn(LearningNodeGroup group) { }
 		public override LearningNodeGroup Forecast(LearningNodeGroup group)
 		{
 			group.Slots[_To] = group.Slots[_From];
@@ -72,10 +69,63 @@ namespace IconLibrary
 		}
 	}
 
+	public class LearningNodeScaleAdd : LearningNode
+	{
+		private int _A, _B, _To;
+		private double _ScaleA, _ScaleB;
+		public LearningNodeScaleAdd(int a, int b, int to, double scaleA = 1, double scaleB = 1)
+		{
+			_A = a;
+			_B = b;
+			_To = to;
+			_ScaleA = scaleA;
+			_ScaleB = scaleB;
+		}
+		public override void Learn(LearningNodeGroup group) { }
+		public override LearningNodeGroup Forecast(LearningNodeGroup group)
+		{
+			LearningSlot slot = new LearningSlot();
+			for (int i = 0; i < group.Slots[_A].Count; i++)
+			{
+				var ai = new LearningImage(group.Slots[_A][i]);
+				var bi = new LearningImage(group.Slots[_B][i]);
+				if (_ScaleA != 1) LearningImage.Sacle(ai, ai, _ScaleA);
+				if (_ScaleB != 1) LearningImage.Sacle(bi, bi, _ScaleB);
+				LearningImage.Add(ai, bi, ai);
+				slot.Add(ai);
+			}
+			group.Slots[_To] = slot;
+			return group;
+		}
+	}
+
+	public class LearningNodeGainBias : LearningNode
+	{
+		double _Gain, _Bias;
+		public LearningNodeGainBias(double gain, double bias)
+		{
+			_Gain = gain;
+			_Bias = bias;
+		}
+		public override void Learn(LearningNodeGroup group) { }
+		public override LearningNodeGroup Forecast(LearningNodeGroup group)
+		{
+			LearningSlot slot = new LearningSlot();
+			for (int i = 0; i < group.Slots[0].Count; i++)
+			{
+				var a = new LearningImage(group.Slots[0][i]);
+				LearningImage.Sacle(a, a, _Gain, _Bias);
+				slot.Add(a);
+			}
+			group.Slots[0] = slot;
+			return group;
+		}
+	}
+
 	/*
 	 * 画像サイズを等倍する
 	 */
-	 public class LearningNodeScaler : LearningNode
+	public class LearningNodeScaler : LearningNode
 	{
 		private int _Scale = 1;
 
@@ -89,10 +139,39 @@ namespace IconLibrary
 		}
 	}
 
+	/*
+	 * 他の関数を動かせるようにする
+	 */
+	public class LearningNodeWrapper : LearningNode
+	{
+		LearnHandler _Learn;
+		ForecastHandler _Forecast;
+
+		public LearningNodeWrapper(LearnHandler learn, ForecastHandler handler)
+		{
+			_Learn = learn;
+			_Forecast = handler;
+		}
+
+		public override void Learn(LearningNodeGroup group)
+		{
+			if (_Learn == null) return;
+			_Learn(group);
+		}
+		public override LearningImage Forecast(LearningImage i)
+		{
+			if (_Forecast == null) return i;
+			return _Forecast(i);
+		}
+	}
+
 	public class LearningNodeGroup
 	{
 		public string Name = "";
 		public Dictionary<int, LearningSlot> Slots = new Dictionary<int, LearningSlot>();
 		public void Update(LearningImage[] images, int index = 0) { Slots[index] = new LearningSlot(images);  }
 	}
+
+	public delegate void LearnHandler(LearningNodeGroup group);
+	public delegate LearningImage ForecastHandler(LearningImage image);
 }

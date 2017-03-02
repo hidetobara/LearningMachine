@@ -52,12 +52,14 @@ namespace IconLibrary
 
 		public override LearningImage Forecast(LearningImage image)
 		{
-			LearningImage temporaryImage = image;
+			LearningNodeGroup group = new LearningNodeGroup() { Name = "Forecast" };
+			group.Slots[0] = new List<LearningImage>() { image };
+
 			for (int n = 0; n < _Nodes.Count; n++)
 			{
-				temporaryImage = _Nodes[n].Forecast(temporaryImage);
+				group = _Nodes[n].Forecast(group);
 			}
-			return temporaryImage;
+			return group.Slots[0][0];
 		}
 
 		#region 追加の関数

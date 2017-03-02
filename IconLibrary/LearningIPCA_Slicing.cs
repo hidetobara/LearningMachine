@@ -100,8 +100,17 @@ namespace IconLibrary
 			public void Add(LearningPlane p) { _Data.Add(p); }
 			public LearningPlane Median()
 			{
-				_Data = _Data.OrderBy(d => d.Euclidean()).ToList();	// バグ発見
-				return _Data[_Data.Count / 2];
+				_Data = _Data.OrderBy(d => d.Euclidean()).ToList();
+				if(_Data.Count < 4) return _Data[_Data.Count / 2];
+
+				LearningPlane p = new LearningPlane(_Data[0].Length);
+				int count = 0;
+				for (int i = 1; i < _Data.Count - 1; i++)
+				{
+					p.Add(_Data[i]);
+					count++;
+				}
+				return p.Scale(1.0 / count);
 			}
 		}
 		#endregion

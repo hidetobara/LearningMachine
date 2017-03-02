@@ -207,6 +207,10 @@ namespace IconLibrary
 		{
 			for (int l = 0; l < o.Length; l++) o.Data[l] = a.Data[l] + b.Data[l];
 		}
+		public static void Add(LearningImage a, double b, LearningImage o)
+		{
+			for (int l = 0; l < o.Length; l++) o.Data[l] = a.Data[l] + b;
+		}
 		public static void Sub(LearningImage a, LearningImage b, LearningImage o)
 		{
 			for (int l = 0; l < o.Length; l++) o.Data[l] = a.Data[l] - b.Data[l];
@@ -442,6 +446,7 @@ namespace IconLibrary
 	public class LearningPlane
 	{
 		public double[] Data;
+		public int Length { get { return Data.Length; } }
 		public LearningPlane(int plane) { Data = new double[plane]; }
 		public LearningPlane(double[] vs) { Data = vs; }
 		public double Euclidean() { return Accord.Math.Norm.Euclidean(Data); }
