@@ -89,8 +89,8 @@ namespace IconLibrary
 			{
 				var ai = new LearningImage(group.Slots[_A][i]);
 				var bi = new LearningImage(group.Slots[_B][i]);
-				if (_ScaleA != 1) LearningImage.Sacle(ai, ai, _ScaleA);
-				if (_ScaleB != 1) LearningImage.Sacle(bi, bi, _ScaleB);
+				if (_ScaleA != 1) LearningImage.Multiply(ai, ai, _ScaleA);
+				if (_ScaleB != 1) LearningImage.Multiply(bi, bi, _ScaleB);
 				LearningImage.Add(ai, bi, ai);
 				slot.Add(ai);
 			}
@@ -101,23 +101,26 @@ namespace IconLibrary
 
 	public class LearningNodeGainBias : LearningNode
 	{
+		int _From, _To;
 		double _Gain, _Bias;
-		public LearningNodeGainBias(double gain, double bias)
+		public LearningNodeGainBias(double gain, double bias, int from = 0, int to = 0)
 		{
 			_Gain = gain;
 			_Bias = bias;
+			_From = from;
+			_To = to;
 		}
 		public override void Learn(LearningNodeGroup group) { }
 		public override LearningNodeGroup Forecast(LearningNodeGroup group)
 		{
 			LearningSlot slot = new LearningSlot();
-			for (int i = 0; i < group.Slots[0].Count; i++)
+			for (int i = 0; i < group.Slots[_From].Count; i++)
 			{
 				var a = new LearningImage(group.Slots[0][i]);
-				LearningImage.Sacle(a, a, _Gain, _Bias);
+				LearningImage.Multiply(a, a, _Gain, _Bias);
 				slot.Add(a);
 			}
-			group.Slots[0] = slot;
+			group.Slots[_To] = slot;
 			return group;
 		}
 	}
@@ -127,15 +130,26 @@ namespace IconLibrary
 	 */
 	public class LearningNodeScaler : LearningNode
 	{
-		private int _Scale = 1;
+		int _Scale = 1;
+		int _From, _To;
+		public bool IsStrictly = true;
 
-		public LearningNodeScaler(int scale)
+		public LearningNodeScaler(int scale, int from = 0, int to = 0)
 		{
 			_Scale = scale;
+			_From = from;
+			_To = to;
 		}
-		public override LearningImage Forecast(LearningImage i)
+		public override LearningNodeGroup Forecast(LearningNodeGroup group)
 		{
-			return i.ScaleImage(_Scale);
+			LearningSlot slot = new LearningSlot();
+			for (int i = 0; i < group.Slots[_From].Count; i++)
+			{
+				var a = group.Slots[0][i].ScaleImage(_Scale, IsStrictly);
+				slot.Add(a);
+			}
+			group.Slots[_To] = slot;
+			return group;
 		}
 	}
 

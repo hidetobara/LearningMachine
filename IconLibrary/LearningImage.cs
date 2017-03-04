@@ -13,6 +13,7 @@ namespace IconLibrary
     {
 		public enum ColorType { Color, Gray };
 
+		public string Name;
 		private LearningFrame _Frame;
 		public int Height { get { return _Frame.Height; } }
 		public int Width { get { return _Frame.Width; } }
@@ -51,10 +52,12 @@ namespace IconLibrary
 			int h0 = (int)h;
 			int w0 = (int)w;
 			double d = Math.Abs(h - h0) + Math.Abs(w - w0);
+			if (d != 0) return new LearningPlane(this.Plane);	// 本当に厳密に
 			return GetPlane(h0, w0).Scale(0.001 / (d + 0.001));
 		}
 		public void SetPlane(int h, int w, LearningPlane p)
 		{
+			if (p == null) { Array.Clear(Data, (Width * h + w) * Plane, Plane); return; }
 			Array.Copy(p.Data, 0, Data, (Width * h + w) * Plane, Plane);
 		}
 
@@ -115,7 +118,9 @@ namespace IconLibrary
 			if (!File.Exists(path)) return null;
 			Bitmap src = new Bitmap(path);
 			Bitmap dest = Zoom(src, block_size);
-			return FromBitmap(dest);
+			LearningImage img = FromBitmap(dest);
+			img.Name = Path.GetFileNameWithoutExtension(path);
+			return img;
 		}
 
 		private static Bitmap Zoom(Bitmap src, int block_size)
@@ -199,9 +204,9 @@ namespace IconLibrary
 			SavePng(path, list[1], list[0]);
 		}
 
-		public static void Sacle(LearningImage i, LearningImage o, double scale = 1, double bias = 0)
+		public static void Multiply(LearningImage i, LearningImage o, double rate = 1, double bias = 0)
 		{
-			for (int l = 0; l < o.Length; l++) o.Data[l] = i.Data[l] * scale + bias;
+			for (int l = 0; l < o.Length; l++) o.Data[l] = i.Data[l] * rate + bias;
 		}
 		public static void Add(LearningImage a, LearningImage b, LearningImage o)
 		{
@@ -407,7 +412,7 @@ namespace IconLibrary
 		}
 
 		// 等倍する
-		public LearningImage ScaleImage(int scale)
+		public LearningImage ScaleImage(int scale, bool isStrict = true)
 		{
 			LearningImage scaled = new LearningImage(Height * scale, Width * scale, Plane);
 			for(int h = 0; h < scaled.Height; h++)
@@ -416,7 +421,7 @@ namespace IconLibrary
 				for(int w = 0; w < scaled.Width; w++)
 				{
 					double ww = (double)w / (double)scale;
-					var plane = GetPlane(hh, ww);
+					var plane = isStrict ? GetPlaneStrict(hh, ww) : GetPlane(hh, ww); // 厳密にするか、平均をとるか要調整
 					scaled.SetPlane(h, w, plane);
 				}
 			}
@@ -440,6 +445,12 @@ namespace IconLibrary
 				}
 			}
 			return focused;
+		}
+
+		// 和を返す
+		public double Sum()
+		{
+			return Matrix.Sum(Data);
 		}
 	}
 

@@ -52,13 +52,17 @@ namespace IconLibrary
 
 		public override LearningImage Forecast(LearningImage image)
 		{
-			LearningNodeGroup group = new LearningNodeGroup() { Name = "Forecast" };
+			LearningNodeGroup group = new LearningNodeGroup() { Name = image.Name };
 			group.Slots[0] = new List<LearningImage>() { image };
 
 			for (int n = 0; n < _Nodes.Count; n++)
 			{
 				group = _Nodes[n].Forecast(group);
 			}
+#if DEBUG
+			if (!string.IsNullOrEmpty(image.Name))
+				foreach (var pair in group.Slots) { if (pair.Key < 0) pair.Value[0].SavePng("../" + image.Name + pair.Key + ".png"); }
+#endif
 			return group.Slots[0][0];
 		}
 

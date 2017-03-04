@@ -143,11 +143,11 @@ namespace IconLibrary
 				nrmV = Norm.Euclidean(_MainImages[i].Data);
 
 				scalerA = (double)(_FrameNow - 1 - l) / (double)_FrameNow;
-				LearningImage.Sacle(_MainImages[i], imgA, scalerA);
+				LearningImage.Multiply(_MainImages[i], imgA, scalerA);
 
 				double dotUV = Matrix.InnerProduct(_TmpImages[i].Data, _MainImages[i].Data);
 				scalerB = ((double)(1 + l) * dotUV) / ((double)_FrameNow * nrmV);
-				LearningImage.Sacle(_TmpImages[i], imgB, scalerB);
+				LearningImage.Multiply(_TmpImages[i], imgB, scalerB);
 
 				LearningImage.Add(imgA, imgB, _MainImages[i]);
 
@@ -157,7 +157,7 @@ namespace IconLibrary
 				nrmV = Norm.Euclidean(_MainImages[i].Data);
 				dotUV = Matrix.InnerProduct(_TmpImages[i].Data, _MainImages[i].Data);
 				scalerC = dotUV / (nrmV * nrmV);
-				LearningImage.Sacle(_MainImages[i], imgC, scalerC);
+				LearningImage.Multiply(_MainImages[i], imgC, scalerC);
 
 				LearningImage.Sub(_TmpImages[i], imgC, _TmpImages[i + 1]);
 			}
@@ -177,7 +177,7 @@ namespace IconLibrary
 					length = LearningImage.EuclideanLength(_MainImages[m]);
 					result = LearningImage.DotProduct(amt, _MainImages[m]) / length;
 				}
-				LearningImage.Sacle(_MainImages[m], tmp, result / length);
+				LearningImage.Multiply(_MainImages[m], tmp, result / length);
 				LearningImage.Sub(amt, tmp, amt);
 				results.Add(result / length);
 			}
@@ -192,7 +192,7 @@ namespace IconLibrary
 			for (int m = 0; m < MainMax; m++)
 			{
 //				double length = LearningImage.EuclideanLength(_MainImages[m]);	本来はlist[m]*length
-				LearningImage.Sacle(_MainImages[m], tmp, list[m]);
+				LearningImage.Multiply(_MainImages[m], tmp, list[m]);
 				LearningImage.Add(image, tmp, image);
 			}
 			return image;

@@ -63,21 +63,24 @@ namespace IconLibrary
 			var ipca2 = new LearningIPCA_Slicing(16, 32, 4);
 			_Nodes.Add(ipca2);  // 32-16
 			_Nodes.Add(new LearningPool(2));    // 32-32
+			_Nodes.Add(new LearningNodeDuplicator(0, -2));  // コピー
+			_Nodes.Add(new LearningNodeScaler(4, -2, -2));  // -2: 64-32
 
 			_Nodes.Add(new LearningNodeScaler(2));  // 32-32
 			_Nodes.Add(new LearningNodeWrapper(null, ipca2.BackProject));   // 32-16
 
 			_Nodes.Add(new LearningNodeScaler(2));  // 64-16
-			_Nodes.Add(new LearningNodeDuplicator(0, -2));  // コピー
 			_Nodes.Add(new LearningNodeWrapper(null, ipca1.BackProject));   // 64-3
-			_Nodes.Add(new LearningNodeDuplicator(0, -3));  // コピー
+			_Nodes.Add(new LearningNodeDuplicator(0, -3));  // コピー-3: 64-3
 
 			_Nodes.Add(new LearningNodeScaleAdd(-1, 0, 0, 1, -1.0));    // 64-3、理想－生成＝差分
-			_Nodes.Add(new LearningNodeGainBias(0.5, 0.5));
-			var dnnc = new LearningDNNConvolution(64, 16, 3, 64);
+			_Nodes.Add(new LearningNodeGainBias(0.5, 0.5)); // -1:差分
+
+			var dnnc = new LearningDNNConvolution(64, 32, 3, 64);
 			dnnc.OutputReference = 0;
 			dnnc.InputReference = -2;
 			_Nodes.Add(dnnc);
+			_Nodes.Add(new LearningNodeDuplicator(0, -2));  // コピー
 			_Nodes.Add(new LearningNodeGainBias(2.0, -1.0));
 
 			_Nodes.Add(new LearningNodeScaleAdd(0, -3, 0));

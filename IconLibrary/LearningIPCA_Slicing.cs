@@ -52,6 +52,7 @@ namespace IconLibrary
 				for (int w = 0; w < i.Width; w++)
 				{
 					LearningImage trimed = i.Trim(new Rectangle(w, h, 1, 1));
+					if (trimed.Sum() == 0) continue;
 					LearningImage pasting = base.BackProject(trimed);
 					for (int hh = 0; hh < pasting.Height; hh++)
 						for (int ww = 0; ww < pasting.Width; ww++)
@@ -100,14 +101,16 @@ namespace IconLibrary
 			public void Add(LearningPlane p) { _Data.Add(p); }
 			public LearningPlane Median()
 			{
+				if (_Data.Count == 0) return null;
 				_Data = _Data.OrderBy(d => d.Euclidean()).ToList();
-				if(_Data.Count < 4) return _Data[_Data.Count / 2];
+				if (_Data.Count < 4) return _Data[_Data.Count / 2];
 
+				// 真ん中の半数だけの平均を求める
 				LearningPlane p = new LearningPlane(_Data[0].Length);
 				int count = 0;
-				for (int i = 1; i < _Data.Count - 1; i++)
+				for (int i = 0; i < _Data.Count / 2; i++)
 				{
-					p.Add(_Data[i]);
+					p.Add(_Data[i + _Data.Count / 4]);
 					count++;
 				}
 				return p.Scale(1.0 / count);

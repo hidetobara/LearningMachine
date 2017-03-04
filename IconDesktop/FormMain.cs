@@ -45,18 +45,23 @@ namespace IconDesktop
 			task.ParseMethod(ComboBoxMethod.Text);
 			if (sender == ButtonRunTraining)
 			{
+				if (!Directory.Exists(TextBoxInputDirectory.Text))
+				{
+					Log.Instance.Error("No Training Directory !");
+					return;
+				}
 				task.Type = MainTaskType.Training;
 				task.Inputs = GetFiles(TextBoxInputDirectory.Text);
 			}
 			else if(sender == ButtonRunForecast)
 			{
-				task.Type = MainTaskType.Forecast;
-				task.Inputs = GetFiles(TextBoxForecast.Text);
-				if(string.IsNullOrEmpty(TextBoxForecastOutput.Text))
+				if (!Directory.Exists(TextBoxForecast.Text) || !Directory.Exists(TextBoxForecastOutput.Text))
 				{
-					Log.Instance.Error("No Output Directory !");
+					Log.Instance.Error("No Forecast/Output Directory !");
 					return;
 				}
+				task.Type = MainTaskType.Forecast;
+				task.Inputs = GetFiles(TextBoxForecast.Text);
 				task.Outputs.Add(TextBoxForecastOutput.Text);
 			}
 			Properties.Settings.Default.Save();
