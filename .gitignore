@@ -1,4 +1,5 @@
-﻿obj/
+﻿.vs/
+obj/
 bin/
 packages/
 Debug/

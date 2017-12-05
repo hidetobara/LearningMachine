@@ -7,43 +7,67 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Forms.DataVisualization.Charting;
+using System.Text.RegularExpressions;
+
 
 namespace CrawlerDesktop
 {
 	public partial class FormMain : Form
 	{
-		WebCrawler _Crawler;
+		WebCrawler2 _Crawler;
 
 		public FormMain()
 		{
 			InitializeComponent();
-			UpdateChart(null);
 		}
 
 		private void buttonStart_Click(object sender, EventArgs e)
 		{
-			if(_Crawler != null)
+			try
 			{
-				_Crawler.Close();
-				_Crawler = null;
+				if (_Crawler != null)
+				{
+					_Crawler.Close();
+					_Crawler = null;
+					buttonStart.Text = "Start";
+					return;
+				}
+
+				buttonJump.Enabled = false;
+
+				_Crawler = new WebCrawler2(webBrowserMain, textBoxImageDirectory.Text);
+				var main = new WebCrawler2.PageNode() { Life = (int)numericUpDownLimitRank.Value };
+				if (textBoxMainWhite.Text.Length > 0)
+				{
+					var lines = textBoxMainWhite.Text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+					foreach (var line in lines) main.WhiteUrls.Add(new Regex(line));
+				}
+				_Crawler.AddRoot(main);
+				if (numericUpDownUpperSize.Value > 0)
+				{
+					_Crawler.AddRoot(new WebCrawler2.ImageNode() { LowerSize = (int)numericUpDownLowerSize.Value, UpperSize = (int)numericUpDownUpperSize.Value });
+				}
+				if (textBoxXmlBear.Text.Length > 0)
+				{
+					var xml = new WebCrawler2.XmlNode();
+					var lines = textBoxXmlBear.Text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+					foreach (var line in lines) xml.BearUrls.Add(new Regex(line));
+					_Crawler.AddRoot(xml);
+				}
+
+				_Crawler.OnAddLog = AddLog;
+				_Crawler.OnUpdatePageProgress = UpdatePageProgress;
+				_Crawler.OnUpdateImageProgress = UpdateImageProgress;
+				_Crawler.OnStop = StopCrawl;
+				_Crawler.Open(textBoxUrl.Text);
+				Properties.Settings.Default.Save();
+				buttonStart.Text = "Stop";
 			}
-
-			buttonGo.Enabled = false;
-
-			_Crawler = new WebCrawler(webBrowserMain, textBoxImageDirectory.Text);
-			_Crawler.LimitRank = (int)numericUpDownLimitRank.Value;
-			_Crawler.IsFixedHost = checkBoxHostFixed.Checked;
-			_Crawler.LowerSize = (int)numericUpDownLowerSize.Value;
-			_Crawler.UpperSize = (int)numericUpDownUpperSize.Value;
-
-			_Crawler.OnAddLog = AddLog;
-			_Crawler.OnUpdatePageProgress = UpdatePageProgress;
-			_Crawler.OnUpdateImageProgress = UpdateImageProgress;
-			_Crawler.OnUpdateChart = UpdateChart;
-			_Crawler.OnStop = StopCrawl;
-			_Crawler.Open(textBoxUrl.Text);
-			Properties.Settings.Default.Save();
+			catch(Exception ex)
+			{
+				AddLog(ex.Message + "@" + ex.StackTrace);
+				if (_Crawler != null) { _Crawler.Close(); _Crawler = null; buttonStart.Text = "Start"; }
+			}
 		}
 
 		private void AddLog(string message)
@@ -53,6 +77,7 @@ namespace CrawlerDesktop
 
 		private void UpdatePageProgress(int all, int crawled)
 		{
+			if (crawled > all) crawled = all;
 			progressBarPages.Maximum = all;
 			progressBarPages.Value = crawled;
 			textBoxPages.Text = crawled + "/" + all;
@@ -65,31 +90,6 @@ namespace CrawlerDesktop
 			textBoxImages.Text = crawled + "/" + all;
 		}
 
-		private void UpdateChart(List<int> list)
-		{
-			chartResult.Series.Clear();
-			chartResult.Legends.Clear();
-			if (list == null || list.Count == 0) return;
-
-			Series series = new Series();
-			series.ChartType = SeriesChartType.Column;
-			Dictionary<int, int> table = new Dictionary<int, int>();
-			foreach(int value in list)
-			{
-				int key = (value / 10) * 10;
-				if (!table.ContainsKey(key)) table[key] = 1; else table[key] += 1;
-			}
-			foreach (var pair in table) series.Points.AddXY(pair.Key, Math.Log10(pair.Value));
-			series.Name = "Size(KB)";
-
-			Legend legend = new Legend();
-			legend.DockedToChartArea = "ChartArea1";
-			legend.Alignment = StringAlignment.Near;
-
-			chartResult.Series.Add(series);
-			chartResult.Legends.Add(legend);
-		}
-
 		private void buttonJump_Click(object sender, EventArgs e)
 		{
 			webBrowserMain.Navigate(textBoxUrl.Text);
@@ -97,7 +97,7 @@ namespace CrawlerDesktop
 
 		private void StopCrawl()
 		{
-			buttonGo.Enabled = true;
+			buttonJump.Enabled = true;
 		}
 
 		private void FormMain_FormClosed(object sender, FormClosedEventArgs e)
