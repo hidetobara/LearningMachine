@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IconDesktop", "IconDesktop\IconDesktop.csproj", "{D8B4ADDD-0E28-4839-923B-19636D9F0CD7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IconLibrary", "IconLibrary\IconLibrary.csproj", "{1C617645-1302-4225-8CB7-D487242939E4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrawlerDesktop", "CrawlerDesktop\CrawlerDesktop.csproj", "{9026D02D-4206-4E06-96D8-AD20B0DD3EAF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleAnalyzerText2", "ConsoleAnalyzerText2\ConsoleAnalyzerText2.csproj", "{00E0BAD1-B79E-4E6D-99F9-A4B9BEBBD838}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,8 +29,15 @@ Global
 		{9026D02D-4206-4E06-96D8-AD20B0DD3EAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9026D02D-4206-4E06-96D8-AD20B0DD3EAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9026D02D-4206-4E06-96D8-AD20B0DD3EAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00E0BAD1-B79E-4E6D-99F9-A4B9BEBBD838}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00E0BAD1-B79E-4E6D-99F9-A4B9BEBBD838}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00E0BAD1-B79E-4E6D-99F9-A4B9BEBBD838}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00E0BAD1-B79E-4E6D-99F9-A4B9BEBBD838}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E1ACD4EA-538E-415C-B582-C42E00FDA58A}
 	EndGlobalSection
 EndGlobal
