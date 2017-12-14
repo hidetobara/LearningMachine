@@ -33,6 +33,7 @@ namespace CrawlerDesktop
 		public Action<string> OnAddLog;
 		public Action<int, int> OnUpdatePageProgress;
 		public Action<int, int> OnUpdateImageProgress;
+		public Action<string> OnLoadPage;
 		public Action OnStop;
 		private bool _IsActive;
 
@@ -46,9 +47,9 @@ namespace CrawlerDesktop
 
 		public void AddRoot(PageNode root) { _Roots.Add(root); }
 
-		public void Open(string url)
+		public void Open(string url, int life)
 		{
-			_CurrentNode = new PageNode() { Url = url };
+			_CurrentNode = new PageNode() { Url = url, Life = life };
 			_Nodes[url] = _CurrentNode;
 			_Browser.Url = new Uri(url);
 			StartDownloading();
@@ -70,8 +71,8 @@ namespace CrawlerDesktop
 					{
 						string url = element.GetAttribute(root.Attribute);
 						if (string.IsNullOrEmpty(url)) continue;
-						if (root.CheckCrawl(url)) AddNode(root.Clone(url));
-						if (root.CheckBear(url)) AddBear(root.Clone(url));
+						if (root.CheckCrawl(url)) AddNode(root.Clone(url, _CurrentNode));
+						if (root.CheckBear(url)) AddBear(root.Clone(url, _CurrentNode));
 					}
 				}
 			}
@@ -81,6 +82,7 @@ namespace CrawlerDesktop
 			}
 			finally
 			{
+				OnLoadPage(_CurrentNode.Url);
 				_CurrentNode.Crawling = DownloadStatus.Done;
 			}
 
@@ -105,7 +107,7 @@ namespace CrawlerDesktop
 				isJumping = true;
 				break;
 			}
-			OnUpdatePageProgress(CountPagesGoingToCrawl(), CountPagesCrawled());
+			OnUpdatePageProgress(CountPages(), CountPagesCrawled());
 			GC.Collect();
 
 			if (isJumping)
@@ -130,13 +132,14 @@ namespace CrawlerDesktop
 
 					if (node == null || string.IsNullOrEmpty(node.Url))
 					{
-						await Task.Delay(new TimeSpan(0, 0, 1));
+						await Task.Delay(new TimeSpan(0, 0, 10));
 						continue;
 					}
 					WebClient client = new WebClient();
 					node.Bytes = await client.DownloadDataTaskAsync(node.Url);
 					node.Bear(_SaveDirectory);
 					OnAddLog("[Image] downloaded=" + node.Url);
+					await Task.Delay(new TimeSpan(0, 0, 3));
 				}
 				catch (Exception ex)
 				{
@@ -147,7 +150,7 @@ namespace CrawlerDesktop
 		}
 
 		private int CountPagesCrawled() { return _Nodes.Count(p => { return p.Value.Crawling == DownloadStatus.Done; }); }
-		private int CountPagesGoingToCrawl() { return _Nodes.Count(p => { return p.Value.Crawling == DownloadStatus.NotYet; }); }
+		private int CountPages() { return _Nodes.Count; }
 		private int CountBearsCrawled() { return _Bears.Count(p => { return p.Value.Crawling == DownloadStatus.Done; }); }
 		private int CountBears() { return _Bears.Count; }
 
@@ -174,7 +177,7 @@ namespace CrawlerDesktop
 				foreach (var e in extensions) BlackUrls.Add(new Regex(@"\." + e + "$"));
 			}
 
-			public virtual PageNode Clone(string url) { return new PageNode() { Url = url, Life = this.Life - 1 }; }
+			public virtual PageNode Clone(string url, PageNode parent) { return new PageNode() { Url = url, Life = parent.Life - 1 }; }
 
 			public virtual bool CheckCrawl(string url)
 			{
@@ -232,7 +235,7 @@ namespace CrawlerDesktop
 				foreach (var e in extensions) BearUrls.Add(new Regex(@"\." + e + "$"));
 			}
 
-			public override PageNode Clone(string url)
+			public override PageNode Clone(string url, PageNode parent)
 			{
 				return new ImageNode() { Url = url, Life = 0, LowerSize = this.LowerSize, UpperSize = this.UpperSize };
 			}
@@ -263,7 +266,7 @@ namespace CrawlerDesktop
 
 			}
 
-			public override PageNode Clone(string url) { return new XmlNode() { Url = url, Life = 0 }; }
+			public override PageNode Clone(string url, PageNode parent) { return new XmlNode() { Url = url, Life = 0 }; }
 
 			public override bool Bear(string dir)
 			{

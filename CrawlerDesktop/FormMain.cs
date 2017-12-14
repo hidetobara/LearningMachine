@@ -36,7 +36,7 @@ namespace CrawlerDesktop
 				buttonJump.Enabled = false;
 
 				_Crawler = new WebCrawler2(webBrowserMain, textBoxImageDirectory.Text);
-				var main = new WebCrawler2.PageNode() { Life = (int)numericUpDownLimitRank.Value };
+				var main = new WebCrawler2.PageNode();
 				if (textBoxMainWhite.Text.Length > 0)
 				{
 					var lines = textBoxMainWhite.Text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
@@ -59,7 +59,8 @@ namespace CrawlerDesktop
 				_Crawler.OnUpdatePageProgress = UpdatePageProgress;
 				_Crawler.OnUpdateImageProgress = UpdateImageProgress;
 				_Crawler.OnStop = StopCrawl;
-				_Crawler.Open(textBoxUrl.Text);
+				_Crawler.OnLoadPage = LoadPage;
+				_Crawler.Open(textBoxUrl.Text, (int)numericUpDownLimitRank.Value);
 				Properties.Settings.Default.Save();
 				buttonStart.Text = "Stop";
 			}
@@ -98,6 +99,11 @@ namespace CrawlerDesktop
 		private void StopCrawl()
 		{
 			buttonJump.Enabled = true;
+		}
+
+		private void LoadPage(string url)
+		{
+			textBoxUrl.Text = url;
 		}
 
 		private void FormMain_FormClosed(object sender, FormClosedEventArgs e)

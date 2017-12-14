@@ -60,6 +60,12 @@
     <None Include="dic\ipadic\unk.dic" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\IconLibrary\IconLibrary.csproj">
+      <Project>{1c617645-1302-4225-8cb7-d487242939e4}</Project>
+      <Name>IconLibrary</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\NMeCab.0.06.4\build\NMeCab.targets" Condition="Exists('..\packages\NMeCab.0.06.4\build\NMeCab.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
