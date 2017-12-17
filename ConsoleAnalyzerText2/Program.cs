@@ -12,8 +12,9 @@ namespace ConsoleAnalyzerText2
 		{
 			var analyzer = new Analyzer();
 //			analyzer.PickupProfileInHappyMail(new Analyzer.Option() { InputDir = "C:/obara/Data/HappyMail/Crawl", OutputDir = "C:/obara/Data/HappyMail/Process" });
-//			analyzer.CalclateWordClasses(new Analyzer.Option() { InputDir = "C:/obara/Data/HappyMail/Process", OutputDir = "C:/obara/Data/HappyMail/Process" });
-			analyzer.CalclateStatistics(new Analyzer.Option() { DictionaryPath = "C:/obara/Data/HappyMail/Process/words.csv", InputDir = "C:/obara/Data/HappyMail/Process", OutputDir = "C:/obara/Data/HappyMail/Process/ipca" });
+//			analyzer.CalclateWordClasses(new Analyzer.Option() { InputDir = "C:/obara/Data/HappyMail/Process", DictionaryPath = "C:/obara/Data/HappyMail/Process/words.csv" });
+			analyzer.CalclateStatistics(new Analyzer.Option() { DictionaryPath = "C:/obara/Data/HappyMail/Process/words.csv", InputDir = "C:/obara/Data/HappyMail/Process", OutputDir = "C:/obara/Data/HappyMail/Process" });
+			analyzer.GroupByStatistics(new Analyzer.Option() { DictionaryPath = "C:/obara/Data/HappyMail/Process/words.csv", InputDir = "C:/obara/Data/HappyMail/Process", OutputDir = "C:/obara/Data/HappyMail/Process" });
 		}
 	}
 }

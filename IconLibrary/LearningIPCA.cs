@@ -35,6 +35,8 @@ namespace IconLibrary
 
 		LearningImage[] _MainImages;	// 主成分
 		LearningImage[] _TmpImages;		// 副成分
+		public LearningImage[] MainImages { get { return _MainImages; } }
+		public LearningImage[] TmpImages { get { return _TmpImages; } }
 
 		long _FrameNow;
 		public override bool IsEnoughToLearn { get { return _FrameNow > 30000; } }
@@ -196,25 +198,6 @@ namespace IconLibrary
 				LearningImage.Add(image, tmp, image);
 			}
 			return image;
-		}
-
-		public List<Pickup> PickupTop(Dictionary<int, string> dic, int main, int top = 30)
-		{
-			var image = _MainImages[main];
-			List<Pickup> list = new List<Pickup>();
-			for (int n = 0; n < image.Data.Length; n++)
-			{
-				if (!dic.ContainsKey(n)) continue;
-				list.Add(new Pickup() { Word = dic[n], Value = image.Data[n] });
-			}
-			return new List<Pickup>(list.OrderByDescending(x => Math.Abs(x.Value)).Take(top));
-		}
-
-		public class Pickup
-		{
-			public string Word;
-			public double Value;
-			public override string ToString() { return Value.ToString("F4") + "," + Word; }
 		}
 	}
 }
