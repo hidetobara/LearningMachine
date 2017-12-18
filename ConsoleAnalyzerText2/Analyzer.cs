@@ -14,7 +14,7 @@ namespace ConsoleAnalyzerText2
 		const int AXIS_MAX = 32;
 		const int WORD_COUNT = 6000;
 		const int CUT_LIMIT = 3;
-		readonly string[] IGNORES = new string[] {"/", ":", "･", "," };
+		readonly string[] IGNORES = new string[] {"/", ":", "･", ",", "&nbsp;", "なし" };
 
 		/*
 		 * 統計情報からグループ分けする 
@@ -306,6 +306,7 @@ namespace ConsoleAnalyzerText2
 		 */
 		public void PickupProfileInHappyMail(Option o)
 		{
+			string[] removes = new string[] { "ﾒﾓの登録", "⇒", "ﾒﾓ内容", "&nbsp;" };
 			Regex r = new Regex("<table.*?自己紹介.*?</table>(.*)<table");
 			Regex tag = new Regex("<[ :&/a-zA-Z0-9=#%\\?\\.\"\']*>");
 			Regex space = new Regex("\\s+");
@@ -324,16 +325,9 @@ namespace ConsoleAnalyzerText2
 					replaced = replaced.Replace('。', '\t');
 					replaced = letter.Replace(replaced, "\t");
 					replaced = space.Replace(replaced, "\t");
-					replaced = replaced.Replace("ﾒﾓの登録", "");
-					replaced = replaced.Replace("⇒", "");
-					replaced = replaced.Replace("&nbsp;ﾒﾓ内容&nbsp;", "");
-					string[] cells = replaced.Split('\t');
-					foreach (string cell in cells)
-					{
-						var trimed = cell.Trim();
-						if (trimed.Length <= 5) continue;
-						pickups.Add(trimed);
-					}
+					foreach (var s in removes) replaced = replaced.Replace(s, "");
+
+					pickups.Add(replaced);
 				}
 			}
 			WriteLines(Path.Combine(o.OutputDir, "profile.log"), pickups);
