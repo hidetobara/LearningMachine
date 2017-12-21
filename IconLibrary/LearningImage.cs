@@ -204,6 +204,10 @@ namespace IconLibrary
 			SavePng(path, list[1], list[0]);
 		}
 
+		public static void Multiply(LearningImage a, LearningImage b, LearningImage o)
+		{
+			for (int l = 0; l < o.Length; l++) o.Data[l] = a.Data[l] * b.Data[l];
+		}
 		public static void Multiply(LearningImage i, LearningImage o, double rate = 1, double bias = 0)
 		{
 			for (int l = 0; l < o.Length; l++) o.Data[l] = i.Data[l] * rate + bias;

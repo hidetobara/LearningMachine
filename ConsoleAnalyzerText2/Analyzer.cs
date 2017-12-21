@@ -14,6 +14,7 @@ namespace ConsoleAnalyzerText2
 		const int AXIS_MAX = 32;
 		const int WORD_COUNT = 6000;
 		const int CUT_LIMIT = 3;
+		const int TOP_COUNT = 30;
 		readonly string[] IGNORES = new string[] {"/", ":", "･", ",", "&nbsp;", "なし" };
 
 		/*
@@ -26,11 +27,35 @@ namespace ConsoleAnalyzerText2
 			var ipca = new LearningIPCAForWords();
 			ipca.Load(o.IpcaDir);
 			int index = 0;
-			int[] counts = new int[AXIS_MAX];
-			double[] amounts = new double[AXIS_MAX];
-			double[] distributions = new double[AXIS_MAX];
+
+			// 平均と偏差
+			Statistics statitcs = new Statistics();
+			if (o.ReloadStatistics) statitcs.Load(Path.Combine(o.OutputDir, "statistics.csv"));
+			if (!statitcs.IsCalclated)
+			{
+				foreach (var p in Directory.GetFiles(o.InputDir, "*.log"))
+				{
+					foreach (var line in File.ReadLines(p))
+					{
+						var node = tagger.ParseToNode(line);
+						var used = RetrieveWords(node);
+						var image = dictionary.WordsToImage(used);
+						var vetor = ipca.Project(image);
+						statitcs.Add(vetor.Data);
+						index++;
+						if (index % 1000 == 0) Console.WriteLine("\tindex=" + index);
+					}
+				}
+				statitcs.Calclate(Path.Combine(o.OutputDir, "statistics.csv"));
+			}
+
+			// 偏差によってならした値でグループ化
+			index = 0;
 			TopList[] tops = new TopList[AXIS_MAX];
-			for (int a = 0; a < AXIS_MAX; a++) tops[a] = new TopList(30);
+			for (int a = 0; a < AXIS_MAX; a++) tops[a] = new TopList(a, TOP_COUNT);
+			LearningImage deviator = new LearningImage(1, AXIS_MAX, 1);
+			deviator.Data[0] = 0;
+			for (int a = 1; a < AXIS_MAX; a++) deviator.Data[a] = 1 / statitcs.Deviations[a];
 
 			StreamWriter writer = new StreamWriter(Path.Combine(o.OutputDir, "profile_grouped.csv"));
 			foreach (var p in Directory.GetFiles(o.InputDir, "*.log"))
@@ -41,19 +66,14 @@ namespace ConsoleAnalyzerText2
 					var used = RetrieveWords(node);
 					var image = dictionary.WordsToImage(used);
 					var vetor = ipca.Project(image);
-					var maxIdx = vetor.Data.Select((val, idx) => new { V = val, I = idx }).Aggregate((max, working) => (max.V > working.V) ? max : working).I;
-					var maxVal = vetor.Data[maxIdx];
+					var corrected = new LearningImage(1, AXIS_MAX, 1);
+					LearningImage.Multiply(vetor, deviator, corrected);
+					var maxIdx = corrected.Data.Select((val, idx) => new { V = val, I = idx }).Aggregate((max, working) => (max.V > working.V) ? max : working).I;
+					var maxVal = corrected.Data[maxIdx];
 					var context = line.Trim();
 					writer.WriteLine(context + "\t" + maxIdx + "\t" + maxVal.ToString("F4"));
 
 					tops[maxIdx].Add(context, maxVal);
-					for (int a = 0; a < AXIS_MAX; a++)
-					{
-						var v = vetor.Data[a];
-						amounts[a] += v;
-						distributions[a] += v * v;
-					}
-					counts[maxIdx]++;
 					index++;
 					if (index % 1000 == 0) Console.WriteLine("\tindex=" + index);
 				}
@@ -63,29 +83,105 @@ namespace ConsoleAnalyzerText2
 			List<string> lines = new List<string>();
 			for (int a = 0; a < AXIS_MAX; a++)
 			{
-				double average = amounts[a] / index;
-				double distribution = distributions[a] / index - average * average;
-				double deviation = Math.Sqrt(distribution);
-				lines.Add(a + "\t" + counts[a] + "\t" + average.ToString("F4") + "\t" + deviation.ToString("F4"));
-			}
-			for (int a = 0; a < AXIS_MAX; a++)
-			{
-				lines.Add("");
-				lines.Add("AXIS" + a.ToString("D2"));
+				if (a != 0) lines.Add("");
 				lines.AddRange(tops[a].ToList());
 			}
-			WriteLines(Path.Combine(o.OutputDir, "group.csv"), lines);
+			WriteLines(Path.Combine(o.OutputDir, "group_top.csv"), lines);
 			Console.WriteLine("grouped.");
+		}
+
+		private class Statistics
+		{
+			public int Count;
+			public double[] Averages;
+			public double[] Deviations;
+			public bool IsCalclated { get; private set; }
+
+			public Statistics()
+			{
+				IsCalclated = false;
+				Averages = new double[AXIS_MAX];
+				Deviations = new double[AXIS_MAX];
+			}
+			public bool Load(string path)
+			{
+				for (int a = 0; a < AXIS_MAX; a++) Deviations[a] = 1;
+
+				var lines = File.ReadAllLines(path);
+				if (lines.Length < AXIS_MAX) return false;
+
+				for (int a = 0; a < lines.Length; a++)
+				{
+					string[] cells = lines[a].Split('\t');
+					if (cells.Length < 3) continue;
+					double.TryParse(cells[1], out Averages[a]);
+					double.TryParse(cells[2], out Deviations[a]);
+				}
+				IsCalclated = true;
+				return true;
+			}
+
+			public void Add(double[] v)
+			{
+				if (IsCalclated) throw new Exception("No more add, already calclated.");
+
+				for (int a = 0; a < AXIS_MAX; a++)
+				{
+					Averages[a] += v[a];
+					Deviations[a] += v[a] * v[a];
+				}
+				Count++;
+			}
+			public bool Calclate(string path)
+			{
+				List<string> lines = new List<string>();
+				for (int a = 0; a < AXIS_MAX; a++)
+				{
+					double average = Averages[a] / Count;
+					double distribution = Deviations[a] / Count - average * average;
+					double deviation = Math.Sqrt(distribution);
+					Averages[a] = average;
+					Deviations[a] = deviation;
+					lines.Add(a + "\t" + average.ToString("F4") + "\t" + deviation.ToString("F4"));
+				}
+				File.WriteAllLines(path, lines);
+				IsCalclated = true;
+				return true;
+			}
+		}
+
+		private double[] LoadDistribution(string path)
+		{
+			double[] distributions = new double[AXIS_MAX];
+			for (int a = 0; a < AXIS_MAX; a++) distributions[a] = 1;
+
+			var lines = File.ReadAllLines(path);
+			if (lines.Length < AXIS_MAX) return distributions;
+
+			for(int r = 0; r < lines.Length; r++)
+			{
+				string[] cells = lines[r].Split('\t');
+				if (cells.Length < 4) continue;
+				double.TryParse(cells[3], out distributions[r]);
+			}
+			return distributions;
 		}
 
 		private class TopList
 		{
+			int _Axis;
 			int _Max = 30;
+			int _Count;
 			Dictionary<string, double> _Table = new Dictionary<string, double>();
 
-			public TopList(int max) { _Max = max; }
+			public TopList(int axis, int max)
+			{
+				_Axis = axis;
+				_Max = max;
+			}
 			public void Add(string w, double v)
 			{
+				_Count++;
 				if (_Table.Count < _Max)
 				{
 					_Table[w] = v;
@@ -101,7 +197,7 @@ namespace ConsoleAnalyzerText2
 
 			public List<string> ToList()
 			{
-				List<string> list = new List<string>();
+				List<string> list = new List<string>() { "Axis=" + _Axis.ToString("D2") + "\tCount=" + _Count };
 				foreach (var p in _Table.OrderByDescending(p => p.Value)) list.Add(p.Value.ToString("F4") + "\t" + p.Key);
 				return list;
 			}
@@ -110,7 +206,7 @@ namespace ConsoleAnalyzerText2
 		/*
 		 * 単語の頻度を計算する
 		 */
-		public void CalclateStatistics(Option o)
+		public void CalclateFrequency(Option o)
 		{
 			var dictionary = WordsDictionary.Load(o.DictionaryPath, CUT_LIMIT);
 			var tagger = PrepareTagger(o);
@@ -140,7 +236,7 @@ namespace ConsoleAnalyzerText2
 				string path = Path.Combine(o.IpcaDir, "main" + main + ".csv");
 				File.WriteAllLines(path, lines);
 			}
-			Console.WriteLine("calclarated statistics.");
+			Console.WriteLine("calclarated frequency.");
 		}
 
 		private List<Pickup> PickupTop(LearningIPCA ipca,　Dictionary<int, string> dic, int main, int top = 30)
@@ -346,6 +442,7 @@ namespace ConsoleAnalyzerText2
 			public bool ReloadIpca;
 			public string DictionaryPath;
 			public string IpcaDir { get { return Path.Combine(OutputDir, "ipca"); } }
+			public bool ReloadStatistics;
 		}
 
 		public enum MorphemeType { OTHERS, NOUN /*名詞*/, VERB /*動詞*/, ADJECTIVE /*形容詞*/, PARTICLE /*助詞*/, ADVERB /*副詞*/, EXCLAMATION /*感嘆詞*/, START, END }
