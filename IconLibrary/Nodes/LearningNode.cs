@@ -48,6 +48,7 @@ namespace IconLibrary
 			group.Update(list);
 			return group;
 		}
+		public virtual LearningImage BackForecast(LearningImage i) { return i; }
 	}
 
 	/*

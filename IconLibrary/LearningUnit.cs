@@ -39,6 +39,7 @@ namespace IconLibrary
 
 		#region 新
 		public override LearningImage Forecast(LearningImage i) { return Project(i); }
+		public override LearningImage BackForecast(LearningImage i) { return BackProject(i); }
 		#endregion
 	}
 

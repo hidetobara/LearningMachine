@@ -186,6 +186,9 @@ namespace IconLibrary
 			return new LearningImage(FrameOut, results.ToArray());
 		}
 
+		/**
+		 * 旧式依存のために残す
+		 */
 		public override LearningImage BackProject(LearningImage i)
 		{
 			List<double> list = new List<double>(i.Data);
@@ -195,6 +198,24 @@ namespace IconLibrary
 			{
 //				double length = LearningImage.EuclideanLength(_MainImages[m]);	本来はlist[m]*length
 				LearningImage.Multiply(_MainImages[m], tmp, list[m]);
+				LearningImage.Add(image, tmp, image);
+			}
+			return image;
+		}
+
+		public override LearningImage Forecast(LearningImage i)
+		{
+			return Project(i);
+		}
+		public override LearningImage BackForecast(LearningImage i)
+		{
+			List<double> list = new List<double>(i.Data);
+			LearningImage image = new LearningImage(Height, Width, Plane);
+			LearningImage tmp = new LearningImage(Height, Width, Plane);
+			for (int m = 0; m < MainMax; m++)
+			{
+				double length = LearningImage.EuclideanLength(_MainImages[m]);
+				LearningImage.Multiply(_MainImages[m], tmp, list[m] * length);
 				LearningImage.Add(image, tmp, image);
 			}
 			return image;

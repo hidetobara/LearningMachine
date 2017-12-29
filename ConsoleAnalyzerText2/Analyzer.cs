@@ -12,10 +12,65 @@ namespace ConsoleAnalyzerText2
 	public class Analyzer
 	{
 		const int AXIS_MAX = 32;
-		const int WORD_COUNT = 6000;
+		const int WORD_COUNT = 7000;
 		const int CUT_LIMIT = 3;
 		const int TOP_COUNT = 30;
 		readonly string[] IGNORES = new string[] {"/", ":", "･", ",", "&nbsp;", "なし" };
+
+		/*
+		 * 逆投影によって、パターン物とそうでないものに分類できないか
+		 * 逆投影後、元から大きくずれる物はそれだけパターンでなく、ずれないものはパターン物つまり業者になるのでは
+		 */
+		public void GroupByDifference(Option o)
+		{
+			var dictionary = WordsDictionary.Load(o.DictionaryPath, CUT_LIMIT);
+			var tagger = PrepareTagger(o);
+			var ipca = new LearningIPCAForWords();
+			ipca.Load(o.IpcaDir);
+
+			TopList[] tops = new TopList[AXIS_MAX];
+			TopList[] bottoms = new TopList[AXIS_MAX];
+			for (int a = 0; a < AXIS_MAX; a++)
+			{
+				tops[a] = new TopList(a, TOP_COUNT);
+				bottoms[a] = new TopList(-a, TOP_COUNT);
+			}
+
+			int index = 0;
+			foreach (var p in Directory.GetFiles(o.InputDir, "*.log"))
+			{
+				foreach (var line in File.ReadLines(p))
+				{
+					var node = tagger.ParseToNode(line);
+					var used = RetrieveWords(node);
+					var image = dictionary.WordsToImage(used);
+					var vetor = ipca.Forecast(image);
+					var reimaged = ipca.BackForecast(vetor);
+					LearningImage.Sub(image, reimaged, reimaged);
+					double distance = LearningImage.EuclideanLength(reimaged);
+
+					var maxIdx = vetor.Data.Select((val, idx) => new { V = val, I = idx }).Aggregate((max, working) => (max.V > working.V) ? max : working).I;
+					var context = line.Trim();
+
+					tops[maxIdx].Add(context, distance);
+					bottoms[maxIdx].Add(context, -distance);
+					index++;
+					if (index % 1000 == 0) Console.WriteLine("\tindex=" + index);
+				}
+			}
+
+			List<string> lines = new List<string>();
+			for (int a = 0; a < AXIS_MAX; a++)
+			{
+				lines.Add("");
+				lines.AddRange(tops[a].ToList());
+				lines.Add("");
+				lines.AddRange(bottoms[a].ToList());
+			}
+			WriteLines(Path.Combine(o.OutputDir, "group_by_difference.csv"), lines);
+			Console.WriteLine("grouped.");
+
+		}
 
 		/*
 		 * 統計情報からグループ分けする 
@@ -53,9 +108,7 @@ namespace ConsoleAnalyzerText2
 			index = 0;
 			TopList[] tops = new TopList[AXIS_MAX];
 			for (int a = 0; a < AXIS_MAX; a++) tops[a] = new TopList(a, TOP_COUNT);
-			LearningImage deviator = new LearningImage(1, AXIS_MAX, 1);
-			deviator.Data[0] = 0;
-			for (int a = 1; a < AXIS_MAX; a++) deviator.Data[a] = 1 / statitcs.Deviations[a];
+			LearningImage deviator = statitcs.GenerateDeviator();
 
 			StreamWriter writer = new StreamWriter(Path.Combine(o.OutputDir, "profile_grouped.csv"));
 			foreach (var p in Directory.GetFiles(o.InputDir, "*.log"))
@@ -86,7 +139,7 @@ namespace ConsoleAnalyzerText2
 				if (a != 0) lines.Add("");
 				lines.AddRange(tops[a].ToList());
 			}
-			WriteLines(Path.Combine(o.OutputDir, "group_top.csv"), lines);
+			WriteLines(Path.Combine(o.OutputDir, "group_by_statistics.csv"), lines);
 			Console.WriteLine("grouped.");
 		}
 
@@ -147,6 +200,14 @@ namespace ConsoleAnalyzerText2
 				File.WriteAllLines(path, lines);
 				IsCalclated = true;
 				return true;
+			}
+
+			public LearningImage GenerateDeviator()
+			{
+				LearningImage deviator = new LearningImage(1, AXIS_MAX, 1);
+				deviator.Data[0] = 0;
+				for (int a = 1; a < AXIS_MAX; a++) deviator.Data[a] = 1 / this.Deviations[a];
+				return deviator;
 			}
 		}
 
@@ -267,6 +328,12 @@ namespace ConsoleAnalyzerText2
 			public int CountMax { get; private set; }
 
 			public Word Get(string s) { if (!_Dictionary.ContainsKey(s)) return null; return _Dictionary[s]; }
+
+			/*
+			 * 単語列からベクトル化する
+			 * 1. 短い文章は何も内容が無いということで、分類されたくない→文章の個数の平方根
+			 * 2. 頻度が低い単語の優先度を上げたいLog(x, 2.0)に
+			 */
 			public LearningWords WordsToImage(List<Word> words)
 			{
 				var image = new LearningWords();
@@ -276,7 +343,7 @@ namespace ConsoleAnalyzerText2
 					if (!_Dictionary.ContainsKey(w.Text)) continue;
 					var word = _Dictionary[w.Text];
 					double importance = Math.Log((double)(CountMax + 1) / (double)word.CountLine, 2.0); // 要調整
-					image.Data[word.ID] = importance * w.CountWord / words.Count;
+					image.Data[word.ID] = importance * w.CountWord / Math.Sqrt(words.Count);	// 平方根の方がいいかも
 				}
 				return image;
 			}
