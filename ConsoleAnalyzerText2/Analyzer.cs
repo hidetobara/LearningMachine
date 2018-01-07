@@ -69,7 +69,6 @@ namespace ConsoleAnalyzerText2
 			}
 			WriteLines(Path.Combine(o.OutputDir, "group_by_difference.csv"), lines);
 			Console.WriteLine("grouped.");
-
 		}
 
 		/*
@@ -233,6 +232,8 @@ namespace ConsoleAnalyzerText2
 			int _Axis;
 			int _Max = 30;
 			int _Count;
+			double _Amount;
+			double _Distribution;
 			Dictionary<string, double> _Table = new Dictionary<string, double>();
 
 			public TopList(int axis, int max)
@@ -243,6 +244,8 @@ namespace ConsoleAnalyzerText2
 			public void Add(string w, double v)
 			{
 				_Count++;
+				_Amount += v;
+				_Distribution += v * v;
 				if (_Table.Count < _Max)
 				{
 					_Table[w] = v;
@@ -258,7 +261,11 @@ namespace ConsoleAnalyzerText2
 
 			public List<string> ToList()
 			{
-				List<string> list = new List<string>() { "Axis=" + _Axis.ToString("D2") + "\tCount=" + _Count };
+				double average = _Amount / _Count;
+				double distribution = _Distribution / _Count - average * average;
+				double deviation = Math.Sqrt(distribution);
+
+				List<string> list = new List<string>() { "Axis=" + _Axis.ToString("D2") + "\tCnt=" + _Count + "\tAve=" + average.ToString("F4") + "\tDev=" + deviation.ToString("F4") };
 				foreach (var p in _Table.OrderByDescending(p => p.Value)) list.Add(p.Value.ToString("F4") + "\t" + p.Key);
 				return list;
 			}
@@ -342,8 +349,10 @@ namespace ConsoleAnalyzerText2
 				{
 					if (!_Dictionary.ContainsKey(w.Text)) continue;
 					var word = _Dictionary[w.Text];
-					double importance = Math.Log((double)(CountMax + 1) / (double)word.CountLine, 2.0); // 要調整
-					image.Data[word.ID] = importance * w.CountWord / Math.Sqrt(words.Count);	// 平方根の方がいいかも
+//					double importance = Math.Log((double)(CountMax + 1) / (double)word.CountLine, Math.E); // 本来
+					double importance = Math.Log((double)(CountMax + 1) / (double)word.CountLine, 2.0); // 頻度の高い単語は無視したい
+//					image.Data[word.ID] = importance * w.CountWord / words.Count;   // 本来
+					image.Data[word.ID] = importance * w.CountWord;	// 単語の少ない文章は無視したい
 				}
 				return image;
 			}
@@ -469,6 +478,7 @@ namespace ConsoleAnalyzerText2
 		 */
 		public void PickupProfileInHappyMail(Option o)
 		{
+			Console.WriteLine("pickuping profiles.");
 			string[] removes = new string[] { "ﾒﾓの登録", "⇒", "ﾒﾓ内容", "&nbsp;" };
 			Regex r = new Regex("<table.*?自己紹介.*?</table>(.*)<table");
 			Regex tag = new Regex("<[ :&/a-zA-Z0-9=#%\\?\\.\"\']*>");
@@ -491,10 +501,10 @@ namespace ConsoleAnalyzerText2
 					foreach (var s in removes) replaced = replaced.Replace(s, "");
 
 					pickups.Add(replaced);
+					if (pickups.Count % 1000 == 0) Console.WriteLine("\tcount pickups=" + pickups.Count);
 				}
 			}
 			WriteLines(Path.Combine(o.OutputDir, "profile.log"), pickups);
-			Console.WriteLine("pickuped profiles.");
 		}
 
 		private void WriteLines(string path, List<string> lines)
