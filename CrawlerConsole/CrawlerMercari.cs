@@ -21,8 +21,7 @@ namespace CrawlerConsole
 
 		public CrawlerMercari()
 		{
-			string enviroment = "server=localhost; userid=baraoto; password=390831; database=mercari; CharSet=utf8";
-			MySqlConnection conn = new MySqlConnection(enviroment);
+			MySqlConnection conn = new MySqlConnection(Accounts.MYSQL_MERCARI_ENVIRONMENT);
 			conn.Open();
 			_Connection = conn;
 		}

@@ -6,8 +6,10 @@ namespace CrawlerConsole
     {
         static void Main(string[] args)
         {
-			CrawlerMercari crawler = new CrawlerMercari();
-			crawler.Run();
+			//CrawlerMercari crawler = new CrawlerMercari();
+			//crawler.Run();
+			CrawlerTwitter twitter = new CrawlerTwitter();
+			twitter.Run();
         }
     }
 }
