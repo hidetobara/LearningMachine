@@ -96,7 +96,7 @@
 			this.webBrowserMain.MinimumSize = new System.Drawing.Size(33, 30);
 			this.webBrowserMain.Name = "webBrowserMain";
 			this.webBrowserMain.ScriptErrorsSuppressed = true;
-			this.webBrowserMain.Size = new System.Drawing.Size(414, 552);
+			this.webBrowserMain.Size = new System.Drawing.Size(411, 552);
 			this.webBrowserMain.TabIndex = 2;
 			// 
 			// textBoxLog
@@ -445,7 +445,7 @@
 			this.textBoxUrl.Location = new System.Drawing.Point(115, 9);
 			this.textBoxUrl.Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
 			this.textBoxUrl.Name = "textBoxUrl";
-			this.textBoxUrl.Size = new System.Drawing.Size(304, 25);
+			this.textBoxUrl.Size = new System.Drawing.Size(301, 25);
 			this.textBoxUrl.TabIndex = 0;
 			this.textBoxUrl.Text = global::CrawlerDesktop.Properties.Settings.Default.CrawlerRootUrl;
 			// 

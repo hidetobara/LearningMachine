@@ -35,24 +35,25 @@ namespace CrawlerDesktop
 
 				buttonJump.Enabled = false;
 
-				_Crawler = new WebCrawler2(webBrowserMain, textBoxImageDirectory.Text);
-				var main = new WebCrawler2.PageNode();
+				var generators = new List<WebCrawler2.Generator>();
+				_Crawler = new WebCrawler2(webBrowserMain);
+				var main = new WebCrawler2.GeneratorPage();
 				if (textBoxMainWhite.Text.Length > 0)
 				{
 					var lines = textBoxMainWhite.Text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 					foreach (var line in lines) main.WhiteUrls.Add(new Regex(line));
 				}
-				_Crawler.AddRoot(main);
+				generators.Add(main);
 				if (numericUpDownUpperSize.Value > 0)
 				{
-					_Crawler.AddRoot(new WebCrawler2.ImageNode() { LowerSize = (int)numericUpDownLowerSize.Value, UpperSize = (int)numericUpDownUpperSize.Value });
+					generators.Add(new WebCrawler2.GeneratorImage() { LowerSize = (int)numericUpDownLowerSize.Value, UpperSize = (int)numericUpDownUpperSize.Value, DownloadDir = textBoxImageDirectory.Text });
 				}
 				if (textBoxXmlBear.Text.Length > 0)
 				{
-					var xml = new WebCrawler2.XmlNode();
+					var xml = new WebCrawler2.GeneratorXml() { DownloadDir = textBoxImageDirectory.Text };
 					var lines = textBoxXmlBear.Text.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-					foreach (var line in lines) xml.BearUrls.Add(new Regex(line));
-					_Crawler.AddRoot(xml);
+					foreach (var line in lines) xml.WhiteUrls.Add(new Regex(line));
+					generators.Add(xml);
 				}
 
 				_Crawler.OnAddLog = AddLog;
@@ -60,7 +61,7 @@ namespace CrawlerDesktop
 				_Crawler.OnUpdateImageProgress = UpdateImageProgress;
 				_Crawler.OnStop = StopCrawl;
 				_Crawler.OnLoadPage = LoadPage;
-				_Crawler.Open(textBoxUrl.Text, (int)numericUpDownLimitRank.Value);
+				_Crawler.Open(textBoxUrl.Text, (int)numericUpDownLimitRank.Value, generators);
 				Properties.Settings.Default.Save();
 				buttonStart.Text = "Stop";
 			}
