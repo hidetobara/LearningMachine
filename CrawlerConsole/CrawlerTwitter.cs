@@ -15,6 +15,12 @@ namespace CrawlerConsole
 		public CrawlerTwitter()
 		{
 			_Tokens = Tokens.Create(Accounts.CONSUMER_KEY, Accounts.CONSUMER_SECRET, Accounts.OBR_TOKEN, Accounts.OBR_SECRET);
+			Reconnect();
+		}
+
+		private void Reconnect()
+		{
+			if (_Connection != null) _Connection.Close();
 
 			MySqlConnection conn = new MySqlConnection(Accounts.MYSQL_TWITTER_ENVIRONMENT);
 			conn.Open();
@@ -41,32 +47,36 @@ namespace CrawlerConsole
 			}
 		}
 
-		
 		private void Save(Status status)
 		{
 			Save(status.Id, status.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"), status.User.ScreenName, status.Text);
 		}
 		private void Save(long tid, string date, string name, string text)
 		{
-			MySqlCommand command;
-			string sql = "";
-			try
-			{
-				sql = string.Format("SELECT `id` FROM `home` WHERE `id` = {0}", tid);
-				command = new MySqlCommand(sql, _Connection);
-				var o = command.ExecuteScalar();
-				if (o != null) return;
+			text = text.Replace("\'", "");
+			text = text.Replace("`", "");
+			text = text.Replace("\\", "");
 
-				text = text.Replace("\'", "");
-				text = text.Replace("`", "");
-				text = text.Replace("\\", "");
-				sql = string.Format("INSERT INTO `home` (`id`, `at_created`, `screen_name`, `text`) VALUES ({0}, '{1}', '{2}', '{3}')", tid, date, name, text);
-				command = new MySqlCommand(sql, _Connection);
-				command.ExecuteNonQuery();
-			}
-			catch(Exception ex)
+			string sql = "";
+			for (int r = 0; r < 3; r++)
 			{
-				Console.WriteLine(ex.Message + "@" + sql);
+				try
+				{
+					sql = string.Format("SELECT `id` FROM `home` WHERE `id` = {0}", tid);
+					MySqlCommand command = new MySqlCommand(sql, _Connection);
+					var o = command.ExecuteScalar();
+					if (o != null) return;
+
+					sql = string.Format("INSERT INTO `home` (`id`, `at_created`, `screen_name`, `text`) VALUES ({0}, '{1}', '{2}', '{3}')", tid, date, name, text);
+					command = new MySqlCommand(sql, _Connection);
+					command.ExecuteNonQuery();
+					break;	// 最後まで実行出来たら終了
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine(ex.Message + "@" + sql + " [" + r + "]");
+					if (_Connection.State != System.Data.ConnectionState.Open) Reconnect();
+				}
 			}
 		}
 
@@ -117,6 +127,7 @@ namespace CrawlerConsole
 
 		public void LoadType1or2(string srcDir)
 		{
+			int count = 0;
 			foreach (string path in Directory.GetFiles(srcDir, "*.log", SearchOption.AllDirectories))
 			{
 				foreach (string line in File.ReadLines(path))
@@ -125,23 +136,29 @@ namespace CrawlerConsole
 					string name = null;
 					string date = null;
 					string text = null;
-					foreach (string cell in line.Split(','))
+					var cells = line.Split(',');
+					for (int i = 0; i < cells.Length; i++)
 					{
-						var kv = cell.Split('=');
-						if (kv.Length == 1)
+						if (i == 0)
 						{
-							long.TryParse(cell, out tid);
+							long.TryParse(cells[0], out tid);
 							continue;
 						}
-						if (kv.Length == 2)
-						{
-							if (kv[0] == "id") long.TryParse(kv[1], out tid);
-							if (kv[0] == "user_screen_name") name = kv[1];
-							if (kv[0] == "created_at" || kv[0] == "create_at") date = kv[1];
-							if (kv[0] == "text") text = kv[1];
-						}
+						var kv = cells[i].Split('=');
+						if (kv.Length != 2) continue;
+
+						if (kv[0] == "id") long.TryParse(kv[1], out tid);
+						if (kv[0] == "user_screen_name") name = kv[1];
+						if (kv[0] == "created_at" || kv[0] == "create_at") date = kv[1].Replace("Z", "");
+						if (kv[0] == "text") text = kv[1];
 					}
-					if (tid > 0 && date != null && name != null && text != null) Save(tid, date, name, text);
+					if (tid > 0 && date != null && name != null && text != null)
+					{
+						Save(tid, date, name, text);
+						count++;
+
+						if (count % 1000 == 0) { Reconnect(); Console.WriteLine("\trecord=" + count); }
+					}
 				}
 			}
 			Console.WriteLine("loaded type1 or 2");

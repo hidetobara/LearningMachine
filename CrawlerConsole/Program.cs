@@ -6,6 +6,8 @@ namespace CrawlerConsole
     {
         static void Main(string[] args)
         {
+			args = new string[] { "--twitter-logs" };
+
 			if (args.Length == 0 || args[0] == "--mercari")
 			{
 				CrawlerMercari crawler = new CrawlerMercari();
