@@ -7,8 +7,8 @@ using MySql.Data.MySqlClient;
 
 namespace CrawlerConsole
 {
-    class CrawlerTwitter
-    {
+	class CrawlerTwitter
+	{
 		private Tokens _Tokens;
 		private MySqlConnection _Connection;
 
@@ -27,7 +27,7 @@ namespace CrawlerConsole
 			_Connection = conn;
 		}
 
-		public void Run()
+		public void RunHome()
 		{
 			try
 			{
@@ -41,17 +41,17 @@ namespace CrawlerConsole
 				}
 				Console.WriteLine("Have run home.");
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				Console.WriteLine(ex.Message + "@" + ex.StackTrace);
 			}
 		}
 
-		private void Save(Status status)
+		private void Save(Status status, string table = "home")
 		{
-			Save(status.Id, status.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"), status.User.ScreenName, status.Text);
+			Save(status.Id, status.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"), status.User.ScreenName, status.Text, table);
 		}
-		private void Save(long tid, string date, string name, string text)
+		private void Save(long tid, string date, string name, string text, string table = "home")
 		{
 			text = text.Replace("\'", "");
 			text = text.Replace("`", "");
@@ -62,15 +62,15 @@ namespace CrawlerConsole
 			{
 				try
 				{
-					sql = string.Format("SELECT `id` FROM `home` WHERE `id` = {0}", tid);
+					sql = string.Format("SELECT `id` FROM `{1}` WHERE `id` = {0}", tid, table);
 					MySqlCommand command = new MySqlCommand(sql, _Connection);
 					var o = command.ExecuteScalar();
 					if (o != null) return;
 
-					sql = string.Format("INSERT INTO `home` (`id`, `at_created`, `screen_name`, `text`) VALUES ({0}, '{1}', '{2}', '{3}')", tid, date, name, text);
+					sql = string.Format("INSERT INTO `{4}` (`id`, `at_created`, `screen_name`, `text`) VALUES ({0}, '{1}', '{2}', '{3}')", tid, date, name, text, table);
 					command = new MySqlCommand(sql, _Connection);
 					command.ExecuteNonQuery();
-					break;	// 最後まで実行出来たら終了
+					break;  // 最後まで実行出来たら終了
 				}
 				catch (Exception ex)
 				{
@@ -86,11 +86,11 @@ namespace CrawlerConsole
 		public void LoadType0(string userPath, string srcDir)
 		{
 			Dictionary<int, string> users = new Dictionary<int, string>();
-			foreach(string line in File.ReadLines(userPath))
+			foreach (string line in File.ReadLines(userPath))
 			{
 				string screenName = null;
 				int uid = 0;
-				foreach(var cell in line.Split(','))
+				foreach (var cell in line.Split(','))
 				{
 					var kv = cell.Split('=');
 					if (kv.Length != 2) continue;
@@ -100,7 +100,7 @@ namespace CrawlerConsole
 				if (uid > 0 && screenName != null) users[uid] = screenName;
 			}
 
-			foreach(string path in Directory.GetFiles(srcDir, "*.log", SearchOption.AllDirectories))
+			foreach (string path in Directory.GetFiles(srcDir, "*.log", SearchOption.AllDirectories))
 			{
 				foreach (string line in File.ReadLines(path))
 				{
@@ -162,6 +162,52 @@ namespace CrawlerConsole
 				}
 			}
 			Console.WriteLine("loaded type1 or 2");
+		}
+
+		public void LoadCsvs(string srcDir)
+		{
+			int count = 0;
+			foreach (string path in Directory.GetFiles(srcDir, "*.csv", SearchOption.AllDirectories))
+			{
+				string name = Path.GetFileNameWithoutExtension(path);
+				foreach (string line in File.ReadLines(path))
+				{
+					long tid = 0;
+					var cells = line.Split(',');
+					if (cells.Length < 6) continue;
+					if (!long.TryParse(cells[0].Trim('"'), out tid)) continue;
+					string date = cells[3].Trim('"').Replace(" +0000", "");
+					string text = cells[5].Trim('"');
+					Save(tid, date, name, text);
+
+					count++;
+					if (count % 1000 == 0) { Reconnect(); Console.WriteLine("\trecord=" + count); }
+				}
+			}
+			Console.WriteLine("loaded csvs.");
+		}
+
+		/**
+		 * ハッシュタグを検索したい、でも同じタグのノイズが入りやすい
+		 */
+		public void SearchTags()
+		{
+			try
+			{
+				var task = _Tokens.Search.TweetsAsync(q: "#.* -RT", count: 100, lang: "jp");
+				task.Wait();
+				if (task.Exception != null) throw task.Exception;
+				var statuses = task.Result;
+				foreach (var status in statuses)
+				{
+					Save(status, "tags");
+				}
+				Console.WriteLine("Have run search.");
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message + "@" + ex.StackTrace);
+			}
 		}
 	}
 }

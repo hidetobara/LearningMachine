@@ -6,7 +6,9 @@ namespace CrawlerConsole
     {
         static void Main(string[] args)
         {
-			args = new string[] { "--twitter-logs" };
+#if DEBUG
+			args = new string[] { "--twitter-search" };
+#endif
 
 			if (args.Length == 0 || args[0] == "--mercari")
 			{
@@ -16,12 +18,27 @@ namespace CrawlerConsole
 			if (args.Length == 0 || args[0] == "--twitter")
 			{
 				CrawlerTwitter twitter = new CrawlerTwitter();
-				twitter.Run();
+				twitter.RunHome();
 			}
-			if(args.Length == 0 || args[0] == "--twitter-logs")
+			if (args.Length == 0 || args[0] == "--twitter-search")
+			{
+				CrawlerTwitter twitter = new CrawlerTwitter();
+				twitter.SearchTags();
+			}
+			if (args.Length == 0 || args[0] == "--twitter-logs")
 			{
 				CrawlerTwitter twitter = new CrawlerTwitter();
 				twitter.LoadType1or2(@"./logs/");
+			}
+			if (args.Length == 0 || args[0] == "--twitter-csvs")
+			{
+				CrawlerTwitter twitter = new CrawlerTwitter();
+				twitter.LoadCsvs(@"./csvs/");
+			}
+			if (args.Length == 0 || args[0] == "--rain")
+			{
+				CrawlerRain rain = new CrawlerRain();
+				rain.Run(args.Length > 1 ? args[1] : "./");
 			}
 		}
     }
