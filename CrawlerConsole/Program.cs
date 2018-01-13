@@ -7,7 +7,7 @@ namespace CrawlerConsole
         static void Main(string[] args)
         {
 #if DEBUG
-			args = new string[] { "--twitter-search" };
+			args = new string[] { "--twitter-accidents" };
 #endif
 
 			if (args.Length == 0 || args[0] == "--mercari")
@@ -20,10 +20,10 @@ namespace CrawlerConsole
 				CrawlerTwitter twitter = new CrawlerTwitter();
 				twitter.RunHome();
 			}
-			if (args.Length == 0 || args[0] == "--twitter-search")
+			if (args.Length == 0 || args[0] == "--twitter-accidents")
 			{
 				CrawlerTwitter twitter = new CrawlerTwitter();
-				twitter.SearchTags();
+				twitter.SearchAccidents();
 			}
 			if (args.Length == 0 || args[0] == "--twitter-logs")
 			{

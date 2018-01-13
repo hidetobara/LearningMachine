@@ -188,19 +188,19 @@ namespace CrawlerConsole
 		}
 
 		/**
-		 * ハッシュタグを検索したい、でも同じタグのノイズが入りやすい
+		 * 特定のキーワードの収集、実験中
 		 */
-		public void SearchTags()
+		public void SearchAccidents()
 		{
 			try
 			{
-				var task = _Tokens.Search.TweetsAsync(q: "#.* -RT", count: 100, lang: "jp");
+				var task = _Tokens.Search.TweetsAsync(q: "人身事故 -RT", count: 100);
 				task.Wait();
 				if (task.Exception != null) throw task.Exception;
 				var statuses = task.Result;
 				foreach (var status in statuses)
 				{
-					Save(status, "tags");
+					if(status.Text.Contains("駅") || status.Text.Contains("線")) Save(status, "accidents");
 				}
 				Console.WriteLine("Have run search.");
 			}
