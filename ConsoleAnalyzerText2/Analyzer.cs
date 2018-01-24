@@ -14,7 +14,7 @@ namespace ConsoleAnalyzerText2
 		const int AXIS_MAX = 32;
 		const int WORD_COUNT = 7000;
 		const int CUT_LIMIT = 3;
-		const int TOP_COUNT = 30;
+		const int TOP_COUNT = 50;
 		readonly string[] IGNORES = new string[] {"/", ":", "･", ",", "&nbsp;", "なし" };
 
 		/*
@@ -28,15 +28,11 @@ namespace ConsoleAnalyzerText2
 			var ipca = new LearningIPCAForWords();
 			ipca.Load(o.IpcaDir);
 
-			TopList[] tops = new TopList[AXIS_MAX];
-			TopList[] bottoms = new TopList[AXIS_MAX];
-			for (int a = 0; a < AXIS_MAX; a++)
-			{
-				tops[a] = new TopList(a, TOP_COUNT);
-				bottoms[a] = new TopList(-a, TOP_COUNT);
-			}
-
 			int index = 0;
+			StreamWriter writer = new StreamWriter(Path.Combine(o.OutputDir, "profile_difference.csv"));
+			writer.Write("id\t");
+			for (int aa = 0; aa < AXIS_MAX; aa++) writer.Write("len" + aa + "\terr" + aa + "\t");
+			writer.WriteLine();
 			foreach (var p in Directory.GetFiles(o.InputDir, "*.log"))
 			{
 				foreach (var line in File.ReadLines(p))
@@ -45,29 +41,23 @@ namespace ConsoleAnalyzerText2
 					var used = RetrieveWords(node);
 					var image = dictionary.WordsToImage(used);
 					var vetor = ipca.Forecast(image);
-					var reimaged = ipca.BackForecast(vetor);
-					LearningImage.Sub(image, reimaged, reimaged);
-					double distance = LearningImage.EuclideanLength(reimaged);
+					List<string> list = new List<string>() { index.ToString() };
+					for (int a = 0; a < AXIS_MAX; a++)
+					{
+						var foot = new LearningImage(1, AXIS_MAX, 1);
+						foot.Data[a] = vetor.Data[a];
+						var reimaged = ipca.BackForecast(foot);
+						LearningImage.Sub(image, reimaged, reimaged);
+						double distance = LearningImage.EuclideanLength(reimaged);
+						list.Add(foot.Data[a].ToString("F2"));
+						list.Add(distance.ToString("F2"));
+					}
+					writer.WriteLine(string.Join("\t", list) + "\t" + line);
 
-					var maxIdx = vetor.Data.Select((val, idx) => new { V = val, I = idx }).Aggregate((max, working) => (max.V > working.V) ? max : working).I;
-					var context = line.Trim();
-
-					tops[maxIdx].Add(context, distance);
-					bottoms[maxIdx].Add(context, -distance);
 					index++;
 					if (index % 1000 == 0) Console.WriteLine("\tindex=" + index);
 				}
 			}
-
-			List<string> lines = new List<string>();
-			for (int a = 0; a < AXIS_MAX; a++)
-			{
-				lines.Add("");
-				lines.AddRange(tops[a].ToList());
-				lines.Add("");
-				lines.AddRange(bottoms[a].ToList());
-			}
-			WriteLines(Path.Combine(o.OutputDir, "group_by_difference.csv"), lines);
 			Console.WriteLine("grouped.");
 		}
 
@@ -106,8 +96,15 @@ namespace ConsoleAnalyzerText2
 			// 偏差によってならした値でグループ化
 			index = 0;
 			TopList[] tops = new TopList[AXIS_MAX];
-			for (int a = 0; a < AXIS_MAX; a++) tops[a] = new TopList(a, TOP_COUNT);
+			TopList[] bottoms = new TopList[AXIS_MAX];
+			for (int a = 0; a < AXIS_MAX; a++)
+			{
+				tops[a] = new TopList(a, TOP_COUNT);
+				bottoms[a] = new TopList(-a, TOP_COUNT);
+			}
+			TopList pickup = new TopList(o.PickupAxis, 500);
 			LearningImage deviator = statitcs.GenerateDeviator();
+			LearningImage bias = statitcs.GenerateBias();
 
 			StreamWriter writer = new StreamWriter(Path.Combine(o.OutputDir, "profile_grouped.csv"));
 			foreach (var p in Directory.GetFiles(o.InputDir, "*.log"))
@@ -119,13 +116,24 @@ namespace ConsoleAnalyzerText2
 					var image = dictionary.WordsToImage(used);
 					var vetor = ipca.Project(image);
 					var corrected = new LearningImage(1, AXIS_MAX, 1);
-					LearningImage.Multiply(vetor, deviator, corrected);
+					LearningImage.Add(vetor, bias, corrected);
+					LearningImage.Multiply(corrected, deviator, corrected);
 					var maxIdx = corrected.Data.Select((val, idx) => new { V = val, I = idx }).Aggregate((max, working) => (max.V > working.V) ? max : working).I;
 					var maxVal = corrected.Data[maxIdx];
-					var context = line.Trim();
-					writer.WriteLine(context + "\t" + maxIdx + "\t" + maxVal.ToString("F4"));
+					List<string> cells = new List<string>();
+					cells.Add(maxIdx.ToString());
+					for (int i = 0; i < corrected.Data.Length; i++) cells.Add(corrected.Data[i].ToString("F2"));
+					cells.Add(line.Trim());
+					writer.WriteLine(string.Join("\t", cells));
 
-					tops[maxIdx].Add(context, maxVal);
+					if (o.PickupAxis > 0)
+					{
+						double value = corrected.Data[o.PickupAxis];
+						if (o.PickupLower < value && value < o.PickupUpper) pickup.Add(line.Trim(), value);
+					}
+
+					tops[maxIdx].Add(line.Trim(), maxVal);
+					bottoms[maxIdx].Add(line.Trim(), -maxVal);
 					index++;
 					if (index % 1000 == 0) Console.WriteLine("\tindex=" + index);
 				}
@@ -139,6 +147,8 @@ namespace ConsoleAnalyzerText2
 				lines.AddRange(tops[a].ToList());
 			}
 			WriteLines(Path.Combine(o.OutputDir, "group_by_statistics.csv"), lines);
+			if (o.PickupAxis > 0) WriteLines(Path.Combine(o.OutputDir, "group_by_pickup.csv"), pickup.ToList());
+
 			Console.WriteLine("grouped.");
 		}
 
@@ -199,6 +209,14 @@ namespace ConsoleAnalyzerText2
 				File.WriteAllLines(path, lines);
 				IsCalclated = true;
 				return true;
+			}
+
+			public LearningImage GenerateBias()
+			{
+				LearningImage bias = new LearningImage(1, AXIS_MAX, 1);
+				bias.Data[0] = 0;
+				for (int a = 1; a < AXIS_MAX; a++) bias.Data[a] = -this.Averages[a];
+				return bias;
 			}
 
 			public LearningImage GenerateDeviator()
@@ -276,21 +294,26 @@ namespace ConsoleAnalyzerText2
 		 */
 		public void CalclateFrequency(Option o)
 		{
+			if (o.Loop < 1) o.Loop = 1;
+
 			var dictionary = WordsDictionary.Load(o.DictionaryPath, CUT_LIMIT);
 			var tagger = PrepareTagger(o);
 			var ipca = new LearningIPCAForWords();
 			if (o.ReloadIpca) ipca.Load(o.IpcaDir); else ipca.Initialize();
 			int index = 0;
-			foreach (var p in Directory.GetFiles(o.InputDir, "*.log"))
+			for (int l = 0; l < o.Loop; l++)
 			{
-				foreach (var line in File.ReadLines(p))
+				foreach (var p in Directory.GetFiles(o.InputDir, "*.log"))
 				{
-					var node = tagger.ParseToNode(line);
-					var used = RetrieveWords(node);
-					var image = dictionary.WordsToImage(used);
-					ipca.Learn(new List<LearningImage>() { image });
-					index++;
-					if (index % 1000 == 0) Console.WriteLine("\tindex=" + index);
+					foreach (var line in File.ReadLines(p))
+					{
+						var node = tagger.ParseToNode(line);
+						var used = RetrieveWords(node);
+						var image = dictionary.WordsToImage(used);
+						ipca.Learn(new List<LearningImage>() { image });
+						index++;
+						if (index % 1000 == 0) Console.WriteLine("\tindex=" + index);
+					}
 				}
 			}
 			ipca.Save(o.IpcaDir);
@@ -520,6 +543,9 @@ namespace ConsoleAnalyzerText2
 			public string DictionaryPath;
 			public string IpcaDir { get { return Path.Combine(OutputDir, "ipca"); } }
 			public bool ReloadStatistics;
+			public int Loop;
+			public int PickupAxis;
+			public double PickupLower, PickupUpper;
 		}
 
 		public enum MorphemeType { OTHERS, NOUN /*名詞*/, VERB /*動詞*/, ADJECTIVE /*形容詞*/, PARTICLE /*助詞*/, ADVERB /*副詞*/, EXCLAMATION /*感嘆詞*/, START, END }
