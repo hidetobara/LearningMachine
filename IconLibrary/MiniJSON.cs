@@ -506,13 +506,16 @@ namespace MiniJSON {
                         builder.Append("\\t");
                         break;
                     default:
-                        int codepoint = Convert.ToInt32(c);
+						builder.Append(c);
+/*
+						int codepoint = Convert.ToInt32(c);
                         if ((codepoint >= 32) && (codepoint <= 126)) {
                             builder.Append(c);
                         } else {
                             builder.Append("\\u");
                             builder.Append(codepoint.ToString("x4"));
                         }
+						*/
                         break;
                     }
                 }

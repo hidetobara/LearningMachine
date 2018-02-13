@@ -17,9 +17,20 @@ namespace ConsoleAnalyzerText2
 		const int TOP_COUNT = 50;
 		readonly string[] IGNORES = new string[] {"/", ":", "･", ",", "&nbsp;", "なし" };
 
+		public void BuildVolatile(Option o)
+		{
+			MorphemeManager.Instance.Initialize("C:/obara/Library/NMeCab0.07/dic/ipadic");
+			VolatileManager v = new VolatileManager(o.OutputDir, "happy");
+			//v.LearningMatrix(o.InputDir);
+			//v.Save();
+			v.Load();
+			string s = v.Generate();
+		}
+
 		/*
 		 * 逆投影によって、パターン物とそうでないものに分類できないか
 		 * 逆投影後、元から大きくずれる物はそれだけパターンでなく、ずれないものはパターン物つまり業者になるのでは
+		 * →使えなかった
 		 */
 		public void GroupByDifference(Option o)
 		{
@@ -37,8 +48,7 @@ namespace ConsoleAnalyzerText2
 			{
 				foreach (var line in File.ReadLines(p))
 				{
-					var node = tagger.ParseToNode(line);
-					var used = RetrieveWords(node);
+					var used = RetrieveWords(tagger, line);
 					var image = dictionary.WordsToImage(used);
 					var vetor = ipca.Forecast(image);
 					List<string> list = new List<string>() { index.ToString() };
@@ -72,23 +82,22 @@ namespace ConsoleAnalyzerText2
 			ipca.Load(o.IpcaDir);
 			int index = 0;
 
+			// lines
+			var lines = LoadLinesUsingUnique(o.InputDir, "*.log");
+
 			// 平均と偏差
 			Statistics statitcs = new Statistics();
 			if (o.ReloadStatistics) statitcs.Load(Path.Combine(o.OutputDir, "statistics.csv"));
 			if (!statitcs.IsCalclated)
 			{
-				foreach (var p in Directory.GetFiles(o.InputDir, "*.log"))
+				foreach (var line in lines)
 				{
-					foreach (var line in File.ReadLines(p))
-					{
-						var node = tagger.ParseToNode(line);
-						var used = RetrieveWords(node);
-						var image = dictionary.WordsToImage(used);
-						var vetor = ipca.Project(image);
-						statitcs.Add(vetor.Data);
-						index++;
-						if (index % 1000 == 0) Console.WriteLine("\tindex=" + index);
-					}
+					var used = RetrieveWords(tagger, line);
+					var image = dictionary.WordsToImage(used);
+					var vetor = ipca.Project(image);
+					statitcs.Add(vetor.Data);
+					index++;
+					if (index % 1000 == 0) Console.WriteLine("\tindex=" + index);
 				}
 				statitcs.Calclate(Path.Combine(o.OutputDir, "statistics.csv"));
 			}
@@ -103,53 +112,68 @@ namespace ConsoleAnalyzerText2
 				bottoms[a] = new TopList(-a, TOP_COUNT);
 			}
 			TopList pickup = new TopList(o.PickupAxis, 500);
+			TopList outer = new TopList(0, 1000);
 			LearningImage deviator = statitcs.GenerateDeviator();
 			LearningImage bias = statitcs.GenerateBias();
 
 			StreamWriter writer = new StreamWriter(Path.Combine(o.OutputDir, "profile_grouped.csv"));
-			foreach (var p in Directory.GetFiles(o.InputDir, "*.log"))
+			writer.Write("CountOut\tMaxIndex\t");
+			for (var a = 0; a < AXIS_MAX; a++) writer.Write("Value" + a + "\t");
+			writer.WriteLine();
+			foreach (var line in lines)
 			{
-				foreach (var line in File.ReadLines(p))
+				var trimed = line.Trim().Replace("\t", "|");
+				var used = RetrieveWords(tagger, line);
+				var image = dictionary.WordsToImage(used);
+				var vetor = ipca.Project(image);
+				var corrected = new LearningImage(1, AXIS_MAX, 1);
+				LearningImage.Add(vetor, bias, corrected);
+				LearningImage.Multiply(corrected, deviator, corrected);
+				var maxIdx = corrected.Data.Select((val, idx) => new { V = val, I = idx }).Aggregate((max, working) => (max.V > working.V) ? max : working).I;
+				var maxVal = corrected.Data[maxIdx];
+				var cntOut = corrected.Data.Count(a => a > 1.96);   // 95%信頼区間
+				List<string> cells = new List<string>();
+				cells.Add(cntOut.ToString());
+				cells.Add(maxIdx.ToString());
+				for (int i = 0; i < corrected.Data.Length; i++) cells.Add(corrected.Data[i].ToString("F2"));
+				cells.Add(trimed);
+				writer.WriteLine(string.Join("\t", cells));
+
+				if (o.PickupAxis > 0)
 				{
-					var node = tagger.ParseToNode(line);
-					var used = RetrieveWords(node);
-					var image = dictionary.WordsToImage(used);
-					var vetor = ipca.Project(image);
-					var corrected = new LearningImage(1, AXIS_MAX, 1);
-					LearningImage.Add(vetor, bias, corrected);
-					LearningImage.Multiply(corrected, deviator, corrected);
-					var maxIdx = corrected.Data.Select((val, idx) => new { V = val, I = idx }).Aggregate((max, working) => (max.V > working.V) ? max : working).I;
-					var maxVal = corrected.Data[maxIdx];
-					List<string> cells = new List<string>();
-					cells.Add(maxIdx.ToString());
-					for (int i = 0; i < corrected.Data.Length; i++) cells.Add(corrected.Data[i].ToString("F2"));
-					cells.Add(line.Trim());
-					writer.WriteLine(string.Join("\t", cells));
-
-					if (o.PickupAxis > 0)
-					{
-						double value = corrected.Data[o.PickupAxis];
-						if (o.PickupLower < value && value < o.PickupUpper) pickup.Add(line.Trim(), value);
-					}
-
-					tops[maxIdx].Add(line.Trim(), maxVal);
-					bottoms[maxIdx].Add(line.Trim(), -maxVal);
-					index++;
-					if (index % 1000 == 0) Console.WriteLine("\tindex=" + index);
+					double value = corrected.Data[o.PickupAxis];
+					if (o.PickupLower < value && value < o.PickupUpper) pickup.Add(trimed, value);
 				}
+
+				tops[maxIdx].Add(trimed, maxVal);
+				bottoms[maxIdx].Add(trimed, -maxVal);
+				outer.Add(trimed, cntOut);
+				index++;
+				if (index % 1000 == 0) Console.WriteLine("\tindex=" + index);
 			}
 			writer.Close();
 
-			List<string> lines = new List<string>();
+			List<string> grouped = new List<string>();
 			for (int a = 0; a < AXIS_MAX; a++)
 			{
-				if (a != 0) lines.Add("");
-				lines.AddRange(tops[a].ToList());
+				if (a != 0) grouped.Add("");
+				grouped.AddRange(tops[a].ToList());
 			}
-			WriteLines(Path.Combine(o.OutputDir, "group_by_statistics.csv"), lines);
+			WriteLines(Path.Combine(o.OutputDir, "group_by_statistics.csv"), grouped);
+			WriteLines(Path.Combine(o.OutputDir, "group_by_outer.csv"), outer.ToList());
 			if (o.PickupAxis > 0) WriteLines(Path.Combine(o.OutputDir, "group_by_pickup.csv"), pickup.ToList());
 
 			Console.WriteLine("grouped.");
+		}
+
+		private List<string> LoadLinesUsingUnique(string dir, string pattern)
+		{
+			Dictionary<string, int> table = new Dictionary<string, int>();
+			foreach (var p in Directory.GetFiles(dir, "*.log"))
+			{
+				foreach (var line in File.ReadLines(p)) table[line] = 1;
+			}
+			return new List<string>(table.Keys);
 		}
 
 		private class Statistics
@@ -307,8 +331,7 @@ namespace ConsoleAnalyzerText2
 				{
 					foreach (var line in File.ReadLines(p))
 					{
-						var node = tagger.ParseToNode(line);
-						var used = RetrieveWords(node);
+						var used = RetrieveWords(tagger, line);
 						var image = dictionary.WordsToImage(used);
 						ipca.Learn(new List<LearningImage>() { image });
 						index++;
@@ -364,18 +387,18 @@ namespace ConsoleAnalyzerText2
 			 * 1. 短い文章は何も内容が無いということで、分類されたくない→文章の個数の平方根
 			 * 2. 頻度が低い単語の優先度を上げたいLog(x, 2.0)に
 			 */
-			public LearningWords WordsToImage(List<Word> words)
+			public LearningWords WordsToImage(List<MorphemeManager.Word> words)
 			{
 				var image = new LearningWords();
 				image.Data[0] = 1.0;
 				foreach (var w in words)
 				{
-					if (!_Dictionary.ContainsKey(w.Text)) continue;
-					var word = _Dictionary[w.Text];
+					if (!_Dictionary.ContainsKey(w.Origin)) continue;
+					var word = _Dictionary[w.Origin];
 //					double importance = Math.Log((double)(CountMax + 1) / (double)word.CountLine, Math.E); // 本来
 					double importance = Math.Log((double)(CountMax + 1) / (double)word.CountLine, 2.0); // 頻度の高い単語は無視したい
 //					image.Data[word.ID] = importance * w.CountWord / words.Count;   // 本来
-					image.Data[word.ID] = importance * w.CountWord;	// 単語の少ない文章は無視したい
+					image.Data[word.ID] = importance * w.CountWord / Math.Sqrt(words.Count);	// 単語の少ない文章は無視したい
 				}
 				return image;
 			}
@@ -409,20 +432,23 @@ namespace ConsoleAnalyzerText2
 		public void CalclateWordClasses(Option o)
 		{
 			var tagger = PrepareTagger(o);
-			Dictionary<string, Word> words = new Dictionary<string, Word>();
+			var words = new Dictionary<string, MorphemeManager.Word>();
 
 			foreach (var p in Directory.GetFiles(o.InputDir, "*.log"))
 			{
 				foreach (var user in File.ReadLines(p))
 				{
-					var node = tagger.ParseToNode(user);
-					var used = RetrieveWords(node);
+					List<string> found = new List<string>();
+					var used = RetrieveWords(tagger, user);
 					foreach (var w in used)
 					{
-						if (!words.ContainsKey(w.Text)) words[w.Text] = w;
-						else words[w.Text].CountWord += w.CountWord;
-						words[w.Text].CountLine++;
+						if (w.IsTerminal()) continue;
+						if (!w.IsUsefull()) continue;
+						if (!words.ContainsKey(w.Origin)) words[w.Origin] = w;
+						words[w.Origin].CountWord++;
+						if (!found.Contains(w.Origin)) found.Add(w.Origin);
 					}
+					foreach (var w in found) words[w].CountLine++;
 				}
 			}
 
@@ -437,63 +463,15 @@ namespace ConsoleAnalyzerText2
 			Console.WriteLine("calclated words classes.");
 		}
 
-		private MeCabTagger PrepareTagger(Option o)
+		private MorphemeManager PrepareTagger(Option o)
 		{
-			MeCabParam p = new MeCabParam();
-			p.LatticeLevel = MeCabLatticeLevel.Zero;
-			p.OutputFormatType = "lattice";
-			p.AllMorphs = false;
-			p.Partial = false;
-			p.DicDir = "C:/obara/Library/NMeCab0.07/dic/ipadic";
-			return MeCabTagger.Create(p);
+			MorphemeManager.Instance.Initialize(o.DicDir);
+			return MorphemeManager.Instance;
 		}
 
-		private Word RetrieveWord(MeCabNode n)
+		private List<MorphemeManager.Word> RetrieveWords(MorphemeManager morpheme, string input)
 		{
-			if (n.CharType == 0) return null;
-			if (IGNORES.Contains(n.Surface)) return null;
-
-			if (n.Feature.StartsWith("名詞"))
-			{
-				return new Word() { Type = MorphemeType.NOUN, Text = n.Surface };
-			}
-			if (n.Feature.StartsWith("動詞"))
-			{
-				string[] cells = n.Feature.Split(',');
-				return new Word() { Type = MorphemeType.VERB, Text = cells[6] };
-			}
-			if (n.Feature.StartsWith("形容詞") || n.Feature.StartsWith("形容動詞"))
-			{
-				string[] cells = n.Feature.Split(',');
-				return new Word() { Type = MorphemeType.ADJECTIVE, Text = cells[6] };
-			}
-			if (n.Feature.StartsWith("副詞"))
-			{
-				string[] cells = n.Feature.Split(',');
-				return new Word() { Type = MorphemeType.ADVERB, Text = cells[6] };
-			}
-			if (n.Feature.StartsWith("感動詞"))
-			{
-				string[] cells = n.Feature.Split(',');
-				return new Word() { Type = MorphemeType.EXCLAMATION, Text = cells[6] };
-			}
-			return null;
-		}
-
-		private List<Word> RetrieveWords(MeCabNode node)
-		{
-			Dictionary<string, Word> used = new Dictionary<string, Word>();
-			while (node != null)
-			{
-				var w = RetrieveWord(node);
-				if (w != null)
-				{
-					if (!used.ContainsKey(w.Text)) used[w.Text] = w;
-					used[w.Text].CountWord++;
-				}
-				node = node.Next;
-			}
-			return new List<Word>(used.Values);
+			return morpheme.Parse(input, false);
 		}
 
 		/*
@@ -546,6 +524,7 @@ namespace ConsoleAnalyzerText2
 			public int Loop;
 			public int PickupAxis;
 			public double PickupLower, PickupUpper;
+			public string DicDir;
 		}
 
 		public enum MorphemeType { OTHERS, NOUN /*名詞*/, VERB /*動詞*/, ADJECTIVE /*形容詞*/, PARTICLE /*助詞*/, ADVERB /*副詞*/, EXCLAMATION /*感嘆詞*/, START, END }
@@ -572,6 +551,8 @@ namespace ConsoleAnalyzerText2
 				i.CountLine = int.Parse(cells[4]);
 				return i;
 			}
+			public bool haveSense() { return Type == MorphemeType.NOUN || Type == MorphemeType.VERB || Type == MorphemeType.ADJECTIVE || Type == MorphemeType.ADVERB || Type == MorphemeType.EXCLAMATION; }
+			public bool haveBorder() { return Type == MorphemeType.START || Type == MorphemeType.END; }
 		}
 		private static T ParseEnum<T>(string s)
 		{
