@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -82,6 +83,9 @@ namespace CrawlerDesktop2
 			}
 
 			SaveSettings();
+			TextBoxLog.Clear();
+
+			if (!Directory.Exists(TextBoxSaveDir.Text)) Directory.CreateDirectory(TextBoxSaveDir.Text);
 
 			var generators = new List<WebCrawler3.Generator>();
 			if (TextBoxWhitePage.Text.Length > 0)
@@ -127,6 +131,12 @@ namespace CrawlerDesktop2
 			if (_PageAll > 0) ProgressBarPages.Value = (double)_PageDone * 100 / (double)_PageAll;
 			TextBlockBears.Text = string.Format("{0:D}/{1:D}", _BearDone, _BearAll);
 			if (_BearAll > 0) ProgressBarBears.Value = (double)_BearDone * 100 / (double)_BearAll;
+
+			if (this.IsActive)
+			{
+				TextBoxLog.CaretIndex = TextBoxLog.Text.Length;
+				TextBoxLog.ScrollToEnd();
+			}
 		}
 
 		List<string> _Logs = new List<string>();
