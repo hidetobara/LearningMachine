@@ -1,0 +1,41 @@
+﻿<Window x:Name="Main" x:Class="CrawlerDesktop2.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:local="clr-namespace:CrawlerDesktop2"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="522.144" Width="455.739" Closed="Main_Closed">
+    <Grid x:Name="TextBoxMain">
+        <Button x:Name="ButtonRun" Content="Run" Margin="10,348,0,0" Click="Button_Click" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="80"/>
+        <TextBox x:Name="TextBoxLog" Margin="10,423,10.333,9.667" TextWrapping="Wrap" Text="TextBox&#xD;&#xA;oioo" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible"/>
+        <Label Content="Save Dir" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <StackPanel HorizontalAlignment="Left" Height="126" Margin="10,41,0,0" VerticalAlignment="Top" Width="378" Background="#FFF0F0F0">
+            <Label Content="Page" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="1.363,4.872" Width="52" FontWeight="Bold"/>
+            <TextBox x:Name="TextBoxWhitePage" Height="40" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Margin="10,0,9.667,0" VerticalScrollBarVisibility="Auto"/>
+            <Label Content="Limit Rank" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,0,0,0" Width="73"/>
+            <xctk:IntegerUpDown x:Name="UpDownLimitRank" Margin="10,0,0,0" HorizontalAlignment="Left" Width="100" Value="10" Maximum="100" Minimum="0" />
+        </StackPanel>
+        <StackPanel HorizontalAlignment="Left" Height="65" Margin="10,172,0,0" VerticalAlignment="Top" Width="378" Background="#FFF0F0F0">
+            <Label Content="Image" FontWeight="Bold"/>
+            <StackPanel Height="32" Orientation="Horizontal">
+                <Label Content="Size (KB)" Height="24" Margin="0,0,0,-0.333" VerticalAlignment="Top"/>
+                <xctk:IntegerUpDown x:Name="UpDownLowerSize" HorizontalAlignment="Left" Width="100" Height="24" VerticalAlignment="Top" Minimum="0" Maximum="10000" Value="0" />
+                <Label Content="～"/>
+                <xctk:IntegerUpDown x:Name="UpDownUpperSize" Margin="10,0,0,0" HorizontalAlignment="Left" Width="100" Height="24" VerticalAlignment="Top" Maximum="10000" Minimum="0" Value="0" />
+            </StackPanel>
+        </StackPanel>
+        <StackPanel HorizontalAlignment="Left" Height="101" Margin="10,242,0,0" VerticalAlignment="Top" Width="378" Background="#FFF0F0F0">
+            <Label Content="Xml" FontWeight="Bold"/>
+            <Label Content="Bear" Margin="10,0,0,0"/>
+            <TextBox x:Name="TextBoxWhiteXml" Height="37" TextWrapping="Wrap" Text="TextBox" Margin="10,0"/>
+        </StackPanel>
+        <TextBox x:Name="TextBoxSaveDir" Height="23" Margin="94,10,56,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top"/>
+        <ProgressBar x:Name="ProgressBarPages" HorizontalAlignment="Left" Height="20" Margin="10,373,0,0" VerticalAlignment="Top" Width="200"/>
+        <ProgressBar x:Name="ProgressBarBears" HorizontalAlignment="Left" Height="20" Margin="10,398,0,0" VerticalAlignment="Top" Width="200"/>
+        <TextBlock x:Name="TextBlockPages" HorizontalAlignment="Left" Margin="215,380,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
+        <TextBlock x:Name="TextBlockBears" HorizontalAlignment="Left" Margin="215,402,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
+
+    </Grid>
+</Window>

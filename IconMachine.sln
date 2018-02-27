@@ -11,7 +11,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrawlerDesktop", "CrawlerDe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleAnalyzerText2", "ConsoleAnalyzerText2\ConsoleAnalyzerText2.csproj", "{00E0BAD1-B79E-4E6D-99F9-A4B9BEBBD838}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrawlerConsole", "CrawlerConsole\CrawlerConsole.csproj", "{5F29398B-D5A4-4511-A3BD-EF15C3D58029}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrawlerConsole", "CrawlerConsole\CrawlerConsole.csproj", "{5F29398B-D5A4-4511-A3BD-EF15C3D58029}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrawlerDesktop2", "CrawlerDesktop2\CrawlerDesktop2.csproj", "{D34BF884-9372-4A74-9C77-27FDD4994AEB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{5F29398B-D5A4-4511-A3BD-EF15C3D58029}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F29398B-D5A4-4511-A3BD-EF15C3D58029}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F29398B-D5A4-4511-A3BD-EF15C3D58029}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D34BF884-9372-4A74-9C77-27FDD4994AEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D34BF884-9372-4A74-9C77-27FDD4994AEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D34BF884-9372-4A74-9C77-27FDD4994AEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D34BF884-9372-4A74-9C77-27FDD4994AEB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
