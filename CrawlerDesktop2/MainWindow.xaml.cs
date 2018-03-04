@@ -117,6 +117,9 @@ namespace CrawlerDesktop2
 		private void Main_Closed(object sender, EventArgs e)
 		{
 			if (_Driver != null) _Driver.Quit();
+			_Driver = null;
+			if (_Crawler != null) _Crawler.Close();
+			_Crawler = null;
 		}
 
 		#region 非同期
@@ -136,6 +139,11 @@ namespace CrawlerDesktop2
 			{
 				TextBoxLog.CaretIndex = TextBoxLog.Text.Length;
 				TextBoxLog.ScrollToEnd();
+			}
+			else
+			{
+				ButtonRun.Content = "Run";
+				_DispatcherTimer.Stop();
 			}
 		}
 

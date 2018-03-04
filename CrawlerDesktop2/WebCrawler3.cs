@@ -19,6 +19,8 @@ namespace CrawlerDesktop2
 	 */
 	public class WebCrawler3
 	{
+		const int SLEEP_TIME = 1500;
+
 		IWebDriver _Driver;
 		List<Generator> _Generators;
 
@@ -63,9 +65,9 @@ namespace CrawlerDesktop2
 		public void Close()
 		{
 			IsActive = false;
-			_ThreadPage.Abort();
+			if (_ThreadPage != null && _ThreadPage.IsAlive) _ThreadPage.Abort();
 			_ThreadPage = null;
-			_ThreadBear.Abort();
+			if (_ThreadBear != null && _ThreadBear.IsAlive) _ThreadBear.Abort();
 			_ThreadBear = null;
 		}
 
@@ -78,7 +80,7 @@ namespace CrawlerDesktop2
 					_CurrentNode = GetNodeNotYet(NodeType.Page);
 					if (_CurrentNode == null) break;
 
-					Thread.Sleep(2000);
+					Thread.Sleep(SLEEP_TIME);
 					lock (_Driver)
 					{
 						_Driver.Url = _CurrentNode.Url; // URL代入
@@ -118,18 +120,26 @@ namespace CrawlerDesktop2
 			{
 				try
 				{
-					node = GetNodeNotYet(NodeType.Xml);
-					OnUpdateBearProgress(CountNodes(NodeType.Xml), CountNodesCrawled(NodeType.Xml));
+					int page = CountNodesCrawled(NodeType.Page);
+					int all = CountNodes(target.Type);
+					int crawled = CountNodesCrawled(target.Type);
+					OnUpdateBearProgress(all, crawled);
+					if (page > 0 && all == crawled)
+					{
+						IsActive = false;
+						break;
+					}
 
+					node = GetNodeNotYet(target.Type);
 					if (node == null || string.IsNullOrEmpty(node.Url))
 					{
-						Thread.Sleep(1000);
+						Thread.Sleep(SLEEP_TIME);
 						continue;
 					}
 					generator.Bear(node);
 					node.Status = DownloadStatus.Done;
 					OnAddLog("[bear] url=" + node.Url);
-					Thread.Sleep(2000);
+					Thread.Sleep(SLEEP_TIME);
 				}
 				catch (Exception ex)
 				{

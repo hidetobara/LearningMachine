@@ -12,18 +12,39 @@ namespace ConsoleAnalyzerText2
 	public class Analyzer
 	{
 		const int AXIS_MAX = 32;
-		const int WORD_COUNT = 7000;
+		const int WORD_COUNT = 5000;
 		const int CUT_LIMIT = 3;
 		const int TOP_COUNT = 50;
 		readonly string[] IGNORES = new string[] {"/", ":", "･", ",", "&nbsp;", "なし" };
+
+		public void RunWakuwaku()
+		{
+			const string DIC = "C:/obara/Library/NMeCab0.07/dic/ipadic";
+			PickupProfileInWakuwaku(new Analyzer.Option() { InputDir = "C:/obara/Data/Waku/Crawl", OutputDir = "C:/obara/Data/Waku/Process" });
+			CalclateWordClasses(new Analyzer.Option() { DicDir = DIC, InputDir = "C:/obara/Data/Waku/Process", DictionaryPath = "C:/obara/Data/Waku/Process/words.csv" });
+			CalclateFrequency(new Analyzer.Option() { DicDir = DIC, Loop = 2, DictionaryPath = "C:/obara/Data/Waku/Process/words.csv", InputDir = "C:/obara/Data/Waku/Process", OutputDir = "C:/obara/Data/Waku/Process" });
+			GroupByStatistics(new Analyzer.Option() { DictionaryPath = "C:/obara/Data/Waku/Process/words.csv", InputDir = "C:/obara/Data/Waku/Process", OutputDir = "C:/obara/Data/Waku/Process" });
+		}
+
+		public void RunHappyMail()
+		{
+			const string DIC = "C:/obara/Library/NMeCab0.07/dic/ipadic";
+			PickupProfileInHappyMail(new Analyzer.Option() { InputDir = "C:/obara/Data/HappyMail/Crawl", OutputDir = "C:/obara/Data/HappyMail/Process" });
+			CalclateWordClasses(new Analyzer.Option() { DicDir = DIC, InputDir = "C:/obara/Data/HappyMail/Process", DictionaryPath = "C:/obara/Data/HappyMail/Process/words.csv" });
+			CalclateFrequency(new Analyzer.Option() { Loop = 2, DictionaryPath = "C:/obara/Data/HappyMail/Process/words.csv", InputDir = "C:/obara/Data/HappyMail/Process", OutputDir = "C:/obara/Data/HappyMail/Process" });
+			GroupByStatistics(new Analyzer.Option() { DictionaryPath = "C:/obara/Data/HappyMail/Process/words.csv", InputDir = "C:/obara/Data/HappyMail/Process", OutputDir = "C:/obara/Data/HappyMail/Process" });
+			//analyzer.GroupByStatistics(new Analyzer.Option() { ReloadStatistics = true, DictionaryPath = "C:/obara/Data/HappyMail/Process/words.csv", InputDir = "C:/obara/Data/HappyMail/Process", OutputDir = "C:/obara/Data/HappyMail/Process", PickupAxis = 4, PickupLower = -3, PickupUpper = -1.1 });
+			//analyzer.GroupByDifference(new Analyzer.Option() { DictionaryPath = "C:/obara/Data/HappyMail/Process/words.csv", InputDir = "C:/obara/Data/HappyMail/Process", OutputDir = "C:/obara/Data/HappyMail/Process" });
+			BuildVolatile(new Analyzer.Option() { InputDir = "C:/obara/Data/HappyMail/Process", OutputDir = "C:/obara/Data/HappyMail/Process" });
+		}
 
 		public void BuildVolatile(Option o)
 		{
 			MorphemeManager.Instance.Initialize("C:/obara/Library/NMeCab0.07/dic/ipadic");
 			VolatileManager v = new VolatileManager(o.OutputDir, "happy");
-			//v.LearningMatrix(o.InputDir);
-			//v.Save();
-			v.Load();
+			v.LearningMatrix(o.InputDir);
+			v.Save();
+			//v.Load();
 			string s = v.Generate();
 		}
 
@@ -252,23 +273,6 @@ namespace ConsoleAnalyzerText2
 			}
 		}
 
-		private double[] LoadDistribution(string path)
-		{
-			double[] distributions = new double[AXIS_MAX];
-			for (int a = 0; a < AXIS_MAX; a++) distributions[a] = 1;
-
-			var lines = File.ReadAllLines(path);
-			if (lines.Length < AXIS_MAX) return distributions;
-
-			for(int r = 0; r < lines.Length; r++)
-			{
-				string[] cells = lines[r].Split('\t');
-				if (cells.Length < 4) continue;
-				double.TryParse(cells[3], out distributions[r]);
-			}
-			return distributions;
-		}
-
 		private class TopList
 		{
 			int _Axis;
@@ -393,12 +397,13 @@ namespace ConsoleAnalyzerText2
 				image.Data[0] = 1.0;
 				foreach (var w in words)
 				{
+					if (w.IsTerminal()) continue;
 					if (!_Dictionary.ContainsKey(w.Origin)) continue;
 					var word = _Dictionary[w.Origin];
 //					double importance = Math.Log((double)(CountMax + 1) / (double)word.CountLine, Math.E); // 本来
 					double importance = Math.Log((double)(CountMax + 1) / (double)word.CountLine, 2.0); // 頻度の高い単語は無視したい
 //					image.Data[word.ID] = importance * w.CountWord / words.Count;   // 本来
-					image.Data[word.ID] = importance * w.CountWord / Math.Sqrt(words.Count);	// 単語の少ない文章は無視したい
+					image.Data[word.ID] = importance * word.CountWord / Math.Sqrt(words.Count);	// 単語の少ない文章は無視したい
 				}
 				return image;
 			}
@@ -475,7 +480,7 @@ namespace ConsoleAnalyzerText2
 		}
 
 		/*
-		 * プロフィールだけを抜き出す
+		 * HappyMail内のプロフィールだけを抜き出す
 		 */
 		public void PickupProfileInHappyMail(Option o)
 		{
@@ -504,6 +509,39 @@ namespace ConsoleAnalyzerText2
 					pickups.Add(replaced);
 					if (pickups.Count % 1000 == 0) Console.WriteLine("\tcount pickups=" + pickups.Count);
 				}
+			}
+			WriteLines(Path.Combine(o.OutputDir, "profile.log"), pickups);
+		}
+
+		/*
+		 * Wakuwaku内のプロフィールだけを抜き出す
+		 */
+		public void PickupProfileInWakuwaku(Option o)
+		{
+			Console.WriteLine("pickuping profiles.");
+			string[] removes = new string[] { ":", "：", "&nbsp;", "&gt;", "&lt;", "自由ｺﾒﾝﾄ", "自由コメント" };
+			Regex r = new Regex("<p class=\"p-profile-comment__content\">(.*?)</p>");
+			Regex tag = new Regex("<[^>]*?>");
+			Regex space = new Regex("[。\\s\r\n]+");
+			Regex letter = new Regex("&#\\d+;");
+			Regex tabs = new Regex("\t+");
+
+			List<string> pickups = new List<string>();
+			foreach (var path in Directory.GetFiles(o.InputDir, "*.xml", SearchOption.AllDirectories))
+			{
+				var context = File.ReadAllText(path, Encoding.GetEncoding("utf-8"));
+				context = context.Replace("\r\n", "");
+				Match match = r.Match(context);
+				if (!match.Success) continue;
+
+				string replaced = match.Groups[1].Value;
+				replaced = tag.Replace(replaced, "\t");
+				replaced = letter.Replace(replaced, "\t");
+				replaced = space.Replace(replaced, "\t");
+				foreach (var s in removes) replaced = replaced.Replace(s, "");
+
+				pickups.Add(replaced);
+				if (pickups.Count % 1000 == 0) Console.WriteLine("\tcount pickups=" + pickups.Count);
 			}
 			WriteLines(Path.Combine(o.OutputDir, "profile.log"), pickups);
 		}

@@ -6,7 +6,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:CrawlerDesktop2"
         mc:Ignorable="d"
-        Title="MainWindow" Height="522.144" Width="455.739" Closed="Main_Closed">
+        Title="Crawler" Height="522.144" Width="455.739" Closed="Main_Closed">
     <Grid x:Name="TextBoxMain">
         <Button x:Name="ButtonRun" Content="Run" Margin="10,348,0,0" Click="Button_Click" Height="20" VerticalAlignment="Top" HorizontalAlignment="Left" Width="80"/>
         <TextBox x:Name="TextBoxLog" Margin="10,423,10.333,9.667" TextWrapping="Wrap" Text="TextBox&#xD;&#xA;oioo" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible"/>
