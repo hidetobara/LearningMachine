@@ -15,7 +15,6 @@ namespace ConsoleAnalyzerText2
 		const int WORD_COUNT = 5000;
 		const int CUT_LIMIT = 3;
 		const int TOP_COUNT = 50;
-		readonly string[] IGNORES = new string[] {"/", ":", "･", ",", "&nbsp;", "なし" };
 
 		public void RunWakuwaku()
 		{
@@ -348,7 +347,7 @@ namespace ConsoleAnalyzerText2
 			var indexDictionary = dictionary.ToIndexDictionary();
 			for(int main = 0; main < ipca.MainMax; main++)
 			{
-				var list = PickupTop(ipca, indexDictionary, main, 50);
+				var list = PickupTop(ipca, indexDictionary, main, 100);
 				List<string> lines = new List<string>();
 				foreach (var item in list) lines.Add(item.ToString());
 				string path = Path.Combine(o.IpcaDir, "main" + main + ".csv");
@@ -381,6 +380,7 @@ namespace ConsoleAnalyzerText2
 		 */
 		private class WordsDictionary
 		{
+			readonly List<string> Ignores = new List<string>() { "する", "いる", "ある", "ない", "てる", "こと", "れる", "なる", "の", "、", "。", "ー", "､", "｡" };
 			private Dictionary<string, Word> _Dictionary;
 			public int CountMax { get; private set; }
 
@@ -397,13 +397,15 @@ namespace ConsoleAnalyzerText2
 				image.Data[0] = 1.0;
 				foreach (var w in words)
 				{
-					if (w.IsTerminal()) continue;
-					if (!_Dictionary.ContainsKey(w.Origin)) continue;
+					if (w.IsTerminal()) continue;	// 終端
+					if (!_Dictionary.ContainsKey(w.Origin)) continue;	// 辞書に含まれない
+					if (Ignores.Contains(w.Origin)) continue;   // 無視単語
+					if (!w.IsUsefull()) continue;
 					var word = _Dictionary[w.Origin];
 //					double importance = Math.Log((double)(CountMax + 1) / (double)word.CountLine, Math.E); // 本来
 					double importance = Math.Log((double)(CountMax + 1) / (double)word.CountLine, 2.0); // 頻度の高い単語は無視したい
 //					image.Data[word.ID] = importance * w.CountWord / words.Count;   // 本来
-					image.Data[word.ID] = importance * word.CountWord / Math.Sqrt(words.Count);	// 単語の少ない文章は無視したい
+					image.Data[word.ID] += importance / Math.Sqrt(words.Count);	// 単語の少ない文章は無視したい
 				}
 				return image;
 			}
@@ -519,7 +521,8 @@ namespace ConsoleAnalyzerText2
 		public void PickupProfileInWakuwaku(Option o)
 		{
 			Console.WriteLine("pickuping profiles.");
-			string[] removes = new string[] { ":", "：", "&nbsp;", "&gt;", "&lt;", "自由ｺﾒﾝﾄ", "自由コメント" };
+			string[] removes = new string[] { "&amp;", "&nbsp;", "&gt;", "&lt;", "自由ｺﾒﾝﾄ", "自由コメント", "ﾏｲﾌﾞｰﾑ", "マイブーム", "誰似", "髪型", "性格", "望む相手", "特技", "休日", "趣味", "恋人", "車", "夢",
+				 "-", "_", ",", ".", "/", ":", "：", ";", "；", "･", "m", "^", "o", "(", ")", "*", "`", "'", "＼", "／", "♪", "?" };
 			Regex r = new Regex("<p class=\"p-profile-comment__content\">(.*?)</p>");
 			Regex tag = new Regex("<[^>]*?>");
 			Regex space = new Regex("[。\\s\r\n]+");
