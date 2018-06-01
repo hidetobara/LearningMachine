@@ -140,7 +140,7 @@ namespace CrawlerDesktop2
 				TextBoxLog.CaretIndex = TextBoxLog.Text.Length;
 				TextBoxLog.ScrollToEnd();
 			}
-			else
+			if (!_Crawler.IsActive)
 			{
 				ButtonRun.Content = "Run";
 				_DispatcherTimer.Stop();
