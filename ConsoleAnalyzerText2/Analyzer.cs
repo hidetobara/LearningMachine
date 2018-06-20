@@ -15,10 +15,10 @@ namespace ConsoleAnalyzerText2
 		const int WORD_COUNT = 5000;
 		const int CUT_LIMIT = 3;
 		const int TOP_COUNT = 50;
+		const string DIC = "C:/obara/Library/NMeCab0.07/dic/ipadic";
 
 		public void RunWakuwaku()
 		{
-			const string DIC = "C:/obara/Library/NMeCab0.07/dic/ipadic";
 			PickupProfileInWakuwaku(new Analyzer.Option() { InputDir = "C:/obara/Data/Waku/Crawl", OutputDir = "C:/obara/Data/Waku/Process" });
 			CalclateWordClasses(new Analyzer.Option() { DicDir = DIC, InputDir = "C:/obara/Data/Waku/Process", DictionaryPath = "C:/obara/Data/Waku/Process/words.csv" });
 			CalclateFrequency(new Analyzer.Option() { DicDir = DIC, Loop = 2, DictionaryPath = "C:/obara/Data/Waku/Process/words.csv", InputDir = "C:/obara/Data/Waku/Process", OutputDir = "C:/obara/Data/Waku/Process" });
@@ -27,7 +27,6 @@ namespace ConsoleAnalyzerText2
 
 		public void RunHappyMail()
 		{
-			const string DIC = "C:/obara/Library/NMeCab0.07/dic/ipadic";
 			PickupProfileInHappyMail(new Analyzer.Option() { InputDir = "C:/obara/Data/HappyMail/Crawl", OutputDir = "C:/obara/Data/HappyMail/Process" });
 			CalclateWordClasses(new Analyzer.Option() { DicDir = DIC, InputDir = "C:/obara/Data/HappyMail/Process", DictionaryPath = "C:/obara/Data/HappyMail/Process/words.csv" });
 			CalclateFrequency(new Analyzer.Option() { Loop = 2, DictionaryPath = "C:/obara/Data/HappyMail/Process/words.csv", InputDir = "C:/obara/Data/HappyMail/Process", OutputDir = "C:/obara/Data/HappyMail/Process" });
@@ -35,6 +34,14 @@ namespace ConsoleAnalyzerText2
 			//analyzer.GroupByStatistics(new Analyzer.Option() { ReloadStatistics = true, DictionaryPath = "C:/obara/Data/HappyMail/Process/words.csv", InputDir = "C:/obara/Data/HappyMail/Process", OutputDir = "C:/obara/Data/HappyMail/Process", PickupAxis = 4, PickupLower = -3, PickupUpper = -1.1 });
 			//analyzer.GroupByDifference(new Analyzer.Option() { DictionaryPath = "C:/obara/Data/HappyMail/Process/words.csv", InputDir = "C:/obara/Data/HappyMail/Process", OutputDir = "C:/obara/Data/HappyMail/Process" });
 			BuildVolatile(new Analyzer.Option() { InputDir = "C:/obara/Data/HappyMail/Process", OutputDir = "C:/obara/Data/HappyMail/Process" });
+		}
+
+		public void RunYYC()
+		{
+			PickupProfileInYYC(new Analyzer.Option() { InputDir = "C:/obara/Data/YYC/Crawl", OutputDir = "C:/obara/Data/YYC/Process" });
+			CalclateWordClasses(new Analyzer.Option() { DicDir = DIC, InputDir = "C:/obara/Data/YYC/Process", DictionaryPath = "C:/obara/Data/YYC/Process/words.csv" });
+			CalclateFrequency(new Analyzer.Option() { DicDir = DIC, Loop = 2, DictionaryPath = "C:/obara/Data/YYC/Process/words.csv", InputDir = "C:/obara/Data/YYC/Process", OutputDir = "C:/obara/Data/YYC/Process" });
+			GroupByStatistics(new Analyzer.Option() { DictionaryPath = "C:/obara/Data/YYC/Process/words.csv", InputDir = "C:/obara/Data/YYC/Process", OutputDir = "C:/obara/Data/YYC/Process" });
 		}
 
 		public void BuildVolatile(Option o)
@@ -542,11 +549,40 @@ namespace ConsoleAnalyzerText2
 				replaced = letter.Replace(replaced, "\t");
 				replaced = space.Replace(replaced, "\t");
 				foreach (var s in removes) replaced = replaced.Replace(s, "");
-
 				pickups.Add(replaced);
 				if (pickups.Count % 1000 == 0) Console.WriteLine("\tcount pickups=" + pickups.Count);
 			}
 			WriteLines(Path.Combine(o.OutputDir, "profile.log"), pickups);
+		}
+
+		public void PickupProfileInYYC(Option o)
+		{
+			string[] removes = new string[] { "&amp;", "&nbsp;", "&gt;", "&lt;", "自己紹介",
+				"-", "_", ",", ".", "/", ":", "：", ";", "；", "･", "m", "^", "o", "(", ")", "*", "`", "'", "＼", "／", "♪", "?" };
+			Regex r = new Regex("<div class=\"pr-title\">(.*?)<div class=\"hope-title\">");
+			Regex tag = new Regex("<[^>]*?>");
+			Regex space = new Regex("[。\\s\r\n]+");
+			Regex letter = new Regex("&#\\d+;");
+			Regex tabs = new Regex("\t+");
+
+			Dictionary<string, int> pickups = new Dictionary<string, int>();
+			foreach (var path in Directory.GetFiles(o.InputDir, "*.xml", SearchOption.AllDirectories))
+			{
+				var context = File.ReadAllText(path, Encoding.GetEncoding("utf-8"));
+				context = context.Replace("\r\n", "");
+				Match match = r.Match(context);
+				if (!match.Success) continue;
+
+				string replaced = match.Groups[1].Value;
+				replaced = tag.Replace(replaced, "\t");
+				replaced = letter.Replace(replaced, "\t");
+				replaced = space.Replace(replaced, "\t");
+				foreach (var s in removes) replaced = replaced.Replace(s, "");
+				if (replaced == "\t") continue;
+				pickups[replaced] = 1;
+				if (pickups.Count % 1000 == 0) Console.WriteLine("\tcount pickups=" + pickups.Count);
+			}
+			WriteLines(Path.Combine(o.OutputDir, "profile.log"), pickups.Keys.ToList());
 		}
 
 		private void WriteLines(string path, List<string> lines)

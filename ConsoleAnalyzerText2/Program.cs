@@ -11,7 +11,7 @@ namespace ConsoleAnalyzerText2
 		static void Main(string[] args)
 		{
 			var analyzer = new Analyzer();
-			analyzer.RunWakuwaku();
+			analyzer.RunYYC();
 		}
 	}
 }

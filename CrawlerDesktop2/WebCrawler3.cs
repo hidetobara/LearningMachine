@@ -105,6 +105,7 @@ namespace CrawlerDesktop2
 					if (_CurrentNode != null) _CurrentNode.Status = DownloadStatus.Error;
 				}
 			}
+			OnAddLog("Downloaded Pages...");
 		}
 
 		private void DownloadingBear(Object o)
