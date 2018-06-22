@@ -39,6 +39,7 @@ namespace ConsoleAnalyzerText2
 		public void RunYYC()
 		{
 			PickupProfileInYYC(new Analyzer.Option() { InputDir = "C:/obara/Data/YYC/Crawl", OutputDir = "C:/obara/Data/YYC/Process" });
+			PickupAgesInYYC(new Analyzer.Option() { InputDir = "C:/obara/Data/YYC/Crawl", OutputDir = "C:/obara/Data/YYC/Process" });
 			CalclateWordClasses(new Analyzer.Option() { DicDir = DIC, InputDir = "C:/obara/Data/YYC/Process", DictionaryPath = "C:/obara/Data/YYC/Process/words.csv" });
 			CalclateFrequency(new Analyzer.Option() { DicDir = DIC, Loop = 2, DictionaryPath = "C:/obara/Data/YYC/Process/words.csv", InputDir = "C:/obara/Data/YYC/Process", OutputDir = "C:/obara/Data/YYC/Process" });
 			GroupByStatistics(new Analyzer.Option() { DictionaryPath = "C:/obara/Data/YYC/Process/words.csv", InputDir = "C:/obara/Data/YYC/Process", OutputDir = "C:/obara/Data/YYC/Process" });
@@ -558,7 +559,7 @@ namespace ConsoleAnalyzerText2
 		public void PickupProfileInYYC(Option o)
 		{
 			string[] removes = new string[] { "&amp;", "&nbsp;", "&gt;", "&lt;", "自己紹介",
-				"-", "_", ",", ".", "/", ":", "：", ";", "；", "･", "m", "^", "o", "(", ")", "*", "`", "'", "＼", "／", "♪", "?" };
+				"-", "о", "_", ",", ".", "/", ":", "：", ";", "；", "･", "m", "^", "o", "(", ")", "*", "`", "'", "＼", "／", "♪", "?", "!" };
 			Regex r = new Regex("<div class=\"pr-title\">(.*?)<div class=\"hope-title\">");
 			Regex tag = new Regex("<[^>]*?>");
 			Regex space = new Regex("[。\\s\r\n]+");
@@ -585,6 +586,30 @@ namespace ConsoleAnalyzerText2
 			WriteLines(Path.Combine(o.OutputDir, "profile.log"), pickups.Keys.ToList());
 		}
 
+		public void PickupAgesInYYC(Option o)
+		{
+			Regex r = new Regex(@"(\d+)歳");
+			Dictionary<string, int> table = new Dictionary<string, int>();
+			foreach (var path in Directory.GetFiles(o.InputDir, "*.xml", SearchOption.AllDirectories))
+			{
+				var context = File.ReadAllText(path, Encoding.GetEncoding("utf-8"));
+				context = context.Replace("\r\n", "");
+				Match match = r.Match(context);
+				if (!match.Success) continue;
+
+				int age = 0;
+				if (!int.TryParse(match.Groups[1].Value, out age)) continue;
+				string name = Path.GetFileNameWithoutExtension(path);
+				string[] cells = name.Split('_');
+				table[cells[0]] = age;
+			}
+			Dictionary<int, int> ages = new Dictionary<int, int>();
+			for (int i = 1; i < 100; i++) ages[i] = 0;
+			foreach (var age in table.Values) if (ages.ContainsKey(age)) ages[age]++;
+			List<string> lines = new List<string>();
+			for (int i = 1; i < 100; i++) lines.Add("age=" + i + ",count=" + ages[i]);
+			WriteLines(Path.Combine(o.OutputDir, "ages.csv"), lines);
+		}
 		private void WriteLines(string path, List<string> lines)
 		{
 			if (File.Exists(path)) File.Delete(path);
